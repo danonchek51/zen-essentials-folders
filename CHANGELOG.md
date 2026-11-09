@@ -10,6 +10,35 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.12.0] — 2026-11-09
+
+A folder is created in one click now, and the mod settings dialog opens again.
+
+### Added
+
+- **A folder is created instantly.** The `+` tile no longer opens a modal dialog: the new
+  folder appears on the spot as a tile, first in the row, with its name already selected for
+  typing. `Enter` or clicking away keeps the name; `Esc`, or an empty name, removes the new
+  folder again.
+- **Renaming happens on the tile.** Double-click a folder name — on a tile or on the header of
+  an open folder — and the caption turns into a text field. `Enter` or clicking away keeps the
+  new name, `Esc` puts the old one back. A single click on the name still opens and closes the
+  folder, as before.
+- **The colour is one click away.** Hovering a folder shows a compact strip of the 16 palette
+  colours next to the tile; a single click applies the colour immediately. The strip floats over
+  the panel, so the grid does not move, and it hides itself as soon as the pointer leaves it.
+  `Advanced…` opens the full folder dialog for the exact hex value, a custom icon and site
+  rules.
+
+### Fixed
+
+- **The mod settings dialog opens again.** `Mod settings` in the folder menu did nothing: the
+  panel was opened with `showPopup()`, which a XUL panel does not have. It is now opened with
+  `openPopup()` against the control that triggered it, and waits for the menu to close first.
+- The folder description in the theme metadata now matches the real number of settings (22).
+
+---
+
 ## [1.11.0] — 2026-11-09
 
 Interface, readability and layout fixes found on the live browser.

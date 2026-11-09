@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.11.0](https://img.shields.io/badge/version-1.11.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.12.0](https://img.shields.io/badge/version-1.12.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -67,6 +67,16 @@ within** — all with ordinary mouse drag & drop.
   **header of an open folder** — that is, an open folder can also be renamed, recoloured or
   unpinned.
 - **The `+` tile** in the row — create a new folder straight from the panel.
+- **A new folder appears immediately.** The `+` tile does not open a dialog: the folder is
+  created on the spot and its name is already selected for typing. Press `Enter` or click
+  away to keep the name; press `Esc`, or leave the name empty, and the new folder is removed
+  again.
+- **Renaming happens on the tile.** Double-click a folder name — on a tile or on the header of
+  an open folder — and the caption turns into a text field. `Enter` or clicking away keeps the
+  new name, `Esc` puts the old one back.
+- **The colour is one click away.** Hovering a folder shows a compact strip of the 16 palette
+  colours next to the tile; a single click applies the colour immediately. `Advanced…` opens
+  the full folder dialog for the exact hex value, a custom icon and site rules.
 - **Folder search**: the row above the tiles. Type a folder name or a domain — and only the
   matches stay. `Esc` or the cross resets the search.
 - **A pinned folder** (the pin in the folder menu) always sits in the top row, above all the
@@ -78,7 +88,9 @@ within** — all with ordinary mouse drag & drop.
 - **Open all tabs of a folder** — the tabs of the folder are selected right away and opened next
   to each other.
 - **Folder dialog**: name, colour, icon (the standard Zen picker), a list of domains with
-  checkboxes, adding a domain manually.
+  checkboxes, adding a domain manually. It stays available from the tile menu and from the
+  `Advanced…` button of the colour strip — the quick inline way handles the name and the
+  colour, the dialog handles everything else.
 - **Any colour for a folder.** Besides 16 preset shades, the dialog has a colour picker (a
   shade square + a colour bar), a field for an exact code (`#rrggbb`, `#rgb` is understood too)
   and a `Random` button. The chosen colour is immediately visible on the folder tile and on its
