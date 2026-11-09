@@ -607,6 +607,45 @@
     return folders.filter(folder => folder.parentId === parentId);
   }
 
+  /** Все потомки папки — на любой глубине. */
+  function descendantIds(id) {
+    const result = [];
+    const queue = [id];
+    while (queue.length) {
+      const current = queue.shift();
+      for (const child of childrenOf(current)) {
+        result.push(child.id);
+        queue.push(child.id);
+      }
+    }
+    return result;
+  }
+
+  /** Родитель папки (null — верхний уровень). */
+  function parentIdOf(id) {
+    const folder = folders.find(item => item.id === id);
+    return folder ? folder.parentId || null : null;
+  }
+
+  /** Папка не видна: закрыта сама или любой её предок.
+   *
+   *  Если закрыт родитель, вложенная папка не должна оставаться открытой:
+   *  иначе её вкладки выпадают в сетку «Важных» как обычные плитки.
+   */
+  function isHiddenByCollapse(id) {
+    if (collapsed.has(id)) {
+      return true;
+    }
+    let parentId = parentIdOf(id);
+    while (parentId) {
+      if (collapsed.has(parentId)) {
+        return true;
+      }
+      parentId = parentIdOf(parentId);
+    }
+    return false;
+  }
+
   /** Глубина папки в дереве. */
   function depthOf(folder) {
     let depth = 0;
@@ -1549,7 +1588,7 @@
       const folder = match.folder;
       tab.setAttribute("data-zef-folder", folder.id);
       tab.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
-      if (collapsed.has(folder.id)) {
+      if (isHiddenByCollapse(folder.id)) {
         tab.setAttribute("data-zef-hidden", "true");
       } else {
         tab.setAttribute("data-zef-open", "true");
@@ -1655,7 +1694,7 @@
       let hasExpandedChild = false;
       let nestedRow = null;
       for (const child of childrenOf(folder.id)) {
-        if (collapsed.has(child.id)) {
+        if (isHiddenByCollapse(child.id)) {
           if (!nestedRow) {
             nestedRow = document.createElement("div");
             nestedRow.className = "zef-tiles-row zef-nested-row";
@@ -2122,6 +2161,12 @@
       rememberOpen(id);
     } else {
       set.add(id);
+      // Закрыли родителя — вложенные папки закрываем вместе с ним.
+      // Иначе открытая вложенная папка остаётся открытой, и её вкладки
+      // выпадают в сетку «Важных» как обычные плитки.
+      for (const childId of descendantIds(id)) {
+        set.add(childId);
+      }
     }
     writeJSONPref(PREF_COLLAPSED, [...set]);
     collapsed = set;

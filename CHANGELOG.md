@@ -41,6 +41,9 @@ Interface, readability and layout fixes found on the live browser.
 
 - The folder caption is no longer cut off in low tiles — the icon gives way instead.
 - Long folder names no longer overlap the neighbouring tiles.
+- **Closing a folder closes the folders inside it too.** A nested folder used to stay open, and
+  its tabs then dropped into the Essentials grid as ordinary tiles. Now the whole branch closes
+  at once and the tabs stay hidden until the parent is opened again.
 
 ---
 
