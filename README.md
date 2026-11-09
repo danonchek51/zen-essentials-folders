@@ -1,6 +1,6 @@
 # Essentials Folders — плитки-папки для «Важных» в Zen Browser
 
-[![Версия 1.10.0](https://img.shields.io/badge/version-1.10.1-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Версия 1.10.2](https://img.shields.io/badge/version-1.10.2-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![Лицензия MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
