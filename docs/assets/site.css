@@ -168,6 +168,10 @@ pre {
 .steps { padding-left: 22px; margin: 14px 0; }
 .steps li { margin-bottom: 10px; }
 
+/* ---------- блоки с разметкой внутри: отдельные RU/EN версии ---------- */
+html[data-lang="ru"] .only-en { display: none; }
+html[data-lang="en"] .only-ru { display: none; }
+
 .note { font-size: 14.5px; color: var(--muted); }
 .note code { background: var(--card); padding: 1px 6px; border-radius: 5px; }
 
