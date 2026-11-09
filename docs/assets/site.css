@@ -141,13 +141,15 @@ p { margin: 0 0 16px; }
 .card p { margin: 0; font-size: 15px; color: var(--muted); }
 
 /* ---------- скриншоты ---------- */
-.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
+.shots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 .shots figure { margin: 0; }
 .shots img {
   width: 100%; border-radius: 12px; border: 1px solid var(--line);
   background: var(--card); padding: 10px;
 }
 .shots figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
+.shots .wide { grid-column: 1 / -1; }
+.shots .tall img { max-height: 460px; width: auto; margin-inline: auto; }
 
 /* ---------- таблица и код ---------- */
 table { width: 100%; border-collapse: collapse; margin: 18px 0 8px; font-size: 15px; }
@@ -179,6 +181,7 @@ pre {
 @media (max-width: 900px) {
   .hero-in { grid-template-columns: 1fr; gap: 34px; }
   .facts { grid-template-columns: repeat(2, 1fr); }
+  .shots { grid-template-columns: 1fr; }
   .nav { display: none; }
 }
 
