@@ -10,6 +10,10 @@
   --accent-soft: rgba(167, 139, 250, 0.14);
   --radius: 16px;
   --wrap: 1120px;
+  /* Шрифты: Rubik — как в самом Zen Browser, Inter — текст, JetBrains Mono — код. */
+  --font-display: "Rubik", "Inter", system-ui, sans-serif;
+  --font-text: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -20,7 +24,10 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-text);
+  font-size: 17px;
+  line-height: 1.65;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
 }
 
@@ -28,7 +35,8 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 code, pre {
-  font-family: "Cascadia Code", "Consolas", "SF Mono", ui-monospace, monospace;
+  font-family: var(--font-mono);
+  font-feature-settings: "liga" 0;
 }
 
 img { max-width: 100%; height: auto; display: block; }
@@ -50,7 +58,7 @@ img { max-width: 100%; height: auto; display: block; }
   border-bottom: 1px solid var(--line);
 }
 .top-in { display: flex; align-items: center; gap: 24px; height: 62px; }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 650; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-family: var(--font-display); font-weight: 600; }
 .brand:hover { text-decoration: none; }
 .brand-mark {
   display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px;
@@ -65,7 +73,8 @@ img { max-width: 100%; height: auto; display: block; }
 
 .lang { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; }
 .lang button {
-  font: 600 12px/1 "Segoe UI", sans-serif; letter-spacing: 0.04em;
+  font-family: var(--font-text);
+  font-weight: 600; font-size: 12px; line-height: 1; letter-spacing: 0.04em;
   color: var(--muted); background: none; border: 0; border-radius: 6px;
   padding: 6px 9px; cursor: pointer;
 }
@@ -84,11 +93,11 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .eyebrow {
   margin: 0 0 14px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--accent);
+  text-transform: uppercase; color: var(--accent); font-family: var(--font-display);
 }
 h1 {
   margin: 0 0 18px; font-size: clamp(34px, 5.2vw, 54px); line-height: 1.08;
-  letter-spacing: -0.025em; font-weight: 700;
+  letter-spacing: -0.025em; font-weight: 700; font-family: var(--font-display);
 }
 .lead { margin: 0 0 30px; font-size: 18px; color: var(--muted); max-width: 56ch; }
 
@@ -96,6 +105,7 @@ h1 {
 .btn {
   display: inline-flex; align-items: center; padding: 12px 20px; border-radius: 11px;
   border: 1px solid var(--line); background: var(--card); color: var(--text);
+  font-family: var(--font-text);
   font-weight: 600; font-size: 15px;
 }
 .btn:hover { text-decoration: none; border-color: var(--accent); color: var(--text); }
@@ -127,8 +137,14 @@ h1 {
 /* ---------- секции ---------- */
 .section { padding: 68px 0; }
 .section.alt { background: var(--bg-alt); border-block: 1px solid var(--line); }
-h2 { margin: 0 0 26px; font-size: clamp(26px, 3.2vw, 34px); letter-spacing: -0.02em; }
-h3 { margin: 30px 0 8px; font-size: 19px; letter-spacing: -0.01em; }
+h2 {
+  margin: 0 0 26px; font-size: clamp(26px, 3.2vw, 34px); letter-spacing: -0.02em;
+  font-family: var(--font-display); font-weight: 600;
+}
+h3 {
+  margin: 30px 0 8px; font-size: 19px; letter-spacing: -0.01em;
+  font-family: var(--font-display); font-weight: 600;
+}
 p { margin: 0 0 16px; }
 .answer { color: var(--text); border-left: 3px solid var(--accent); padding-left: 18px; }
 
@@ -137,7 +153,7 @@ p { margin: 0 0 16px; }
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 22px;
 }
-.card h3 { margin: 0 0 8px; font-size: 17px; }
+.card h3 { margin: 0 0 8px; font-size: 17px; font-family: var(--font-display); }
 .card p { margin: 0; font-size: 15px; color: var(--muted); }
 
 /* ---------- скриншоты ---------- */
@@ -178,7 +194,7 @@ html[data-lang="en"] .only-ru { display: none; }
 /* ---------- подвал ---------- */
 .foot { border-top: 1px solid var(--line); padding: 34px 0 44px; }
 .foot-in { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
-.foot-name { font-weight: 650; margin: 0 0 4px; }
+.foot-name { font-family: var(--font-display); font-weight: 600; margin: 0 0 4px; }
 .foot p { margin: 0; color: var(--muted); font-size: 14.5px; }
 .foot-links { display: flex; flex-wrap: wrap; gap: 18px; font-size: 14.5px; }
 

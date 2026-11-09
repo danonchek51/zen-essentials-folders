@@ -69,7 +69,7 @@ Real screenshots from Zen Browser 1.24b.
 
 | Tile row | Open folder | Nested folder | Tile menu | Folder dialog | "Move to folder" |
 |---|---|---|---|---|---|
-| ![A row of colour-coded folder tiles with icons, names and tab counters](images/tiles.png) | ![An open folder unfolded into a wide coloured plane holding its tabs](images/expanded.png) | ![A nested folder: the parent tiles start a new row and stay out of the nested colour](images/nested.png) | ![The context menu of a folder tile: expand, rename, change colour, nest, delete](images/menu.png) | ![The folder dialog: name, colour, icon and a list of domains with checkboxes](images/dialog.png) | ![The "Move to folder" entry in the context menu of an Essentials tab](images/context.png) |
+| ![A row of colour-coded folder tiles with icons, names and tab counters](images/tiles.png) | ![An open folder unfolded into a wide coloured plane holding its tabs](images/expanded.png) | ![A nested folder: the parent tiles start a new row and stay out of the nested colour](images/nested.png) | ![The context menu of a folder tile: expand, rename, change colour, nest, delete](images/menu.png) | ![Choosing a folder colour: palette, gradient picker and an exact hex code](images/dialog.png) | ![The "Move to folder" entry in the context menu of an Essentials tab](images/context.png) |
 
 ## Settings
 
