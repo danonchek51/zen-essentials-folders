@@ -1,0 +1,8 @@
+# временные файлы сборки
+*.zip
+__pycache__/
+*.pyc
+harness*.html
+harness*.js
+harness*.css
+shots/

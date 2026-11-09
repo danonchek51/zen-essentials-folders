@@ -1,0 +1,32 @@
+[
+  {
+    "property": "zen.essentialsfolders.show-names",
+    "label": "Показывать названия папок на плитках",
+    "type": "checkbox",
+    "defaultValue": true
+  },
+  {
+    "property": "zen.essentialsfolders.show-count",
+    "label": "Показывать количество вкладок в папке",
+    "type": "checkbox",
+    "defaultValue": true
+  },
+  {
+    "property": "zen.essentialsfolders.show-search",
+    "label": "Показывать строку поиска по папкам",
+    "type": "checkbox",
+    "defaultValue": true
+  },
+  {
+    "property": "zen.essentialsfolders.icon-size",
+    "label": "Размер логотипа в «Важных» (например 26px)",
+    "type": "string",
+    "defaultValue": "26px"
+  },
+  {
+    "property": "zen.essentialsfolders.tab-icon-size",
+    "label": "Размер иконки вкладки в списке сбоку (например 18px)",
+    "type": "string",
+    "defaultValue": "18px"
+  }
+]

@@ -1,0 +1,37 @@
+{
+  "id": "zen-essentials-folders",
+  "name": "Essentials Folders",
+  "description": "Folder tiles for Zen Essentials: nesting, drag & drop, search and settings.",
+  "author": "danonchek51",
+  "version": "1.10.0",
+  "homepage": "https://github.com/danonchek51/zen-essentials-folders",
+  "readme": "https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md",
+  "style": {
+    "chrome": "chrome.css",
+    "content": ""
+  },
+  "scripts": {
+    "essentials-folders.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ]
+    }
+  },
+  "preferences": "preferences.json",
+  "tags": [
+    "sine",
+    "JavaScript",
+    "danonchek51",
+    "tabs",
+    "sidebar",
+    "essentials",
+    "folders",
+    "productivity"
+  ],
+  "createdAt": "2026-10-24",
+  "updatedAt": "2026-11-09",
+  "fork": [
+    "zen"
+  ],
+  "enabled": true
+}
