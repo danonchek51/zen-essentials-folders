@@ -148,6 +148,10 @@
     "folder.expandAll": { en: "Expand all folders", ru: "Развернуть все папки" },
     "folder.collapseAll": { en: "Collapse all folders", ru: "Свернуть все папки" },
     "folder.nameLabel": { en: "Folder name", ru: "Название папки" },
+    "folder.namePlaceholder": { en: "Folder name\u2026", ru: "Название папки\u2026" },
+    "folder.renameHint": { en: "Double-click to rename", ru: "Двойной клик — переименовать" },
+    "folder.inlineColours": { en: "Folder colour", ru: "Цвет папки" },
+    "folder.inlineAdvanced": { en: "Advanced\u2026", ru: "Подробнее\u2026" },
     "folder.iconButton": { en: "Change icon", ru: "Сменить иконку" },
     "folder.sitesLabel": { en: "Sites in this folder", ru: "Сайты в папке" },
     "folder.rulePlaceholder": { en: "add a domain and press Enter", ru: "добавить домен и Enter" },
@@ -402,6 +406,19 @@
   const sizeObservers = [];
   // Слушатели окна — их нужно снять, если мод перезагрузили.
   const windowListeners = [];
+  // Правка названия прямо на плитке: папка, поле ввода и прежнее имя.
+  let inlineEdit = null;
+  // Полоска цветов у плитки: сама полоса и папка, к которой она относится.
+  let swatchStrip = null;
+  let swatchFolderId = null;
+  let swatchHideTimer = 0;
+  // Где последний раз был курсор: по этому понимаем, что полоска ещё
+  // нужна (мышь над плиткой или над самой полоской).
+  let pointerX = -1;
+  let pointerY = -1;
+  // Задержка перед открытием папки кликом по названию: за это время
+  // понятно, не будет ли второго клика (двойной клик — это правка).
+  const DOUBLE_CLICK_DELAY = 250;
 
   /** Вешаем слушатель окна и запоминаем его, чтобы потом снять. */
   function onWindow(type, handler, capture = false) {
@@ -1662,7 +1679,8 @@
         event.preventDefault();
         event.stopPropagation();
         pendingSite = null;
-        openFolderDialog(null, "name", null);
+        // Папка появляется сразу: без диалога, название правится на месте.
+        createFolderInline();
       });
       tileHost.appendChild(add);
     }
@@ -1775,6 +1793,11 @@
     // Плоскости раскрытых папок должны обкрыть их плитки — считаем
     // размеры после того, как браузер разложил сетку.
     layoutPlanes();
+
+    // Правка названия и полоска цветов должны пережить перерисовку:
+    // панель перестраивается целиком, а поле правки — часть плитки.
+    reattachInlineEdit();
+    positionSwatchStrip();
   }
 
   /* ------------------------------------------------------------------ *
@@ -1805,10 +1828,16 @@
     const name = document.createElement("div");
     name.className = "zef-tile-name";
     name.textContent = folder.name || "";
+    name.title = t("folder.renameHint");
     if (!readBoolPref(PREF_SHOW_NAMES, true)) {
       name.hidden = true;
     }
     tile.appendChild(name);
+
+    // Название — зона правки: двойной клик открывает поле ввода.
+    attachNameEditing(name, folder, () => toggleFolder(folder.id));
+    // Наведение показывает полоску цветов рядом с плиткой.
+    attachColourStrip(tile, folder);
 
     const badge = document.createElement("div");
     badge.className = "zef-tile-count";
@@ -1948,7 +1977,12 @@
     const name = document.createElement("div");
     name.className = "zef-head-name";
     name.textContent = folder.name || "";
+    name.title = t("folder.renameHint");
     head.appendChild(name);
+
+    // Название шапки — та же зона правки, что и у плитки.
+    attachNameEditing(name, folder, () => toggleFolder(folder.id));
+    attachColourStrip(head, folder);
 
     const badge = document.createElement("div");
     badge.className = "zef-head-count";
@@ -2006,6 +2040,416 @@
     });
 
     return head;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Мгновенное создание папки и правка названия на месте
+   *
+   * Папка появляется сразу: без диалога и без лишних шагов. Название
+   * правится прямо на плитке, цвет выбирается полоской свотчей рядом с
+   * ней. Сложные случаи (иконка, точный код цвета, правила сайтов)
+   * остались в старом диалоге — он по-прежнему доступен из меню плитки.
+   * ------------------------------------------------------------------ */
+
+  /** Плитка или шапка папки — то, где живёт её название. */
+  function folderElement(id) {
+    const container = getContainer();
+    if (!container || !id) {
+      return null;
+    }
+    const selector =
+      `.zef-tile[data-zef-folder="${CSS.escape(id)}"], ` +
+      `.zef-head[data-zef-folder="${CSS.escape(id)}"]`;
+    return container.querySelector(selector);
+  }
+
+  /** Создаёт папку сразу, без диалога: новая плитка появляется в панели
+   *  уже с включённой правкой названия. */
+  function createFolderInline() {
+    const folder = {
+      id: newFolderId(),
+      name: "",
+      color: DEFAULT_COLOR,
+      icon: DEFAULT_ICON,
+      parentId: null,
+      sites: pendingSite ? [pendingSite] : [],
+    };
+    pendingSite = null;
+    // Новая папка — первая: так её сразу видно в ряду.
+    folders.unshift(folder);
+    // Показываем её плиткой (свёрнутой): развёрнутая папка — это плоскость
+    // с шапкой, а править название удобнее на плитке.
+    const set = new Set(readJSONPref(PREF_COLLAPSED, []));
+    set.add(folder.id);
+    writeJSONPref(PREF_COLLAPSED, [...set]);
+    collapsed = set;
+    persist();
+    // Панель уже перестроена — ищем плитку и включаем правку названия.
+    startInlineEdit(folder, folderElement(folder.id), true);
+  }
+
+  /** Включает правку названия прямо на плитке: вместо подписи появляется
+   *  поле ввода. */
+  function startInlineEdit(folder, host, isNew) {
+    if (!folder || !host) {
+      return;
+    }
+    const nameEl = host.querySelector(".zef-tile-name, .zef-head-name");
+    if (!nameEl) {
+      return;
+    }
+    const previous = folder.name || "";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "zef-inline-input";
+    input.placeholder = t("folder.namePlaceholder");
+    input.value = previous;
+    input.spellcheck = false;
+    input.draggable = false;
+    input.setAttribute("data-zef-inline", "name");
+
+    // Клавиши не должны уезжать в панель: иначе пробел и стрелки
+    // управляли бы навигацией Zen вместо правки названия.
+    input.addEventListener("keydown", event => {
+      event.stopPropagation();
+      if (event.key === "Enter") {
+        event.preventDefault();
+        commitInlineEdit();
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        cancelInlineEdit();
+      }
+    });
+    input.addEventListener("keyup", event => event.stopPropagation());
+    input.addEventListener("mousedown", event => event.stopPropagation());
+    input.addEventListener("click", event => event.stopPropagation());
+    // Выделять текст нельзя: это отменяет перетаскивание плитки.
+    input.addEventListener("dragstart", event => event.stopPropagation());
+    input.addEventListener("blur", () => {
+      // Поле вырезали из DOM при перерисовке панели — это не уход фокуса.
+      if (!input.isConnected || document.activeElement === input) {
+        return;
+      }
+      commitInlineEdit();
+    });
+
+    nameEl.replaceWith(input);
+    inlineEdit = {
+      folderId: folder.id,
+      isNew: Boolean(isNew),
+      previous,
+      input,
+      done: false,
+    };
+    focusInlineInput(input);
+    showSwatchStrip(host, folder);
+  }
+
+  /** Ставит курсор в поле правки. */
+  function focusInlineInput(input) {
+    try {
+      input.focus({ preventScroll: true });
+    } catch (e) {
+      try {
+        input.focus();
+      } catch (e2) {}
+    }
+    try {
+      input.select();
+    } catch (e) {}
+  }
+
+  /** Фиксирует правку: Enter или уход фокуса. Пустое имя — отмена. */
+  function commitInlineEdit() {
+    const state = inlineEdit;
+    if (!state || state.done) {
+      return;
+    }
+    state.done = true;
+    inlineEdit = null;
+    const value = state.input.value.trim();
+    state.input.remove();
+    const folder = folderById(state.folderId);
+    if (!folder) {
+      sync(true);
+      return;
+    }
+    if (!value) {
+      // Имя не введено: новую папку удаляем, старой возвращаем прежнее.
+      if (state.isNew) {
+        deleteFolder(folder);
+      } else {
+        folder.name = state.previous;
+        persist();
+      }
+      hideSwatchStrip();
+      return;
+    }
+    folder.name = value;
+    persist();
+  }
+
+  /** Отменяет правку: Esc. */
+  function cancelInlineEdit() {
+    const state = inlineEdit;
+    if (!state || state.done) {
+      return;
+    }
+    state.done = true;
+    inlineEdit = null;
+    state.input.remove();
+    const folder = folderById(state.folderId);
+    if (!folder) {
+      sync(true);
+      return;
+    }
+    // Новую папку отменяем целиком — она была создана «на лету».
+    if (state.isNew) {
+      deleteFolder(folder);
+      hideSwatchStrip();
+      return;
+    }
+    folder.name = state.previous;
+    persist();
+  }
+
+  /** Возвращает поле правки на место: панель могла перестроиться (например,
+   *  открылась вкладка) — тогда поле вырезали, а правка должна продолжиться. */
+  function reattachInlineEdit() {
+    const state = inlineEdit;
+    if (!state) {
+      return;
+    }
+    const host = folderElement(state.folderId);
+    const nameEl = host?.querySelector(".zef-tile-name, .zef-head-name");
+    if (!host || !nameEl) {
+      // Папки больше нет — правку отменяем.
+      cancelInlineEdit();
+      return;
+    }
+    const value = state.input.value;
+    nameEl.replaceWith(state.input);
+    state.input.value = value;
+    focusInlineInput(state.input);
+    showSwatchStrip(host, folderById(state.folderId));
+  }
+
+  /** Название папки: двойной клик — правка на месте, одиночный клик —
+   *  открытие или закрытие папки. Клик по названию ждёт, не будет ли
+   *  второго: иначе папка открылась бы, плитка переехала на другое место
+   *  и двойной клик до названия бы не дошёл. */
+  function attachNameEditing(nameEl, folder, onToggle) {
+    let timer = 0;
+    const cancel = () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = 0;
+      }
+    };
+    nameEl.addEventListener("click", event => {
+      event.stopPropagation();
+      cancel();
+      timer = setTimeout(() => {
+        timer = 0;
+        if (isClickAfterDrag()) {
+          return;
+        }
+        onToggle();
+      }, DOUBLE_CLICK_DELAY);
+    });
+    nameEl.addEventListener("dblclick", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      cancel();
+      startInlineEdit(folder, nameEl.closest(".zef-tile, .zef-head"), false);
+    });
+    // Перетаскивание не должно превращаться в открытие папки.
+    nameEl.addEventListener("dragstart", cancel);
+  }
+
+  /** Полоска цветов рядом с плиткой: цвет меняется одним кликом.
+   *  Живёт внутри панели, но вне сетки — иначе плитки поедут. */
+  function ensureSwatchStrip() {
+    const container = getContainer();
+    if (!container) {
+      return null;
+    }
+    if (!swatchStrip) {
+      swatchStrip = document.createElement("div");
+      swatchStrip.className = "zef-inline-swatches";
+      swatchStrip.hidden = true;
+      for (const color of PALETTE) {
+        const swatch = document.createElement("button");
+        swatch.type = "button";
+        swatch.className = "zef-swatch";
+        swatch.style.backgroundColor = color;
+        swatch.title = color;
+        swatch.setAttribute("data-zef-color", color);
+        swatch.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          applyInlineColor(swatch.getAttribute("data-zef-color"));
+        });
+        swatchStrip.appendChild(swatch);
+      }
+      // Сложные случаи (иконка, точный hex, правила сайтов) — в диалоге.
+      const more = document.createElement("button");
+      more.type = "button";
+      more.className = "zef-inline-more";
+      more.textContent = t("folder.inlineAdvanced");
+      more.title = t("folder.inlineAdvanced");
+      more.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const folder = folderById(swatchFolderId);
+        if (folder) {
+          openFolderDialog(folder, "color", folderElement(folder.id));
+        }
+      });
+      swatchStrip.appendChild(more);
+      // Мышь должна успеть переехать с плитки на полоску — иначе полоска
+      // прячется раньше, чем до неё дотянулись.
+      swatchStrip.addEventListener("mouseenter", () => {
+        if (swatchHideTimer) {
+          clearTimeout(swatchHideTimer);
+          swatchHideTimer = 0;
+        }
+      });
+      swatchStrip.addEventListener("mouseleave", () => hideSwatchStrip(0));
+      // Курсор запоминаем: после перерисовки панели по нему решаем,
+      // показывать ли полоску.
+      container.addEventListener("mousemove", event => {
+        pointerX = event.clientX;
+        pointerY = event.clientY;
+      });
+    }
+    if (swatchStrip.parentElement !== container) {
+      container.appendChild(swatchStrip);
+    }
+    return swatchStrip;
+  }
+
+  /** Показывает полоску цветов у плитки папки. */
+  function showSwatchStrip(element, folder) {
+    if (!element || !folder) {
+      return;
+    }
+    const strip = ensureSwatchStrip();
+    if (!strip) {
+      return;
+    }
+    swatchFolderId = folder.id;
+    strip.hidden = false;
+    strip.title = t("folder.inlineColours");
+    for (const swatch of strip.querySelectorAll(".zef-swatch")) {
+      const color = swatch.getAttribute("data-zef-color") || "";
+      swatch.classList.toggle(
+        "zef-selected",
+        color.toLowerCase() === String(folder.color || "").toLowerCase()
+      );
+    }
+    positionSwatchStrip();
+  }
+
+  /** Ставит полоску под плиткой. Панель прокручивается, поэтому координаты
+   *  считаем от содержимого, а не от видимой части. */
+  function positionSwatchStrip() {
+    const container = getContainer();
+    const strip = swatchStrip;
+    if (!container || !strip || strip.hidden || !swatchFolderId) {
+      return;
+    }
+    const host = folderElement(swatchFolderId);
+    if (!host) {
+      strip.hidden = true;
+      return;
+    }
+    // Полоска живёт, пока курсор над плиткой или над самой полоской.
+    // Иначе после перерисовки она осталась бы висеть впустую.
+    if (pointerX >= 0 && !inlineEdit) {
+      const over = document.elementFromPoint(pointerX, pointerY);
+      if (over) {
+        const onStrip = over === strip || strip.contains(over);
+        const onHost = over === host || host.contains(over);
+        if (!onStrip && !onHost) {
+          strip.hidden = true;
+          return;
+        }
+      }
+    }
+    const rect = host.getBoundingClientRect();
+    const cRect = container.getBoundingClientRect();
+    const scrollLeft = container.scrollLeft || 0;
+    const scrollTop = container.scrollTop || 0;
+    const height = strip.offsetHeight || 26;
+    const width = strip.offsetWidth || 200;
+    // Полоску ставим под плиткой. Если снизу не помещается — над ней,
+    // а если и там тесно, прижимаем к краю панели: она всё равно должна
+    // быть видна, а не уехать за край.
+    const below = cRect.bottom - rect.bottom;
+    const above = rect.top - cRect.top;
+    let viewTop;
+    if (below >= height + 8) {
+      viewTop = rect.bottom + 4;
+    } else if (above >= height + 8) {
+      viewTop = rect.top - height - 4;
+    } else {
+      viewTop = Math.max(cRect.top + 4, cRect.bottom - height - 4);
+    }
+    let left = rect.left - cRect.left + scrollLeft;
+    left = Math.max(0, Math.min(left, (container.clientWidth || 0) - width));
+    strip.style.left = left + "px";
+    strip.style.top = (viewTop - cRect.top + scrollTop) + "px";
+  }
+
+  /** Прячет полоску. С задержкой — мышь должна успеть переехать с плитки
+   *  на саму полоску. */
+  function hideSwatchStrip(delay = 0) {
+    if (swatchHideTimer) {
+      clearTimeout(swatchHideTimer);
+      swatchHideTimer = 0;
+    }
+    if (!delay) {
+      if (swatchStrip) {
+        swatchStrip.hidden = true;
+      }
+      return;
+    }
+    swatchHideTimer = setTimeout(() => {
+      swatchHideTimer = 0;
+      if (swatchStrip) {
+        swatchStrip.hidden = true;
+      }
+    }, delay);
+  }
+
+  /** Применяет цвет папки сразу — без диалога. */
+  function applyInlineColor(color) {
+    const folder = folderById(swatchFolderId);
+    if (!folder || !color) {
+      return;
+    }
+    folder.color = color;
+    // Цвет запоминаем сразу: если преф не запишется, следующая
+    // перерисовка не вернёт папке старый цвет.
+    pendingColors.set(folder.id, color);
+    persist();
+    paintFolderColor(folder.id, color);
+    showSwatchStrip(folderElement(folder.id), folder);
+  }
+
+  /** Наведение на плитку (или на шапку) показывает полоску цветов. */
+  function attachColourStrip(element, folder) {
+    element.addEventListener("mouseenter", () => {
+      if (swatchHideTimer) {
+        clearTimeout(swatchHideTimer);
+        swatchHideTimer = 0;
+      }
+      showSwatchStrip(element, folder);
+    });
+    element.addEventListener("mouseleave", () => hideSwatchStrip(200));
   }
 
   /** Воздух под иконками папки (--zef-plane-air). Разрыв ряда после
@@ -2875,7 +3319,7 @@
     addItem(t("folder.expandAll"), () => setAllCollapsed(false));
     addItem(t("folder.collapseAll"), () => setAllCollapsed(true));
     addSeparator();
-    addItem(t("menu.modSettings"), () => openSettingsDialog());
+    addItem(t("menu.modSettings"), () => openSettingsDialog(null, true));
 
     // XUL-меню не умеет надёжно позиционироваться по HTML-якорю,
     // поэтому считаем координаты экрана сами и открываем меню рядом с плиткой.
@@ -3768,20 +4212,35 @@
     panel.appendChild(box);
   }
 
-  function openSettingsDialog(anchor = null) {
+  function openSettingsDialog(anchor = null, fromMenu = false) {
     const panel = ensureSettingsPanel();
     fillSettingsPanel(panel);
-    try {
-      if (anchor) {
-        // Диалог открывается рядом с кнопкой, которой его открыли.
-        panel.openPopup(anchor, "after_start", 0, 0, false, false);
-        return;
-      }
-      panel.showPopup();
-    } catch (e) {
+    // Якорь: кнопка, которой открыли, — иначе шестерёнка, — иначе панель.
+    const target =
+      anchor ||
+      document.querySelector(".zef-search-settings") ||
+      getContainer();
+    const show = () => {
       try {
-        panel.showPopup();
-      } catch (e2) {}
+        // У XUL-панели нет showPopup(): открывать её надо через openPopup.
+        panel.openPopup(target, "after_start", 0, 0, false, false);
+      } catch (e) {
+        try {
+          panel.openPopup(null, null, Math.round((window.innerWidth || 800) / 2),
+                          Math.round((window.innerHeight || 600) / 2));
+        } catch (e2) {
+          try {
+            panel.showPopup();
+          } catch (e3) {}
+        }
+      }
+    };
+    if (fromMenu) {
+      // Из меню: сначала даём меню закрыться, иначе панель спрячется вместе
+      // с ним.
+      setTimeout(show, 60);
+    } else {
+      show();
     }
   }
 
@@ -3809,6 +4268,18 @@
     const menu = document.getElementById("context_zef-folders");
     if (menu) {
       menu.setAttribute("label", t("menu.intoFolder"));
+    }
+    // Полоска цветов и поле правки названия — тоже с новым языком.
+    if (swatchStrip) {
+      const more = swatchStrip.querySelector(".zef-inline-more");
+      if (more) {
+        more.textContent = t("folder.inlineAdvanced");
+        more.title = t("folder.inlineAdvanced");
+      }
+      swatchStrip.title = t("folder.inlineColours");
+    }
+    if (inlineEdit?.input) {
+      inlineEdit.input.placeholder = t("folder.namePlaceholder");
     }
     if (settingsPanel) {
       fillSettingsPanel(settingsPanel);
@@ -4118,6 +4589,10 @@
       }
       tilePopup?.remove();
       dialogPanel?.remove();
+      swatchStrip?.remove();
+      swatchStrip = null;
+      swatchFolderId = null;
+      inlineEdit = null;
       searchRow?.remove();
       searchRow = null;
       searchInput = null;

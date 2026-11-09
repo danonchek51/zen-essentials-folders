@@ -599,6 +599,42 @@
 }
 
 /* ------------------------------------------------------------------
+ * Правка названия прямо на плитке
+ *
+ * Поле занимает место подписи: размеры плитки не меняются, поэтому ряд
+ * не прыгает. Рамка нарисована контуром, а не границей: контур не
+ * влияет на размеры элемента.
+ * ------------------------------------------------------------------ */
+
+.zef-inline-input {
+  box-sizing: border-box;
+  flex: none;
+  width: 100%;
+  max-width: 100%;
+  height: 11px;
+  margin: 0;
+  padding: 0 2px;
+  font: 10px/11px "Segoe UI", system-ui, sans-serif;
+  text-align: center;
+  color: inherit;
+  background: light-dark(#ffffff, #2b2a33);
+  border: none;
+  border-radius: 4px;
+  outline: 1px solid var(--zef-color, #8b5cf6);
+  outline-offset: -1px;
+}
+
+/* В шапке раскрытой папки поле крупнее: там название заметно больше. */
+.zen-essentials-container > .zef-head .zef-inline-input {
+  flex: 1 1 auto;
+  width: auto;
+  height: 18px;
+  font-size: 11.5px;
+  line-height: 18px;
+  text-align: left;
+}
+
+/* ------------------------------------------------------------------
  * Вкладки внутри папок
  * ------------------------------------------------------------------ */
 
@@ -831,6 +867,54 @@
 
 .zef-swatch.zef-selected {
   border-color: light-dark(#15141a, #fbfbfe);
+}
+
+/* ------------------------------------------------------------------
+ * Полоска цветов у плитки папки
+ *
+ * Появляется рядом с плиткой (наведение или правка названия) и лежит
+ * поверх сетки: цвет меняется одним кликом, без диалога. Позиция
+ * считается от содержимого панели, поэтому ряд не ломается.
+ * ------------------------------------------------------------------ */
+
+.zen-essentials-container > .zef-inline-swatches {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  max-width: calc(100% - 10px);
+  padding: 5px 6px;
+  border-radius: 10px;
+  background: light-dark(#ffffff, #2b2a33);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.zen-essentials-container > .zef-inline-swatches[hidden] {
+  display: none;
+}
+
+.zen-essentials-container > .zef-inline-swatches .zef-swatch {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  aspect-ratio: auto;
+  border-width: 1px;
+  border-radius: 4px;
+}
+
+.zen-essentials-container > .zef-inline-swatches .zef-inline-more {
+  flex: none;
+  padding: 2px 6px;
+  font: 10px/1.4 "Segoe UI", system-ui, sans-serif;
+  color: inherit;
+  white-space: nowrap;
+  background: none;
+  border: 1px solid light-dark(#d0d0d8, #4a4a56);
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 /* Свой цвет: квадрат оттенка, полоса цвета, поле кода и «случайный». */
