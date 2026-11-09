@@ -10,7 +10,7 @@
 ## Documentation
 
 - [README (Русский)](https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md): полное описание мода на русском — возможности, настройки, перетаскивание, правила принадлежности вкладок, установка, решение проблем.
-- [CHANGELOG.md](https://github.com/danonchek51/zen-essentials-folders/blob/main/CHANGELOG.md): что изменилось в каждой версии, начиная с 1.10.1.
+- [CHANGELOG.md](https://github.com/danonchek51/zen-essentials-folders/blob/main/CHANGELOG.md): что изменилось в каждой версии, начиная с 1.9.0.
 - [CONTRIBUTING.md](https://github.com/danonchek51/zen-essentials-folders/blob/main/CONTRIBUTING.md): как поставить мод к себе, как проверить правку и как оформить pull request.
 - [FAQ](https://danonchek51.github.io/zen-essentials-folders/#faq): нужно ли переносить вкладки вручную, где хранятся папки, что делать, если плитки пропали.
 
@@ -18,7 +18,7 @@
 
 - [Repository](https://github.com/danonchek51/zen-essentials-folders): исходники мода — `essentials-folders.uc.js`, `chrome.css`, `theme.json`, `preferences.json`.
 - [Releases](https://github.com/danonchek51/zen-essentials-folders/releases): архивы версий с заметками к выпуску.
-- [v1.10.1](https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.10.1): текущая версия.
+- [v1.10.2](https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.10.2): текущая версия.
 - [LICENSE](https://github.com/danonchek51/zen-essentials-folders/blob/main/LICENSE): MIT.
 
 ## Installation
