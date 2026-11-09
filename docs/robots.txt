@@ -57,4 +57,10 @@ Allow: /
 User-agent: YouBot
 Allow: /
 
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
 Sitemap: https://danonchek51.github.io/zen-essentials-folders/sitemap.xml
