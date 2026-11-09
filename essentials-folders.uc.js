@@ -59,99 +59,260 @@
 
   const PREF_SETTINGS = "zen.essentialsfolders.settings";
 
+
+  /* ------------------------------------------------------------------ *
+   * Язык интерфейса
+   *
+   * Английский — по умолчанию: мод публичный, и английский читает весь мир.
+   * Русский включается настройкой «Interface language» и переключается без
+   * перезапуска Zen.
+   * ------------------------------------------------------------------ */
+
+  const STRINGS = {
+    "group.language": { en: "Language", ru: "Язык" },
+    "group.tiles": { en: "Folder tiles", ru: "Плитки папок" },
+    "group.grid": { en: "Icon grid", ru: "Сетка иконок" },
+    "group.indicators": { en: "Indicators", ru: "Индикаторы" },
+    "group.behaviour": { en: "Behaviour", ru: "Поведение" },
+
+    "set.lang": { en: "Interface language", ru: "Язык интерфейса" },
+    "lang.en": { en: "English", ru: "English" },
+    "lang.ru": { en: "Русский", ru: "Русский" },
+
+    "set.tileHeight": { en: "Tile height", ru: "Высота плитки" },
+    "set.tileMinWidth": { en: "Minimum tile width", ru: "Минимальная ширина плитки" },
+    "set.folderIconSize": { en: "Folder icon size", ru: "Размер иконки папки" },
+    "set.showNames": { en: "Show folder names", ru: "Показывать названия папок" },
+    "set.showCount": { en: "Show tab counters", ru: "Показывать количество вкладок" },
+    "set.countStyle": { en: "Counter on the tile", ru: "Счётчик на плитке" },
+    "set.tilesRow": { en: "Folder tiles in the panel", ru: "Плитки папок в панели" },
+    "set.showPlus": { en: "Show the \u201c+\u201d button", ru: "Показывать кнопку \u00ab+\u00bb" },
+    "set.nestedMarker": { en: "Nested folder marker", ru: "Значок вложенной папки" },
+
+    "set.iconStep": { en: "Icon step inside a folder", ru: "Шаг иконок в папке" },
+    "set.iconSize": { en: "Logo size in Essentials", ru: "Размер логотипа в \u00abВажных\u00bb" },
+    "set.tabIconSize": { en: "Tab icon size in the sidebar", ru: "Размер иконки вкладки сбоку" },
+    "set.planeAir": { en: "Space below the plane", ru: "Воздух под плоскостью" },
+    "set.blockGap": { en: "Gap between folders", ru: "Зазор между папками" },
+
+    "set.activeStyle": { en: "Active folder indicator", ru: "Индикатор активной папки" },
+    "set.pulse": { en: "Indicator pulse", ru: "Пульсация индикатора" },
+    "set.pulseSpeed": { en: "Pulse speed", ru: "Скорость пульсации" },
+    "set.unloadStyle": { en: "Unloaded tab marker", ru: "Метка выгруженной вкладки" },
+
+    "set.showSearch": { en: "Show the search bar", ru: "Показывать строку поиска" },
+    "set.hints": { en: "Hints on a failed drop", ru: "Подсказки при неудачном броске" },
+    "set.freshOnTop": { en: "Newest folder on top", ru: "Свежая папка сверху" },
+
+    "opt.badge": { en: "Badge (as now)", ru: "Бейдж (как сейчас)" },
+    "opt.dot": { en: "Dot", ru: "Точка" },
+    "opt.hidden": { en: "Hidden", ru: "Не показывать" },
+    "opt.strip": { en: "Separate strip", ru: "Отдельной полосой" },
+    "opt.grid": { en: "In the shared grid", ru: "В общей сетке" },
+    "opt.chevron": { en: "Chevron \u201c\u203a\u201d", ru: "Шеврон \u00ab\u203a\u00bb" },
+    "opt.noMarker": { en: "No marker", ru: "Без значка" },
+    "opt.glow": { en: "Soft glow", ru: "Мягкое свечение" },
+    "opt.corner": { en: "Corner", ru: "Уголок" },
+    "opt.zenBadge": { en: "Zen badge", ru: "Значок Zen" },
+    "opt.off": { en: "Off", ru: "Выключить" },
+    "opt.frame": { en: "Frame", ru: "Рамка" },
+    "opt.dashed": { en: "Dashed", ru: "Пунктир" },
+    "opt.line": { en: "Line", ru: "Линия" },
+    "opt.dimmed": { en: "Dimmed", ru: "Приглушение" },
+
+    "unit.ms": { en: "ms", ru: "мс" },
+
+    "search.placeholder": { en: "Search folders\u2026", ru: "Поиск по папкам\u2026" },
+    "search.clear": { en: "Clear search", ru: "Очистить поиск" },
+    "search.empty": { en: "Nothing found: \u00ab{query}\u00bb", ru: "Ничего не найдено: \u00ab{query}\u00bb" },
+    "settings.title": { en: "Mod settings", ru: "Настройки мода" },
+    "settings.reset": { en: "Reset", ru: "Сбросить" },
+    "settings.close": { en: "Close", ru: "Закрыть" },
+
+    "folder.unnamed": { en: "Unnamed", ru: "Без названия" },
+    "folder.new": { en: "New folder", ru: "Новая папка" },
+    "folder.plural": { en: "Folder", ru: "Папка" },
+    "folder.newMenu": { en: "New folder\u2026", ru: "Новая папка\u2026" },
+    "folder.rename": { en: "Rename\u2026", ru: "Переименовать\u2026" },
+    "folder.icon": { en: "Change icon\u2026", ru: "Сменить иконку\u2026" },
+    "folder.color": { en: "Change colour\u2026", ru: "Сменить цвет\u2026" },
+    "folder.nest": { en: "Nest inside a folder\u2026", ru: "Вложить в папку\u2026" },
+    "folder.topLevel": { en: "Move to the top level", ru: "Вынести на верхний уровень" },
+    "folder.sites": { en: "Folder sites\u2026", ru: "Сайты папки\u2026" },
+    "folder.delete": { en: "Delete folder", ru: "Удалить папку" },
+    "folder.expand": { en: "Expand", ru: "Развернуть" },
+    "folder.collapse": { en: "Collapse", ru: "Свернуть" },
+    "folder.openAll": { en: "Open all tabs in this folder", ru: "Открыть все вкладки папки" },
+    "folder.pin": { en: "Pin to the top", ru: "Закрепить вверху" },
+    "folder.unpin": { en: "Unpin from the top row", ru: "Открепить от верхнего ряда" },
+    "folder.expandAll": { en: "Expand all folders", ru: "Развернуть все папки" },
+    "folder.collapseAll": { en: "Collapse all folders", ru: "Свернуть все папки" },
+    "folder.nameLabel": { en: "Folder name", ru: "Название папки" },
+    "folder.iconButton": { en: "Change icon", ru: "Сменить иконку" },
+    "folder.sitesLabel": { en: "Sites in this folder", ru: "Сайты в папке" },
+    "folder.rulePlaceholder": { en: "add a domain and press Enter", ru: "добавить домен и Enter" },
+    "folder.exclusion": { en: "exclusion {rule}", ru: "исключение {rule}" },
+    "folder.dragType": { en: "folder", ru: "папка" },
+    "folder.save": { en: "Save", ru: "Сохранить" },
+    "folder.cancel": { en: "Cancel", ru: "Отмена" },
+    "folder.remove": { en: "Remove", ru: "Удалить" },
+    "folder.random": { en: "Random", ru: "Случайный" },
+    "folder.randomTitle": { en: "Random shade", ru: "Случайный оттенок" },
+    "folder.hexTitle": { en: "Exact colour code", ru: "Точный код цвета" },
+    "folder.saveFailed":
+      {
+        en: "Could not save: the folder list no longer fits in the Zen preferences. "
+          + "The colour is applied now, but the previous one comes back after a restart.",
+        ru: "Не удалось сохранить: список папок не помещается в настройки Zen. "
+          + "Цвет применён сейчас, но после перезапуска вернётся прежний.",
+      },
+
+    "menu.intoFolder": { en: "Into a folder", ru: "В папку" },
+    "menu.newFolder": { en: "New folder\u2026", ru: "Новая папка\u2026" },
+    "menu.modSettings": { en: "Mod settings\u2026", ru: "Настройки мода\u2026" },
+
+    "pinned.withCount":
+      {
+        en: "Pinned tabs ({count}). Drag here to take a tab out of its folder.",
+        ru: "Закреплённые вкладки ({count}). Перетащите сюда, чтобы убрать вкладку из папки.",
+      },
+    "pinned.plain":
+      {
+        en: "Pinned tabs. Drag here to take a tab out of its folder.",
+        ru: "Закреплённые вкладки. Перетащите сюда, чтобы убрать вкладку из папки.",
+      },
+
+    "hint.dragFailed": { en: "Could not tell which tab was dragged", ru: "Не понял, какую вкладку перетащили" },
+    "hint.alreadyIn": { en: "This tab is already in \u00ab{name}\u00bb", ru: "Вкладка уже в папке \u00ab{name}\u00bb" },
+    "hint.moveFailed": { en: "Could not move the tab", ru: "Не получилось перенести вкладку" },
+  };
+
+  /** Текущий язык интерфейса: английский по умолчанию, русский — по выбору. */
+  let uiLang = "en";
+
+  /** Строка интерфейса по ключу. {placeholders} подставляются из vars. */
+  function t(key, vars) {
+    const entry = STRINGS[key];
+    if (!entry) {
+      return key;
+    }
+    let text = entry[uiLang] || entry.en || key;
+    if (vars) {
+      for (const [name, value] of Object.entries(vars)) {
+        text = text.split("{" + name + "}").join(String(value));
+      }
+    }
+    return text;
+  }
+
   const SETTINGS = [
     {
-      group: "Плитки папок",
+      groupKey: "group.language",
       items: [
-        { id: "tileHeight", label: "Высота плитки", type: "number", def: 46, min: 36, max: 64, unit: "px" },
-        { id: "tileMinWidth", label: "Минимальная ширина плитки", type: "number", def: 23, min: 12, max: 50, unit: "%" },
-        { id: "folderIconSize", label: "Размер иконки папки", type: "number", def: 22, min: 14, max: 34, unit: "px" },
-        { id: "showNames", label: "Показывать названия папок", type: "bool", def: true, legacy: PREF_SHOW_NAMES },
-        { id: "showCount", label: "Показывать количество вкладок", type: "bool", def: true, legacy: PREF_SHOW_COUNT },
+        {
+          id: "lang",
+          labelKey: "set.lang",
+          type: "select",
+          def: "en",
+          options: [
+            { value: "en", labelKey: "lang.en" },
+            { value: "ru", labelKey: "lang.ru" },
+          ],
+        },
+      ],
+    },
+    {
+      groupKey: "group.tiles",
+      items: [
+        { id: "tileHeight", labelKey: "set.tileHeight", type: "number", def: 46, min: 36, max: 64, unit: "px" },
+        { id: "tileMinWidth", labelKey: "set.tileMinWidth", type: "number", def: 23, min: 12, max: 50, unit: "%" },
+        { id: "folderIconSize", labelKey: "set.folderIconSize", type: "number", def: 22, min: 14, max: 34, unit: "px" },
+        { id: "showNames", labelKey: "set.showNames", type: "bool", def: true, legacy: PREF_SHOW_NAMES },
+        { id: "showCount", labelKey: "set.showCount", type: "bool", def: true, legacy: PREF_SHOW_COUNT },
         {
           id: "countStyle",
-          label: "Счётчик на плитке",
+          labelKey: "set.countStyle",
           type: "select",
           def: "badge",
           options: [
-            { value: "badge", label: "Бейдж (как сейчас)" },
-            { value: "dot", label: "Точка" },
-            { value: "none", label: "Не показывать" },
+            { value: "badge", labelKey: "opt.badge" },
+            { value: "dot", labelKey: "opt.dot" },
+            { value: "none", labelKey: "opt.hidden" },
           ],
         },
         {
           id: "tilesRow",
-          label: "Плитки папок в панели",
+          labelKey: "set.tilesRow",
           type: "select",
           def: "strip",
           options: [
-            { value: "strip", label: "Отдельной полосой" },
-            { value: "grid", label: "В общей сетке" },
+            { value: "strip", labelKey: "opt.strip" },
+            { value: "grid", labelKey: "opt.grid" },
           ],
         },
-        { id: "showPlus", label: "Показывать кнопку «+»", type: "bool", def: true },
+        { id: "showPlus", labelKey: "set.showPlus", type: "bool", def: true },
         {
           id: "nestedMarker",
-          label: "Значок вложенной папки",
+          labelKey: "set.nestedMarker",
           type: "select",
           def: "chevron",
           options: [
-            { value: "chevron", label: "Шеврон «›»" },
-            { value: "none", label: "Без значка" },
+            { value: "chevron", labelKey: "opt.chevron" },
+            { value: "none", labelKey: "opt.noMarker" },
           ],
         },
       ],
     },
     {
-      group: "Сетка иконок",
+      groupKey: "group.grid",
       items: [
-        { id: "iconStep", label: "Шаг иконок в папке", type: "number", def: 12, min: 6, max: 30, unit: "%" },
-        { id: "iconSize", label: "Размер логотипа в «Важных»", type: "string", def: "26px", legacy: PREF_ICON_SIZE },
-        { id: "tabIconSize", label: "Размер иконки вкладки сбоку", type: "string", def: "18px", legacy: PREF_TAB_ICON_SIZE },
-        { id: "planeAir", label: "Воздух под плоскостью", type: "number", def: 12, min: 0, max: 40, unit: "px" },
-        { id: "blockGap", label: "Зазор между папками", type: "number", def: 4, min: 0, max: 24, unit: "px" },
+        { id: "iconStep", labelKey: "set.iconStep", type: "number", def: 12, min: 6, max: 30, unit: "%" },
+        { id: "iconSize", labelKey: "set.iconSize", type: "string", def: "26px", legacy: PREF_ICON_SIZE },
+        { id: "tabIconSize", labelKey: "set.tabIconSize", type: "string", def: "18px", legacy: PREF_TAB_ICON_SIZE },
+        { id: "planeAir", labelKey: "set.planeAir", type: "number", def: 12, min: 0, max: 40, unit: "px" },
+        { id: "blockGap", labelKey: "set.blockGap", type: "number", def: 4, min: 0, max: 24, unit: "px" },
       ],
     },
     {
-      group: "Индикаторы",
+      groupKey: "group.indicators",
       items: [
         {
           id: "activeStyle",
-          label: "Индикатор активной папки",
+          labelKey: "set.activeStyle",
           type: "select",
           def: "glow",
           options: [
-            { value: "glow", label: "Свечение рамки" },
-            { value: "dot", label: "Точка в углу" },
-            { value: "corner", label: "Уголок" },
-            { value: "badge", label: "Значок Zen" },
-            { value: "off", label: "Выключить" },
+            { value: "glow", labelKey: "opt.glow" },
+            { value: "dot", labelKey: "opt.dot" },
+            { value: "corner", labelKey: "opt.corner" },
+            { value: "badge", labelKey: "opt.zenBadge" },
+            { value: "off", labelKey: "opt.off" },
           ],
         },
-        { id: "pulse", label: "Пульсация индикатора", type: "bool", def: true },
-        { id: "pulseSpeed", label: "Скорость пульсации", type: "number", def: 1600, min: 600, max: 4000, unit: "мс" },
+        { id: "pulse", labelKey: "set.pulse", type: "bool", def: true },
+        { id: "pulseSpeed", labelKey: "set.pulseSpeed", type: "number", def: 1600, min: 600, max: 4000, unitKey: "unit.ms" },
         {
           id: "unloadStyle",
-          label: "Метка выгруженной вкладки",
+          labelKey: "set.unloadStyle",
           type: "select",
-          def: "frame",
+          def: "off",
           options: [
-            { value: "frame", label: "Рамка" },
-            { value: "dash", label: "Пунктир" },
-            { value: "dot", label: "Точка" },
-            { value: "line", label: "Линия" },
-            { value: "dim", label: "Приглушение" },
-            { value: "off", label: "Выключить" },
+            { value: "frame", labelKey: "opt.frame" },
+            { value: "dash", labelKey: "opt.dashed" },
+            { value: "dot", labelKey: "opt.dot" },
+            { value: "line", labelKey: "opt.line" },
+            { value: "dim", labelKey: "opt.dimmed" },
+            { value: "off", labelKey: "opt.off" },
           ],
         },
       ],
     },
     {
-      group: "Поведение",
+      groupKey: "group.behaviour",
       items: [
-        { id: "showSearch", label: "Показывать строку поиска", type: "bool", def: true, legacy: PREF_SHOW_SEARCH },
-        { id: "hints", label: "Подсказки при неудачном броске", type: "bool", def: true },
-        { id: "freshOnTop", label: "Свежая папка сверху", type: "bool", def: true },
+        { id: "showSearch", labelKey: "set.showSearch", type: "bool", def: true, legacy: PREF_SHOW_SEARCH },
+        { id: "hints", labelKey: "set.hints", type: "bool", def: true },
+        { id: "freshOnTop", labelKey: "set.freshOnTop", type: "bool", def: true },
       ],
     },
   ];
@@ -348,7 +509,11 @@
       }
     }
     writeJSONPref(PREF_SETTINGS, stored);
+    const previousLang = uiLang;
     applySettings();
+    if (uiLang !== previousLang) {
+      refreshLanguage();
+    }
   }
 
   /** Применяет настройки: числа — в CSS-переменные, варианты — в классы. */
@@ -359,6 +524,7 @@
       return values;
     }
     settings = values;
+    uiLang = values.lang === "ru" ? "ru" : "en";
     root.style.setProperty("--zef-tile-height", `${values.tileHeight}px`);
     root.style.setProperty("--zef-tile-min-pct", `${values.tileMinWidth}%`);
     root.style.setProperty("--zef-folder-icon-size", `${values.folderIconSize}px`);
@@ -527,7 +693,7 @@
     let current = folder;
     while (current && !seen.has(current.id)) {
       seen.add(current.id);
-      parts.unshift(current.name || "Без названия");
+      parts.unshift(current.name || t("folder.unnamed"));
       current = current.parentId ? folderById(current.parentId) : null;
     }
     return parts.join(" / ");
@@ -1082,7 +1248,7 @@
     return !tab.linkedPanel && seenLoaded.has(tab);
   }
 
-  /** Помечает выгруженные вкладки — вокруг их ячейки рисуется рамка. */
+  /** Помечает выгруженные вкладки — вид метки выбирается настройкой unloadStyle. */
   function updateUnloadedMarks(tabs) {
     for (const tab of tabs || []) {
       if (tab.linkedPanel) {
@@ -1118,7 +1284,7 @@
       searchInput = document.createElement("input");
       searchInput.type = "text";
       searchInput.className = "zef-search-input";
-      searchInput.placeholder = "Поиск по папкам…";
+      searchInput.placeholder = t("search.placeholder");
       searchInput.value = filterText;
       searchInput.addEventListener("mousedown", event => {
         event.stopPropagation();
@@ -1143,7 +1309,7 @@
       const clear = document.createElement("button");
       clear.type = "button";
       clear.className = "zef-search-clear";
-      clear.title = "Очистить поиск";
+      clear.title = t("search.clear");
       clear.textContent = "×";
       clear.addEventListener("mousedown", event => event.stopPropagation());
       clear.addEventListener("click", event => {
@@ -1163,7 +1329,7 @@
       const settingsButton = document.createElement("button");
       settingsButton.type = "button";
       settingsButton.className = "zef-search-settings";
-      settingsButton.title = "Настройки мода";
+      settingsButton.title = t("settings.title");
       settingsButton.textContent = "⚙";
       settingsButton.addEventListener("mousedown", event => event.stopPropagation());
       settingsButton.addEventListener("click", event => {
@@ -1230,6 +1396,14 @@
       }
     }
 
+    // Ряд вложенных папок скрываем целиком, если не видно ни одной плитки:
+    // иначе под поиском осталась бы пустая полоса.
+    for (const row of container.querySelectorAll(".zef-nested-row")) {
+      const tiles = Array.from(row.querySelectorAll(".zef-tile"));
+      const visible = tiles.some(tile => tile.style.display !== "none");
+      row.style.display = visible ? "" : "none";
+    }
+
     // Плитка «+» и разделитель во время поиска лишние.
     const newTile = container.querySelector(".zef-tile.zef-new");
     if (newTile) {
@@ -1249,7 +1423,7 @@
         emptyHint = document.createElement("div");
         emptyHint.className = "zef-empty";
       }
-      emptyHint.textContent = `Ничего не найдено: «${filterText.trim()}»`;
+      emptyHint.textContent = t("search.empty", { query: filterText.trim() });
       emptyHint.style.display = "";
       if (emptyHint.parentElement !== container) {
         container.appendChild(emptyHint);
@@ -1438,7 +1612,7 @@
     if (settings.showPlus) {
       const add = document.createElement("div");
       add.className = "zef-tile zef-new";
-      add.setAttribute("title", "Новая папка");
+      add.setAttribute("title", t("folder.new"));
       add.style.order = String(nextOrder());
       const plus = document.createElement("div");
       plus.className = "zef-tile-icon zef-plus";
@@ -1473,14 +1647,29 @@
 
       // Вложенные папки — плиткой сразу под шапкой родителя:
       // так структура видна сразу, а не теряется в конце ряда.
+      //
+      // Плитки вложенных папок лежат отдельным рядом, а не прямо в общей
+      // сетке Zen. В общей сетке такая плитка вставала в свободную ячейку
+      // чужого ряда — и папка выглядела лежащей в другой папке. Вдобавок её
+      // высота больше высоты ряда Zen, и плитки наезжали друг на друга.
       let hasExpandedChild = false;
+      let nestedRow = null;
       for (const child of childrenOf(folder.id)) {
         if (collapsed.has(child.id)) {
+          if (!nestedRow) {
+            nestedRow = document.createElement("div");
+            nestedRow.className = "zef-tiles-row zef-nested-row";
+            nestedRow.style.order = String(nextOrder());
+            container.appendChild(nestedRow);
+          }
           const tile = buildTile(child, countOf(child.id), true);
           tile.setAttribute("data-zef-parent", folder.id);
-          tile.style.order = String(nextOrder());
-          container.appendChild(tile);
+          tile.style.order = String(nestedRow.children.length);
+          nestedRow.appendChild(tile);
         } else {
+          // Раскрытая вложенная папка разрывает ряд: следующие вложенные
+          // плитки соберутся в новый ряд.
+          nestedRow = null;
           layoutFolder(child);
           hasExpandedChild = true;
         }
@@ -1513,8 +1702,8 @@
     divider.setAttribute(
       "title",
       free.length > 0
-        ? `Закреплённые вкладки (${free.length}). Перетащите сюда, чтобы убрать вкладку из папки.`
-        : "Закреплённые вкладки. Перетащите сюда, чтобы убрать вкладку из папки."
+        ? t("pinned.withCount", { count: free.length })
+        : t("pinned.plain")
     );
     divider.style.order = String(nextOrder());
     divider.addEventListener("dragover", event => {
@@ -1613,7 +1802,7 @@
       try {
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData("application/x-zef-folder", folder.id);
-        event.dataTransfer.setData("text/plain", folder.name || "папка");
+        event.dataTransfer.setData("text/plain", folder.name || t("folder.dragType"));
       } catch (e) {}
       tile.classList.add("zef-dragging");
       document.documentElement.classList.add("zef-drag-active");
@@ -1748,7 +1937,7 @@
       try {
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData("application/x-zef-folder", folder.id);
-        event.dataTransfer.setData("text/plain", folder.name || "папка");
+        event.dataTransfer.setData("text/plain", folder.name || t("folder.dragType"));
       } catch (e) {}
       head.classList.add("zef-dragging");
       document.documentElement.classList.add("zef-drag-active");
@@ -1816,11 +2005,10 @@
           el.getAttribute("data-zef-open") === "true"
       );
       // Плитки вложенных папок тоже лежат внутри плоскости родителя.
-      const nested = Array.from(container.children).filter(
-        el =>
-          el.classList?.contains("zef-tile") &&
-          el.getAttribute("data-zef-parent") === folderId
-      );
+      // Ищём по всему контейнеру: вложенные плитки лежат в своём ряду.
+      const nested = Array.from(
+        container.querySelectorAll('.zef-tile[data-zef-parent]')
+      ).filter(el => el.getAttribute("data-zef-parent") === folderId);
       if (!head) {
         plane.style.display = "none";
         continue;
@@ -2219,7 +2407,7 @@
         return true;
       }
     } catch (e) {
-      console.warn("[ZEF] не удалось закрепить вкладку", e);
+      console.warn("[ZEF] could not pin the tab", e);
     }
     return false;
   }
@@ -2337,18 +2525,18 @@
     const tab = draggedTabFrom(event) || draggedTab;
     const url = tab ? tabUrl(tab) : urlFromData(event);
     if (!url) {
-      showHint("Не понял, какую вкладку перетащили");
+      showHint(t("hint.dragFailed"));
       return;
     }
     const source = folderForUrl(url);
     if (source && source.id === folder.id) {
-      showHint("Вкладка уже в папке «" + (folder.name || "…") + "»");
+      showHint(t("hint.alreadyIn", { name: folder.name || "…" }));
       return;
     }
     if (moveSiteToFolder(url, folder, -1, true)) {
       persist();
     } else {
-      showHint("Не получилось перенести вкладку");
+      showHint(t("hint.moveFailed"));
     }
     // Обычная вкладка сразу становится «Важной» — и попадает в папку.
     if (tab) {
@@ -2574,19 +2762,19 @@
       tilePopup.appendChild(document.createXULElement("menuseparator"));
 
     const isOpen = !collapsed.has(folder.id);
-    addItem(isOpen ? "Свернуть" : "Развернуть", () => toggleFolder(folder.id));
-    addItem("Открыть все вкладки папки", () => openFolderTabs(folder));
+    addItem(isOpen ? t("folder.collapse") : t("folder.expand"), () => toggleFolder(folder.id));
+    addItem(t("folder.openAll"), () => openFolderTabs(folder));
     addSeparator();
     addItem(
-      folder.pinned ? "Открепить от верхнего ряда" : "Закрепить вверху",
+      folder.pinned ? t("folder.unpin") : t("folder.pin"),
       () => {
         folder.pinned = !folder.pinned;
         persist();
       }
     );
-    addItem("Переименовать…", () => openFolderDialog(folder, "name"));
-    addItem("Сменить иконку…", () => pickIcon(folder));
-    addItem("Сменить цвет…", () => openFolderDialog(folder, "color"));
+    addItem(t("folder.rename"), () => openFolderDialog(folder, "name"));
+    addItem(t("folder.icon"), () => pickIcon(folder));
+    addItem(t("folder.color"), () => openFolderDialog(folder, "color"));
     addSeparator();
 
     // Вложение папки в другую — тем же способом, что и перетаскивание.
@@ -2595,12 +2783,12 @@
     );
     if (candidates.length) {
       const sub = document.createXULElement("menu");
-      sub.setAttribute("label", "Вложить в папку…");
+      sub.setAttribute("label", t("folder.nest"));
       const subPopup = document.createXULElement("menupopup");
       sub.appendChild(subPopup);
       for (const candidate of candidates) {
         const entry = document.createXULElement("menuitem");
-        entry.setAttribute("label", candidate.name || "Без названия");
+        entry.setAttribute("label", candidate.name || t("folder.unnamed"));
         entry.setAttribute("image", candidate.icon || DEFAULT_ICON);
         entry.addEventListener("command", () => {
           nestFolder(folder, candidate);
@@ -2610,20 +2798,20 @@
       tilePopup.appendChild(sub);
     }
     if (folder.parentId) {
-      addItem("Вынести на верхний уровень", () => {
+      addItem(t("folder.topLevel"), () => {
         placeFolder(folder, null, null, false);
         persist();
       });
     }
 
     addSeparator();
-    addItem("Сайты папки…", () => openFolderDialog(folder, "sites"));
-    addItem("Удалить папку", () => deleteFolder(folder));
+    addItem(t("folder.sites"), () => openFolderDialog(folder, "sites"));
+    addItem(t("folder.delete"), () => deleteFolder(folder));
     addSeparator();
-    addItem("Развернуть все папки", () => setAllCollapsed(false));
-    addItem("Свернуть все папки", () => setAllCollapsed(true));
+    addItem(t("folder.expandAll"), () => setAllCollapsed(false));
+    addItem(t("folder.collapseAll"), () => setAllCollapsed(true));
     addSeparator();
-    addItem("Настройки мода…", () => openSettingsDialog());
+    addItem(t("menu.modSettings"), () => openSettingsDialog());
 
     // XUL-меню не умеет надёжно позиционироваться по HTML-якорю,
     // поэтому считаем координаты экрана сами и открываем меню рядом с плиткой.
@@ -2841,7 +3029,7 @@
 
     const title = document.createElement("div");
     title.className = "zef-dialog-title";
-    title.textContent = isNew ? "Новая папка" : "Папка";
+    title.textContent = isNew ? t("folder.new") : t("folder.plural");
     box.appendChild(title);
 
     // Место для ошибки: если настройки не записались, скажем об этом.
@@ -2857,7 +3045,7 @@
     const iconButton = document.createElement("button");
     iconButton.className = "zef-icon-button";
     iconButton.type = "button";
-    iconButton.title = "Сменить иконку";
+    iconButton.title = t("folder.iconButton");
     iconButton.style.backgroundImage = `url("${model.icon}")`;
     iconButton.addEventListener("click", () => {
       try {
@@ -2888,7 +3076,7 @@
     const nameInput = document.createElement("input");
     nameInput.type = "text";
     nameInput.className = "zef-input zef-name-input";
-    nameInput.placeholder = "Название папки";
+    nameInput.placeholder = t("folder.nameLabel");
     nameInput.value = model.name;
     nameInput.addEventListener("input", () => {
       model.name = nameInput.value;
@@ -2924,7 +3112,7 @@
     hexInput.className = "zef-input zef-hex-input";
     hexInput.placeholder = "#8b5cf6";
     hexInput.spellcheck = false;
-    hexInput.title = "Точный код цвета";
+    hexInput.title = t("folder.hexTitle");
     hexInput.value = normalizeHex(model.color) || DEFAULT_COLOR;
 
     // Текущий выбор: оттенок (градусы), насыщенность и светлота (0..1).
@@ -3005,8 +3193,8 @@
     const random = document.createElement("button");
     random.type = "button";
     random.className = "zef-btn zef-color-random";
-    random.textContent = "Случайный";
-    random.title = "Случайный оттенок";
+    random.textContent = t("folder.random");
+    random.title = t("folder.randomTitle");
     random.addEventListener("click", () => {
       applyColor(hslToHex(Math.floor(Math.random() * 360), 62, 55));
     });
@@ -3063,7 +3251,7 @@
     // --- сайты ---
     const sitesLabel = document.createElement("div");
     sitesLabel.className = "zef-section-label";
-    sitesLabel.textContent = "Сайты в папке";
+    sitesLabel.textContent = t("folder.sitesLabel");
     box.appendChild(sitesLabel);
 
     const sitesList = document.createElement("div");
@@ -3153,14 +3341,14 @@
     }
 
     for (const rule of extraRules) {
-      addRuleRow(rule, isExclusionRule(rule) ? `исключение ${rule}` : rule);
+      addRuleRow(rule, isExclusionRule(rule) ? t("folder.exclusion", { rule }) : rule);
     }
     box.appendChild(sitesList);
 
     const siteInput = document.createElement("input");
     siteInput.type = "text";
     siteInput.className = "zef-input zef-site-input";
-    siteInput.placeholder = "добавить домен и Enter";
+    siteInput.placeholder = t("folder.rulePlaceholder");
     siteInput.addEventListener("keydown", event => {
       if (event.key !== "Enter") {
         return;
@@ -3202,7 +3390,7 @@
     const save = document.createElement("button");
     save.type = "button";
     save.className = "zef-btn zef-btn-primary";
-    save.textContent = "Сохранить";
+    save.textContent = t("folder.save");
     const applyChanges = () => {
       // Список сайтов меняем только если пользователь его трогал.
       // Иначе сохранение цвета или имени тихо переписало бы его.
@@ -3238,8 +3426,7 @@
         // Говорим об этом и не закрываем диалог.
         showDialogError(
           errorBox,
-          "Не удалось сохранить: список папок не помещается в настройки Zen. " +
-            "Цвет применён сейчас, но после перезапуска вернётся прежний."
+          t("folder.saveFailed")
         );
         return;
       }
@@ -3262,7 +3449,7 @@
     const cancel = document.createElement("button");
     cancel.type = "button";
     cancel.className = "zef-btn";
-    cancel.textContent = "Отмена";
+    cancel.textContent = t("folder.cancel");
     cancel.addEventListener("click", () => panel.hidePopup());
     actions.appendChild(cancel);
 
@@ -3270,7 +3457,7 @@
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "zef-btn zef-btn-danger";
-      remove.textContent = "Удалить";
+      remove.textContent = t("folder.remove");
       remove.addEventListener("click", () => {
         deleteFolder(folder);
         panel.hidePopup();
@@ -3319,7 +3506,7 @@
     }
 
     const fragment = window.MozXULElement.parseXULToFragment(`
-      <menu id="context_zef-folders" label="В папку" hidden="true">
+      <menu id="context_zef-folders" hidden="true">
         <menupopup id="context_zef-folders-popup"></menupopup>
       </menu>
     `);
@@ -3334,6 +3521,7 @@
     }
 
     const item = document.getElementById("context_zef-folders");
+    item.setAttribute("label", t("menu.intoFolder"));
     const popup = document.getElementById("context_zef-folders-popup");
 
     // Список пунктов и видимость обновляем, когда открывается всё меню,
@@ -3355,7 +3543,7 @@
       }
       popup.appendChild(document.createXULElement("menuseparator"));
       const create = document.createXULElement("menuitem");
-      create.setAttribute("label", "Новая папка…");
+      create.setAttribute("label", t("menu.newFolder"));
       create.addEventListener("command", () => {
         const url = tabUrl(tab);
         pendingSite = hostOf(url);
@@ -3392,7 +3580,7 @@
 
     const label = document.createElement("label");
     label.className = "zef-set-label";
-    label.textContent = item.label;
+    label.textContent = t(item.labelKey);
     row.appendChild(label);
 
     const inputId = `zef-set-${item.id}`;
@@ -3413,7 +3601,7 @@
       for (const option of item.options) {
         const el = document.createElement("option");
         el.setAttribute("value", option.value);
-        el.textContent = option.label;
+        el.textContent = t(option.labelKey);
         input.appendChild(el);
       }
       input.value = values[item.id];
@@ -3457,7 +3645,7 @@
     if (item.unit) {
       const unit = document.createElement("span");
       unit.className = "zef-set-unit";
-      unit.textContent = item.unit;
+      unit.textContent = item.unitKey ? t(item.unitKey) : item.unit;
       row.appendChild(unit);
     }
     return row;
@@ -3472,7 +3660,7 @@
 
     const title = document.createElement("div");
     title.className = "zef-dialog-title";
-    title.textContent = "Настройки мода";
+    title.textContent = t("settings.title");
     box.appendChild(title);
 
     const values = readSettings();
@@ -3483,7 +3671,7 @@
 
       const groupTitle = document.createElement("div");
       groupTitle.className = "zef-settings-group-title";
-      groupTitle.textContent = group.group;
+      groupTitle.textContent = t(group.groupKey);
       groupBox.appendChild(groupTitle);
 
       for (const item of group.items) {
@@ -3498,7 +3686,7 @@
     const reset = document.createElement("button");
     reset.type = "button";
     reset.className = "zef-btn";
-    reset.textContent = "Сбросить";
+    reset.textContent = t("settings.reset");
     reset.addEventListener("click", () => {
       saveSettings(defaultSettings());
       fillSettingsPanel(panel);
@@ -3508,7 +3696,7 @@
     const close = document.createElement("button");
     close.type = "button";
     close.className = "zef-btn zef-btn-primary";
-    close.textContent = "Закрыть";
+    close.textContent = t("settings.close");
     close.addEventListener("click", () => panel.hidePopup());
     buttons.appendChild(close);
 
@@ -3530,6 +3718,36 @@
       try {
         panel.showPopup();
       } catch (e2) {}
+    }
+  }
+
+
+  /** Перерисовывает интерфейс после смены языка. */
+  function refreshLanguage() {
+    const container = getContainer();
+    if (container) {
+      ensureSearchRow(container);
+      if (searchInput) {
+        searchInput.placeholder = t("search.placeholder");
+      }
+      if (searchRow) {
+        const clear = searchRow.querySelector(".zef-search-clear");
+        if (clear) {
+          clear.title = t("search.clear");
+        }
+        const gear = searchRow.querySelector(".zef-search-settings");
+        if (gear) {
+          gear.title = t("settings.title");
+        }
+      }
+      sync(true);
+    }
+    const menu = document.getElementById("context_zef-folders");
+    if (menu) {
+      menu.setAttribute("label", t("menu.intoFolder"));
+    }
+    if (settingsPanel) {
+      fillSettingsPanel(settingsPanel);
     }
   }
 

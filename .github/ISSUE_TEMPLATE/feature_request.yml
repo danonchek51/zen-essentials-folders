@@ -1,52 +1,52 @@
-name: Предложение / Feature request
-description: Идея для мода — опишите сценарий, а не только желаемую кнопку
+name: Feature request
+description: An idea for the mod — describe the scenario, not just the button you want
 title: "[Feature] "
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        Опишите, **что вы хотели сделать** и почему текущий интерфейс мешает.
-        Так проще понять, что именно нужно изменить.
+        Describe **what you wanted to do** and why the current interface gets in the way.
+        That makes it easier to understand what exactly needs to change.
 
   - type: textarea
     id: scenario
     attributes:
-      label: Сценарий
-      description: Что вы делаете по шагам и что хотите получить
+      label: Scenario
+      description: What you do step by step and what you want to get
       placeholder: |
-        У меня 30 закреплённых вкладок из 8 разных проектов.
-        Хочу разложить их по папкам прямо из сетки «Важных»,
-        не открывая каждую вкладку отдельно.
+        I have 30 pinned tabs from 8 different projects.
+        I want to sort them into folders right from the Essentials grid,
+        without opening each tab separately.
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: Что пробовали делать
-      description: Как решаете задачу сейчас
+      label: What you have tried
+      description: How you solve the task today
     validations:
       required: false
 
   - type: dropdown
     id: area
     attributes:
-      label: Область
+      label: Area
       options:
-        - Плитки и внешний вид
-        - Папки и вложенность
-        - Перетаскивание
-        - Поиск
-        - Настройки мода
-        - Совместимость с другими модами
-        - Другое
+        - Tiles and appearance
+        - Folders and nesting
+        - Drag and drop
+        - Search
+        - Mod settings
+        - Compatibility with other mods
+        - Other
     validations:
       required: true
 
   - type: textarea
     id: alternatives-detail
     attributes:
-      label: Подробности
+      label: Details
     validations:
       required: false

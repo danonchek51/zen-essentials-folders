@@ -232,6 +232,14 @@
  * а не добавилась ещё одна в ряд.
  * ------------------------------------------------------------------ */
 
+/* Ряд вложенных папок: та же полоса, но плитки начинаются с левого края и
+   не растягиваются на всю ширину панели — как соседние плитки в общей сетке
+   Zen. */
+.zen-essentials-container > .zef-tiles-row.zef-nested-row {
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  justify-content: start;
+}
+
 .zen-essentials-container .zef-tiles-row {
   grid-column: 1 / -1;
   display: grid;
@@ -332,19 +340,26 @@
  * Плитка папки
  * ------------------------------------------------------------------ */
 
+/* Плитка наследует цвет текста панели Zen: он контрастный в любой теме.
+   Подпись папки считается от него (см. .zef-tile-name) — если считать от
+   цвета папки, то на тёмной папке она почти сливалась с фоном. */
 .zen-essentials-container .zef-tile {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 1px;
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
   /* Фиксированная высота: иконка и название всегда помещаются целиком.
      Высоту задаёт настройка мода. */
   height: var(--zef-tile-height, 46px);
-  padding: 4px 4px 3px;
+  /* В общей сетке Zen высота строки может быть меньше плитки — тогда плитка
+     подстраивается под строку, а не вылезает из неё. */
+  max-height: 100%;
+  min-height: 0;
+  padding: 3px 4px 2px;
   border-radius: var(--border-radius-medium, 12px);
   background: color-mix(
     in srgb,
@@ -522,10 +537,13 @@
   color: currentColor;
 }
 
+/* Иконка уступает место подписи: в низкой плитке лучше маленькая иконка,
+   чем обрезанное имя папки. */
 .zef-tile-icon {
   width: var(--zef-folder-icon-size, 22px);
   height: var(--zef-folder-icon-size, 22px);
-  flex: none;
+  flex: 0 1 auto;
+  min-height: 0;
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
@@ -535,21 +553,32 @@
 }
 
 .zef-tile-name {
+  flex: none;
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   /* Фиксированная высота строки: название никогда не режется по вертикали,
      длинное просто укорачивается многоточием. */
-  height: 12px;
+  height: 11px;
   font-size: 10px;
-  line-height: 12px;
+  line-height: 11px;
   margin: 0;
   padding: 0 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
-  color: color-mix(in srgb, var(--zef-color, #8b5cf6) 35%, currentColor);
+  /* Цвет папки — только как лёгкий оттенок: основной тон берётся от текста
+     панели, иначе на чёрной папке подпись превращалась в тёмное пятно. */
+  color: color-mix(in srgb, var(--zef-color, #8b5cf6) 25%, currentColor);
+  /* Тень отделяет буквы от фона плитки — работает и на светлой теме. */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* При наведении подпись становится обычным цветом текста: на тёмной папке
+   её видно сразу, а оттенок цвета папки не мешает. */
+.zen-essentials-container .zef-tile:hover .zef-tile-name {
+  color: currentColor;
 }
 
 /* Счётчик — маленький круглый бейдж в углу плитки. */
@@ -624,6 +653,9 @@
   position: relative;
   z-index: 1;
   cursor: pointer;
+  /* Скруглённые углы: подсветка активной папки не должна быть sharp-угольным
+     прямоугольником во всю ширину панели. */
+  border-radius: var(--border-radius-medium, 12px);
   /* Папка начинается ниже предыдущей: её шапка не должна лезть в цвет
      плоскости, которая кончается на --zef-plane-air ниже иконок. */
   margin-top: calc(var(--zef-plane-air, 12px) + var(--zef-block-gap, 4px));
@@ -648,11 +680,13 @@
   white-space: nowrap;
   font-size: 11.5px;
   font-weight: 600;
-  color: color-mix(in srgb, var(--zef-color, #8b5cf6) 55%, currentColor);
+  /* Как и у плитки: оттенок цвета папки плюс текст панели. */
+  color: color-mix(in srgb, var(--zef-color, #8b5cf6) 45%, currentColor);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .zen-essentials-container > .zef-head:hover .zef-head-name {
-  color: color-mix(in srgb, var(--zef-color, #8b5cf6) 85%, currentColor);
+  color: currentColor;
 }
 
 .zen-essentials-container > .zef-head .zef-head-count {
@@ -1190,45 +1224,99 @@
   display: none;
 }
 
-/* Свечение рамки — стиль по умолчанию.
+/* Свечение — стиль по умолчанию.
  *
- * Рамка насыщенным цветом папки видна всегда, в любой теме и на любом
- * цвете (жёлтая папка на светлом фоне, синяя на тёмном). Пульсирует
- * только ореол вокруг рамки — так активная папка читается даже на
- * пике пульсации и даже если анимацию выключили. */
-:root:root.zef-active-glow .zef-tile.zef-active,
+ * Раньше здесь стояла плотная рамка в 2 px и узкий ореол вокруг неё: на
+ * плитке это читалось как обведённый прямоугольник, а на шапке открытой
+ * папки — как выделение ячейки во всю ширину панели. Теперь рамка тонкая,
+ * углы скруглённые, а свечение мягкое и широкое — папка подсвечивается,
+ * а не обводится.
+ *
+ * Пульсирует только ореол: рамка не «дышит», поэтому активная папка читается
+ * даже на пике пульсации и даже если анимацию выключили. */
+:root:root.zef-active-glow .zef-tile.zef-active {
+  box-shadow:
+    inset 0 0 0 1.5px
+      color-mix(in srgb, var(--zef-color, #8b5cf6) 85%, transparent),
+    0 0 0 1px
+      color-mix(in srgb, var(--zef-color, #8b5cf6) 20%, transparent),
+    0 0 14px 3px
+      color-mix(in srgb, var(--zef-color, #8b5cf6) 40%, transparent),
+    0 0 30px 10px
+      color-mix(in srgb, var(--zef-color, #8b5cf6) 16%, transparent);
+  animation: zef-pulse-glow var(--zef-pulse-speed, 1600ms) ease-in-out infinite;
+}
+
+/* Шапка открытой папки — только мягкий ореол, без рамки: прямоугольник во
+   всю ширину панели выглядел как рамка выделения, а не как подсветка папки. */
 :root:root.zef-active-glow .zef-head.zef-active {
   box-shadow:
-    inset 0 0 0 2px var(--zef-color, #8b5cf6),
-    0 0 0 1px light-dark(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.55)),
-    0 0 10px 1px
-      color-mix(in srgb, var(--zef-color, #8b5cf6) 70%, transparent);
-  animation: zef-pulse-glow var(--zef-pulse-speed, 1600ms) ease-in-out infinite;
+    0 0 0 1px
+      color-mix(in srgb, var(--zef-color, #8b5cf6) 22%, transparent),
+    0 0 14px 3px
+      color-mix(in srgb, var(--zef-color, #8b5cf6) 40%, transparent),
+    0 0 30px 10px
+      color-mix(in srgb, var(--zef-color, #8b5cf6) 16%, transparent);
+  animation: zef-pulse-glow-head var(--zef-pulse-speed, 1600ms) ease-in-out
+    infinite;
 }
 
 @keyframes zef-pulse-glow {
   0%,
   100% {
     box-shadow:
-      inset 0 0 0 2px var(--zef-color, #8b5cf6),
-      0 0 0 2px
-        color-mix(in srgb, var(--zef-color, #8b5cf6) 30%, transparent),
-      0 0 8px 1px
-        color-mix(in srgb, var(--zef-color, #8b5cf6) 55%, transparent);
+      inset 0 0 0 1.5px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 85%, transparent),
+      0 0 0 1px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 20%, transparent),
+      0 0 12px 2px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 35%, transparent),
+      0 0 26px 8px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 12%, transparent);
   }
   50% {
     box-shadow:
-      inset 0 0 0 3px var(--zef-color, #8b5cf6),
-      0 0 0 4px
-        color-mix(in srgb, var(--zef-color, #8b5cf6) 45%, transparent),
-      0 0 22px 7px
-        color-mix(in srgb, var(--zef-color, #8b5cf6) 90%, transparent);
+      inset 0 0 0 1.5px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 95%, transparent),
+      0 0 0 2px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 28%, transparent),
+      0 0 20px 5px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 50%, transparent),
+      0 0 40px 14px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 20%, transparent);
+  }
+}
+
+@keyframes zef-pulse-glow-head {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 22%, transparent),
+      0 0 12px 2px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 35%, transparent),
+      0 0 26px 8px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 12%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 28%, transparent),
+      0 0 20px 5px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 50%, transparent),
+      0 0 40px 14px
+        color-mix(in srgb, var(--zef-color, #8b5cf6) 20%, transparent);
   }
 }
 
 /* Название активной плитки — обычным цветом, а не приглушённым:
    так активная папка читается даже на пике свечения. */
 :root:root .zef-tile.zef-active .zef-tile-name {
+  color: currentColor;
+}
+
+/* То же и для шапки открытой папки. */
+:root:root .zef-head.zef-active .zef-head-name {
   color: currentColor;
 }
 

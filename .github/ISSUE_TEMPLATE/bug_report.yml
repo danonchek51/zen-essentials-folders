@@ -1,18 +1,18 @@
-name: Ошибка / Bug report
-description: Что-то в моде работает не так — расскажите, что ожидалось и что получилось
+name: Bug report
+description: Something in the mod does not work as expected — tell us what you expected and what you got
 title: "[Bug] "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Спасибо за отчёт! Пожалуйста, заполните поля ниже — без версий Zen и мода
-        разобраться будет трудно.
+        Thanks for the report! Please fill in the fields below — without the Zen and
+        mod versions it is hard to make sense of the issue.
 
   - type: input
     id: zen-version
     attributes:
-      label: Версия Zen
+      label: Zen version
       placeholder: "1.24b"
     validations:
       required: true
@@ -20,62 +20,62 @@ body:
   - type: input
     id: mod-version
     attributes:
-      label: Версия мода
-      placeholder: "1.10.0"
-      description: Страница мода в Zen → «Настройки мода» → или начало файла `essentials-folders.uc.js`
+      label: Mod version
+      placeholder: "1.11.0"
+      description: The mod page in Zen → "Mod settings" → or the top of the `essentials-folders.uc.js` file
     validations:
       required: true
 
   - type: dropdown
     id: install-method
     attributes:
-      label: Как ставили
+      label: How it was installed
       options:
         - Sine Store
         - Sine → Install from repo
-        - Вручную (копирование файлов)
+        - Manually (copying the files)
     validations:
       required: true
 
   - type: textarea
     id: what-happened
     attributes:
-      label: Что произошло
-      description: Что вы делали и что получилось
+      label: What happened
+      description: What you were doing and what you got
     validations:
       required: true
 
   - type: textarea
     id: expected
     attributes:
-      label: Что ожидалось
+      label: What you expected
     validations:
       required: true
 
   - type: textarea
     id: steps
     attributes:
-      label: Шаги для повторения
+      label: Steps to reproduce
       placeholder: |
-        1. Открыть папку «Работа»
-        2. Перетащить иконку GitHub на плитку «Учеба»
-        3. Вкладка осталась в «Работе»
+        1. Open the "Work" folder
+        2. Drag the GitHub icon onto the "Study" tile
+        3. The tab stayed in "Work"
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: Логи из консоли (если есть)
-      description: "about:support → «Консоль браузера», сообщения мода помечены префиксом [ZEF]"
+      label: Logs from the console (if any)
+      description: "about:support → \"Browser Console\", the mod's messages are prefixed with [ZEF]"
       render: text
 
   - type: checkboxes
     id: checks
     attributes:
-      label: Проверки
+      label: Checks
       options:
-        - label: Мод включён в Zen Mods
+        - label: The mod is enabled in Zen Mods
           required: true
-        - label: После правок Zen был перезапущен
+        - label: Zen was restarted after the changes
           required: false

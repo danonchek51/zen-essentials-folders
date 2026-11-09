@@ -1,100 +1,100 @@
 # Contributing to Essentials Folders
 
-Спасибо, что хотите помочь. Мод — [Essentials Folders](https://github.com/danonchek51/zen-essentials-folders):
-плитки-папки для сетки «Важных» (Essentials) в [Zen Browser](https://zen-browser.app).
+Thanks for wanting to help. The mod is [Essentials Folders](https://github.com/danonchek51/zen-essentials-folders):
+folder tiles for the Essentials (pinboard) grid in [Zen Browser](https://zen-browser.app).
 
-Документ на русском, короткая версия на английском — в [CONTRIBUTING.en.md](CONTRIBUTING.en.md).
+> Русская версия: [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md)
 
-## Что здесь нужно
+## What belongs here
 
-- **Сообщения об ошибках** — самый ценный вклад. Особенно полезны: версия Zen, версия мода,
-  что ожидалось, что получилось, шаги для повторения.
-- **Идеи и предложения** — через [Issues](https://github.com/danonchek51/zen-essentials-folders/issues).
-  Опишите сценарий использования: что вы хотели сделать и почему текущий интерфейс мешает.
-- **Переводы** — английская версия README уже есть ([README.en.md](README.en.md));
-  приветствуются другие языки.
-- **Правки кода** — см. ниже.
+- **Bug reports** — the most valuable contribution. Especially useful: Zen version, mod
+  version, what you expected, what you actually got, steps to reproduce.
+- **Ideas and suggestions** — via [Issues](https://github.com/danonchek51/zen-essentials-folders/issues).
+  Describe the use case: what you wanted to do and why the current interface gets in the way.
+- **Translations** — this file is the English version; the Russian one lives in
+  [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md), and other languages are welcome.
+- **Code changes** — see below.
 
-## Правила, которые мод обязан соблюдать
+## Rules the mod must follow
 
-Это не формальность: если мод начнёт менять вкладки, а не только рисовать плитки,
-у пользователей пропадут закладки. Поэтому:
+This is not ceremony: if the mod starts moving tabs instead of only drawing tiles,
+users will lose their bookmarks. Therefore:
 
-1. **Мод ничего не переносит и не удаляет.** Вкладки остаются обычными вкладками Zen.
-2. **Мод только рисует.** Свои плитки в сетке «Важных», порядок через CSS `order`.
-3. **Настройки хранятся в префах Zen**, а не в файлах на диске: `zen.essentialsfolders.*`.
-4. **Публичный код без отладочного вывода.** В консоли допустим только `console.warn`
-   в аварийных `catch`; обычного `console.log` в моде быть не должно.
-5. **Мод не должен ломать другие моды.** Мод **Zen Tab Groups** (oom333) поддерживается
-   явно — не ломайте эту совместимость.
+1. **The mod never moves or deletes anything.** Tabs stay ordinary Zen tabs.
+2. **The mod only draws.** Its own tiles in the Essentials grid, order via CSS `order`.
+3. **Settings live in Zen prefs**, not in files on disk: `zen.essentialsfolders.*`.
+4. **Public code without debug output.** Only `console.warn` is allowed in emergency
+   `catch` blocks; there should be no plain `console.log` in the mod.
+5. **The mod must not break other mods.** Compatibility with the **Zen Tab Groups** mod
+   (oom333) is explicit — do not break it.
 
-## Как собрать мод у себя
+## Run the mod locally
 
-Репозиторий — это и есть исходники мода, упаковка не нужна.
+The repository *is* the mod source; there is no build step.
 
-| Файл | Что это |
+| File | What it is |
 |---|---|
-| `essentials-folders.uc.js` | вся логика мода (userscript, XUL-контекст Zen) |
-| `chrome.css` | оформление плиток, панелей и индикаторов |
-| `theme.json` | манифест: имя, версия, файлы, теги |
-| `preferences.json` | настройки мода по умолчанию (значения Zen) |
-| `install.py` | установка в профиль Zen |
-| `images/` | скриншоты для README и карточки мода |
-| `PUBLISH.md` | как выпустить новую версию |
+| `essentials-folders.uc.js` | all of the mod logic (userscript, Zen XUL context) |
+| `chrome.css` | tile, panel and indicator styling |
+| `theme.json` | manifest: name, version, files, tags |
+| `preferences.json` | default mod settings (Zen pref values) |
+| `install.py` | installs the mod into a Zen profile |
+| `images/` | screenshots for the README and the store card |
+| `PUBLISH.md` | how to cut a release |
 
-### Установка в профиль Zen
+### Installing into a Zen profile
 
 ```powershell
 python install.py
 ```
 
-Скрипт сам найдёт профиль Zen, скопирует файлы в
-`<профиль>\chrome\sine-mods\zen-essentials-folders\` и поправит `mods.json`.
+The script finds the Zen profile on its own, copies the files into
+`<profile>\chrome\sine-mods\zen-essentials-folders\` and updates `mods.json`.
 
-> **Закройте Zen перед правкой `mods.json` и `prefs.js`.** Zen перезаписывает эти файлы
-> при выходе и может затереть изменения.
+> **Close Zen before editing `mods.json` or `prefs.js`.** Zen rewrites those files on
+> exit and can overwrite your changes.
 
-После правок перезапустите Zen: мод читается при старте.
+After the edits, restart Zen: the mod is loaded at startup.
 
-## Проверка перед отправкой
+## Check before you send
 
 ```powershell
-node --check essentials-folders.uc.js          # синтаксис
-python install.py                                # установка в профиль
+node --check essentials-folders.uc.js          # syntax
+python install.py                               # install into the profile
 ```
 
-Полезно также:
+Also worth checking:
 
-- проверить, что панель папок не наезжает на соседние открытые папки;
-- проверить перетаскивание вкладки в папку и обратно на разделитель;
-- проверить, что папка с текущей вкладкой помечается индикатором;
-- проверить, что диалог настроек применяет значения сразу.
+- that the folder panel does not overlap neighbouring open folders;
+- that dragging a tab into a folder and back onto the separator works;
+- that the folder holding the current tab is marked by the indicator;
+- that the settings dialog applies values immediately.
 
-Если меняете CSS или JS — после проверки обязательно **перезапустите Zen**:
-изменения не подхватываются на лету.
+If you change CSS or JS — after checking, always **restart Zen**:
+changes are not picked up on the fly.
 
-## Как отправить правку
+## How to send a change
 
-1. Форкните репозиторий и сделайте ветку от `main`.
-2. Внесите изменения, опишите их в коммите одним понятным предложением.
-3. Откройте Pull Request в `main`.
-4. В описании укажите: что изменилось, зачем, и как вы это проверили.
+1. Fork the repository and branch from `main`.
+2. Make your changes, describe them in the commit with one clear sentence.
+3. Open a Pull Request against `main`.
+4. In the description state: what changed, why, and how you verified it.
 
-В шаблоне PR есть готовые поля — заполните их, это ускоряет разбор.
+The PR template has ready-made fields — fill them in, it speeds up the review.
 
-## Стиль кода
+## Code style
 
-- JavaScript — как в существующем `essentials-folders.uc.js`: `const`/`let`, стрелочные
-  функции, никаких `var`, никаких модулей и сборки.
-- CSS — переменные `--zef-*` в начале `chrome.css`, чтобы настройки мода могли их
-  переопределять.
-- Комментарии — по-русски, как в текущем коде.
-- Не добавляйте зависимости: мод работает на голом Zen без npm и без сборки.
+- JavaScript — as in the existing `essentials-folders.uc.js`: `const`/`let`, arrow
+  functions, no `var`, no modules and no build.
+- CSS — `--zef-*` variables at the top of `chrome.css`, so the mod settings can
+  override them.
+- Comments — in English, the project's main language.
+- Do not add dependencies: the mod works on plain Zen without npm and without a build.
 
-## Вопросы
+## Questions
 
-Через [Issues](https://github.com/danonchek51/zen-essentials-folders/issues) или
+Via [Issues](https://github.com/danonchek51/zen-essentials-folders/issues) or
 [Discussions](https://github.com/danonchek51/zen-essentials-folders/discussions).
 
-Лицензия — [MIT](LICENSE). Участвуя в проекте, вы соглашаетесь с
-[кодексом поведения](CODE_OF_CONDUCT.md).
+License — [MIT](LICENSE). By taking part in the project you agree to the
+[code of conduct](CODE_OF_CONDUCT.md).

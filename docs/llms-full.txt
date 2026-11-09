@@ -152,8 +152,8 @@ order through CSS `order`. Zen's Essentials counter keeps counting real tabs onl
 
 - Repository: https://github.com/danonchek51/zen-essentials-folders
 - Releases: https://github.com/danonchek51/zen-essentials-folders/releases
-- English README: https://github.com/danonchek51/zen-essentials-folders/blob/main/README.en.md
-- Russian README: https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md
+- English README: https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md
+- Russian README: https://github.com/danonchek51/zen-essentials-folders/blob/main/README.ru.md
 - Changelog: https://github.com/danonchek51/zen-essentials-folders/blob/main/CHANGELOG.md
 - Sine Store listing: https://github.com/sineorg/store
 - License: MIT

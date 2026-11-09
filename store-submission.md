@@ -1,109 +1,111 @@
-# Заявка на публикацию мода
+# Mod Submission Request
 
-Готовый текст для заявок. Ничего придумывать на месте не нужно — скопируйте
-в поле формы.
+Ready-made text for submissions. Nothing needs to be improvised on the spot — just copy
+it into the form field.
 
-## 1. Sine Store — маркетплейс модов (главный)
+## 1. Sine Store — mod marketplace (primary)
 
-Адрес: <https://github.com/sineorg/store/issues/new?template=add-theme.yml>
+Address: <https://github.com/sineorg/store/issues/new?template=add-theme.yml>
 
 - **Title:** `[add-theme]: Essentials Folders`
 - **Theme Homepage:** `https://github.com/danonchek51/zen-essentials-folders`
 
-Больше ничего заполнять не нужно — в шаблоне одно поле.
+There is nothing else to fill in — the template has a single field.
 
-Уже подана заявка: <https://github.com/sineorg/store/issues/1411>.
-Карточка мода подхватывает `theme.json` из репозитория, поэтому описание и теги
-обновятся сами; если модератор спросит — ответ готов (ниже).
+A submission has already been filed: <https://github.com/sineorg/store/issues/1411>.
+The mod card pulls `theme.json` from the repository, so the description and the tags
+update on their own; if a moderator asks, the answer is ready (below).
 
-Если модераторы попросят пояснение, вот готовый текст:
+If the moderators ask for clarification, here is the ready-made text:
 
-> **Essentials Folders** — плитки-папки для сетки «Важных» (Essentials) в Zen Browser.
+> **Essentials Folders** — folder tiles for the Essentials (pinboard) grid in Zen Browser.
 >
-> Что умеет:
-> - вложенные папки любой глубины, перетаскивание вкладок и плиток мышью;
-> - поиск по папкам, пинка папки вверх, кнопка «+» для новой папки;
-> - свой диалог настроек: 21 параметр в четырёх группах (вид плиток, сетка
->   иконок, индикаторы, поведение) — применяется сразу;
-> - индикатор активной папки: та папка, где лежит текущая вкладка, помечается
->   и мягко пульсирует (свечение рамки, точка, уголок или звёздочка);
-> - переносится ровно одна вкладка, а не весь сайт.
+> What it does:
+> - nested folders of any depth, drag & drop of tabs and tiles with the mouse;
+> - folder search, pinning a folder to the top, a "+" button to create a new folder;
+> - its own settings dialog: 21 options in four groups (tile appearance, icon grid,
+>   indicators, behaviour) — applied instantly;
+> - active folder indicator: the folder holding the current tab is highlighted
+>   and softly pulses (frame glow, dot, corner or a small star);
+> - moves exactly one tab, not an entire site.
 >
-> Мод ничего не переносит и не удаляет: вкладки остаются обычными вкладками Zen.
-> Исходники открытые, MIT.
+> The mod never moves or deletes anything: tabs stay ordinary Zen tabs.
+> Open source, MIT.
 >
-> **Установка:** из маркетплейса Sine (Настройки → Sine Mods → Marketplace)
-> или «Установить из репозитория» со ссылкой
+> **Install:** from the Sine marketplace (Settings → Sine Mods → Marketplace)
+> or via "Install from repo" with the link
 > `https://github.com/danonchek51/zen-essentials-folders`.
 >
-> **English description for the listing:**
+> **Short listing description:**
 > Folder tiles for Zen Essentials - nesting, drag & drop, search, 21 settings.
-> English README: https://github.com/danonchek51/zen-essentials-folders/blob/main/README.en.md
+>
+> **English README:** https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md
+> **Russian README:** https://github.com/danonchek51/zen-essentials-folders/blob/main/README.ru.md
 
-## 2. Официальный реестр Zen — не подаём
+## 2. Official Zen registry — not submitted
 
-<https://zen-browser.app/mods/> заполняется автоматически: бот из
-`zen-browser/theme-store` сам собирает `theme.json` из полей формы, и в нём
-есть только `style` (CSS), `readme`, `image` и `preferences`. Поля `scripts`
-там нет, а установщик Zen скачивает только `chrome.css`, `readme.md` и
+<https://zen-browser.app/mods/> is filled in automatically: the bot from
+`zen-browser/theme-store` collects `theme.json` from the form fields, and it only
+contains `style` (CSS), `readme`, `image` and `preferences`. There is no `scripts`
+field there, and the Zen installer downloads only `chrome.css`, `readme.md` and
 `preferences.json`.
 
-Наш мод без скрипта не работает: плитки рисует JavaScript. Поэтому в этот
-реестр заявку не подаём — правильная площадка для модов со скриптами это
-Sine Store (раздел 1).
+Our mod does not work without a script: the tiles are drawn by JavaScript. So we do
+not submit to this registry — the right platform for mods with scripts is the
+Sine Store (section 1).
 
-Если формат реестра расширят и в `theme.json` появится `scripts`, заявка
-оформляется по шаблону `create-theme`
+If the registry format is extended and `scripts` appears in `theme.json`, the submission
+is made with the `create-theme` template
 (<https://github.com/zen-browser/theme-store/issues/new>):
 
-- **Name:** `Essentials Folders` (18 символов, лимит 25) ✔
-- **Description:** `Zen Browser mod: folder tiles for Essentials - nesting, drag & drop, search, 21 settings.` (89 символов, лимит 100) ✔
+- **Name:** `Essentials Folders` (18 characters, limit 25) ✔
+- **Description:** `Zen Browser mod: folder tiles for Essentials - nesting, drag & drop, search, 21 settings.` (89 characters, limit 100) ✔
 - **Homepage:** `https://github.com/danonchek51/zen-essentials-folders`
-- **Image:** PNG 600×400 по HTTPS (живой снимок мода в Zen)
-- **Theme Styles:** содержимое `chrome.css` (без обёртки `@-moz-document url-prefix('chrome://')`)
-- **Readme:** содержимое `README.md`
-- **Preferences:** содержимое `preferences.json`
+- **Image:** PNG 600×400 over HTTPS (a live snapshot of the mod in Zen)
+- **Theme Styles:** the contents of `chrome.css` (without the `@-moz-document url-prefix('chrome://')` wrapper)
+- **Readme:** the contents of `README.md`
+- **Preferences:** the contents of `preferences.json`
 
-Скриншот 600×400 снимается из живого Zen после перезапуска с установленной
-версией мода.
+The 600×400 screenshot is taken from a live Zen after a restart with the installed
+version of the mod.
 
-## 3. Другие площадки — тексты готовы
+## 3. Other platforms — texts are ready
 
-Аккаунты и публикации — ваши, поэтому тексты ниже просто лежат готовыми.
+Accounts and publishing are yours, so the texts below are simply kept ready to use.
 
 ### Reddit (r/zen_browser)
 
-> **Essentials Folders** — мод, который превращает «Важные» в плитки-папки.
+> **Essentials Folders** — a mod that turns Essentials into folder tiles.
 >
-> Что получилось: вместо россыпи иконок в сетке Essentials — цветные плитки
-> с иконкой, названием и счётчиком вкладок. Папки вкладываются друг в друга
-> на любую глубину, всё переставляется перетаскиванием, есть поиск и свой
-> диалог настроек (21 параметр, применяется сразу). Плюс индикатор активной
-> папки: та, где лежит текущая вкладка, мягко пульсирует.
+> What it does: instead of a scatter of icons in the Essentials grid — coloured tiles
+> with an icon, a name and a tab counter. Folders nest inside each other to any
+> depth, everything is rearranged by dragging, and there is search plus a settings
+> dialog of its own (21 options, applied instantly). On top of that, an active folder
+> indicator: the folder that holds the current tab softly pulses.
 >
-> Главное: мод ничего не переносит и не удаляет — вкладки остаются обычными
-> вкладками Zen, папки хранятся в настройках браузера.
+> The main thing: the mod never moves or deletes anything — tabs stay ordinary Zen
+> tabs, and the folders are stored in the browser's preferences.
 >
 > https://github.com/danonchek51/zen-essentials-folders
 
-### Список модов / Awesome
+### Mod lists / Awesome
 
-Одна строка для списка:
+One line for the list:
 
 ```markdown
-- [Essentials Folders](https://github.com/danonchek51/zen-essentials-folders) — плитки-папки для «Важных» в Zen Browser: вложенность, перетаскивание, поиск, настройки. MIT.
+- [Essentials Folders](https://github.com/danonchek51/zen-essentials-folders) — folder tiles for Essentials in Zen Browser: nesting, drag & drop, search, settings. MIT.
 ```
 
-### Профиль GitHub
+### GitHub profile
 
-Репозиторий стоит закрепить (Pin) в профиле `danonchek51` — до шести позиций.
-В описании профиля стоит упомянуть Zen Browser и моды для него: это связывает
-профиль с репозиторием и с поиском по имени.
+The repository is worth pinning in the `danonchek51` profile — up to six slots.
+The profile description should mention Zen Browser and mods for it: this links the
+profile to the repository and to name-based search.
 
-## 4. Что проверять после публикации
+## 4. What to check after publishing
 
-- [ ] Мод появился в маркетплейсе Sine и ставится кнопкой `Install`.
-- [ ] В карточке видно новое описание и теги.
-- [ ] `Theme Homepage` ведёт на репозиторий, а не на 404.
-- [ ] Вкладка Releases на GitHub открывает архив, в котором есть все 4 файла мода.
-- [ ] В README на GitHub открываются картинки (все 9 в папке `images/`).
+- [ ] The mod appears in the Sine marketplace and installs with the `Install` button.
+- [ ] The new description and tags are visible on the card.
+- [ ] `Theme Homepage` leads to the repository, not to a 404.
+- [ ] The Releases tab on GitHub opens an archive that contains all 4 mod files.
+- [ ] The images open in the README on GitHub (all 9 in the `images/` folder).

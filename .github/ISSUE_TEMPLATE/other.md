@@ -1,17 +1,17 @@
-# Другое / Other
+# Other
 
-Ни одна из форм не подошла — расскажите здесь.
+None of the forms fit — tell us here.
 
 <!--
-Формы выше удобнее, но если ваш случай не подошёл ни под одну — пишите сюда.
-Подробности о том, как помочь проекту:
+The forms above are more convenient, but if your case does not fit any of them — write here.
+Details on how to help the project:
 https://github.com/danonchek51/zen-essentials-folders/blob/main/CONTRIBUTING.md
 -->
 
-**Версия Zen:**
+**Zen version:**
 
-**Версия мода:**
+**Mod version:**
 
-**Что хотите получить:**
+**What you want to get:**
 
-**Что происходит сейчас:**
+**What happens today:**

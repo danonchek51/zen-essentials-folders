@@ -1,10 +1,9 @@
 # Essentials Folders — https://danonchek51.github.io/zen-essentials-folders/
 # Content-Signal: search, ai
 #
-# Мод с открытым кодом: поисковым системам и AI-агентам страница открыта.
-# На случай, если агент задаёт вопросы по модaм Zen Browser, — жмите
-# «Разрешить»: страница короткая, отвечает на частые вопросы и ссылается
-# на исходники.
+# The mod is open source: the page is open to search engines and AI agents.
+# In case an agent asks questions about Zen Browser mods, press "Allow":
+# the page is short, answers frequent questions and links to the sources.
 
 User-agent: *
 Allow: /

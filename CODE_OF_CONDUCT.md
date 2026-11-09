@@ -1,59 +1,62 @@
 # Contributor Covenant Code of Conduct
 
-## Наши правила
+## Our Rules
 
-Мы — участники, контрибьюторы и мейнтейнеры проекта **Essentials Folders**. Мы обязуемся
-сделать участие в проекте комфортным для всех: без травли, без унижений и без нападок.
+We are participants, contributors and maintainers of the **Essentials Folders** project.
+We pledge to make participation in this project a harassment-free experience for
+everyone: no bullying, no humiliation and no attacks.
 
-Коротко: относитесь к другим людям так, как хотели бы, чтобы относились к вам.
+In short: treat other people the way you would like to be treated.
 
-## Что приветствуется
+## What We Encourage
 
-- Уважение к чужим мнениям, опыту и стилю работы.
-- Доброжелательные, конструктивные замечания.
-- Принятие ответственности за свои ошибки и извлечение из них урока.
-- Ориентация на пользу проекта, а не на спор «кто прав».
+- Respect for other people's opinions, experience and working style.
+- Friendly and constructive feedback.
+- Taking responsibility for your own mistakes and learning from them.
+- Focusing on what is useful for the project rather than on "who is right" arguments.
 
-## Что не приемлемо
+## What Is Not Acceptable
 
-- Оскорбления, пренебрежительные комментарии, троллинг и личные нападки.
-- Публикация чужих личных данных (адреса, почты, скриншотов личных окон) без разрешения.
-- Сексуализированный контент и нежелательные заигрывания.
-- Любое поведение, которое в рабочем контексте считается неуместным.
+- Insults, condescending comments, trolling and personal attacks.
+- Publishing other people's private data (addresses, emails, screenshots of personal
+  windows) without permission.
+- Sexualised content and unwanted advances.
+- Any behaviour that would be considered inappropriate in a professional context.
 
-## Ответственность мейнтейнеров
+## Maintainer Responsibilities
 
-Мейнтейнеры отвечают за разъяснение правил и за их соблюдение. Они вправе убрать,
-отредактировать или отклонить комментарий, коммит, код, issue и любой другой материал,
-который противоречит этому документу, и объяснить причину решения.
+Maintainers are responsible for clarifying the rules and for enforcing them. They may
+remove, edit or reject a comment, commit, code, issue and any other material that
+contradicts this document, and explain the reason for the decision.
 
-## Где действуют правила
+## Scope
 
-Правила действуют во всех пространствах проекта: issues, pull requests, discussions,
-репозиторий, релизы — и за его пределами, когда человек представляет проект публично
-(например, в посте или в репозитории другого проекта).
+The rules apply in all project spaces: issues, pull requests, discussions, the
+repository, releases — and beyond them, whenever a person represents the project publicly
+(for example, in a post or in another project's repository).
 
-## Как сообщить о нарушении
+## Reporting a Violation
 
-- Нажмите **Report abuse** на странице GitHub профиля или конкретного комментария —
-  GitHub передаст сообщение администрации репозитория.
-- Или напишите мейнтейнеру `danonchek51` через его профиль:
+- Click **Report abuse** on the GitHub profile page or on a specific comment —
+  GitHub will pass the report to the repository administration.
+- Or write to the maintainer `danonchek51` via their profile:
   <https://github.com/danonchek51>.
 
-Все жалобы рассматриваются конфиденциально. Мы не публикуем имя заявителя без его
-явного согласия.
+All complaints are handled confidentially. We do not publish the name of the reporter
+without their explicit consent.
 
-## Что будет в ответ
+## Enforcement
 
-Мейнтейнеры разберут ситуацию и выберут меру, соразмерную нарушению:
+Maintainers will look into the situation and choose a measure proportional to the
+violation:
 
-1. **Замечание** — короткое предупреждение без последствий.
-2. **Временное ограничение** — запрет на любое взаимодействие с проектом на срок.
-3. **Постоянное ограничение** — пожизненный запрет на публичное взаимодействие с проектом.
+1. **A note** — a short warning with no consequences.
+2. **A temporary ban** — no interaction with the project for a period of time.
+3. **A permanent ban** — a lifelong ban from any public interaction with the project.
 
-## Атрибуция
+## Attribution
 
-Этот кодекс поведения составлен по
-[Contributor Covenant](https://www.contributor-covenant.org), версия 2.1, доступная по
-адресу <https://www.contributor-covenant.org/version/2/1/code_of_conduct.html>.
-Ответы на частые вопросы — там же.
+This Code of Conduct is adapted from the
+[Contributor Covenant](https://www.contributor-covenant.org), version 2.1, available at
+<https://www.contributor-covenant.org/version/2/1/code_of_conduct.html>.
+Answers to common questions are there too.

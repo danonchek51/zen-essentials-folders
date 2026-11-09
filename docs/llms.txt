@@ -5,26 +5,26 @@
 ## Start here
 
 - [Essentials Folders — landing page](https://danonchek51.github.io/zen-essentials-folders/): what the mod does, how to install it, screenshots and answers to common questions.
-- [English README](https://github.com/danonchek51/zen-essentials-folders/blob/main/README.en.md): the full English documentation.
+- [English README](https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md): the full English documentation.
 
 ## Documentation
 
-- [README (Русский)](https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md): полное описание мода на русском — возможности, настройки, перетаскивание, правила принадлежности вкладок, установка, решение проблем.
-- [CHANGELOG.md](https://github.com/danonchek51/zen-essentials-folders/blob/main/CHANGELOG.md): что изменилось в каждой версии, начиная с 1.9.0.
-- [CONTRIBUTING.md](https://github.com/danonchek51/zen-essentials-folders/blob/main/CONTRIBUTING.md): как поставить мод к себе, как проверить правку и как оформить pull request.
-- [FAQ](https://danonchek51.github.io/zen-essentials-folders/#faq): нужно ли переносить вкладки вручную, где хранятся папки, что делать, если плитки пропали.
+- [Russian README](https://github.com/danonchek51/zen-essentials-folders/blob/main/README.ru.md): the full description of the mod in Russian — features, settings, drag & drop, tab membership rules, installation, troubleshooting.
+- [CHANGELOG.md](https://github.com/danonchek51/zen-essentials-folders/blob/main/CHANGELOG.md): what changed in each version, starting from 1.9.0.
+- [CONTRIBUTING.md](https://github.com/danonchek51/zen-essentials-folders/blob/main/CONTRIBUTING.md): how to install the mod locally, how to check a change and how to file a pull request.
+- [FAQ](https://danonchek51.github.io/zen-essentials-folders/#faq): whether tabs have to be moved by hand, where folders are stored, what to do if the tiles disappeared.
 
 ## Source code and releases
 
-- [Repository](https://github.com/danonchek51/zen-essentials-folders): исходники мода — `essentials-folders.uc.js`, `chrome.css`, `theme.json`, `preferences.json`.
-- [Releases](https://github.com/danonchek51/zen-essentials-folders/releases): архивы версий с заметками к выпуску.
-- [v1.10.2](https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.10.2): текущая версия.
+- [Repository](https://github.com/danonchek51/zen-essentials-folders): the mod sources — `essentials-folders.uc.js`, `chrome.css`, `theme.json`, `preferences.json`.
+- [Releases](https://github.com/danonchek51/zen-essentials-folders/releases): version archives with release notes.
+- [v1.11.0](https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.11.0): the current release.
 - [LICENSE](https://github.com/danonchek51/zen-essentials-folders/blob/main/LICENSE): MIT.
 
 ## Installation
 
-- [Sine Store](https://github.com/sineorg/store): маркетплейс модов Zen — найдите «Essentials Folders» и нажмите `Install`.
-- [Install from repo](https://github.com/danonchek51/zen-essentials-folders): в Zen откройте `Sine Mods` → `Install from repo` и вставьте ссылку `https://github.com/danonchek51/zen-essentials-folders`, затем перезапустите Zen.
+- [Sine Store](https://github.com/sineorg/store): the Zen mod marketplace — find "Essentials Folders" and press `Install`.
+- [Install from repo](https://github.com/danonchek51/zen-essentials-folders): in Zen open `Sine Mods` → `Install from repo` and paste the link `https://github.com/danonchek51/zen-essentials-folders`, then restart Zen.
 
 ## Notes
 

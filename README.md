@@ -1,288 +1,295 @@
-# Essentials Folders — плитки-папки для «Важных» в Zen Browser
+# Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Версия 1.10.2](https://img.shields.io/badge/version-1.10.2-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
-[![Лицензия MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Version 1.11.0](https://img.shields.io/badge/version-1.11.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
 
-**Essentials Folders** — мод для [Zen Browser](https://zen-browser.app), который превращает
-сетку «Важных» (Essentials, он же pinboard) в **плитки-папки**. Папки вкладываются друг в друга
-на любую глубину, вкладки и папки перетаскиваются мышью, есть поиск по папкам и свой диалог
-настроек из 21 параметра. Вкладки при этом остаются обычными вкладками Zen — мод ничего не
-переносит и не удаляет.
+> Русская версия: [README.ru.md](README.ru.md)
 
-| Что внутри | Значение |
+**Essentials Folders** is a mod for [Zen Browser](https://zen-browser.app) that turns the
+Essentials grid (the pinboard) into **folder tiles**. Folders nest inside each other to any
+depth, tabs and folders are rearranged by drag & drop, there is a search box for folders, and the
+mod ships its own settings dialog with 22 options. Tabs stay ordinary Zen tabs — the mod never
+moves or deletes anything.
+
+| What is inside | Value |
 |---|---|
-| Настраиваемых параметров | 21, в четырёх группах |
-| Стилей индикатора активной папки | 4, плюс отключение |
-| Глубина вложенности папок | без ограничений |
-| Правил принадлежности вкладки | домен, домен с адресом, исключение |
-| Совместимость | Zen Tab Groups (oom333) |
-| Лицензия | [MIT](LICENSE) |
+| Configurable options | 22, in five groups |
+| Active-folder indicator styles | 4, plus off |
+| Folder nesting depth | unlimited |
+| Membership rules | domain, domain + path, exclusion |
+| Compatibility | Zen Tab Groups (oom333) |
+| License | [MIT](LICENSE) |
 
-*English: a Zen Browser mod that turns the Essentials (pinboard) grid into folder tiles —
-nested folders, drag & drop, search, and 21 settings. Tabs stay ordinary Zen tabs.*
+*A Zen Browser mod that turns the Essentials (pinboard) grid into folder tiles — nested
+folders, drag & drop, search, and 22 settings. Tabs stay ordinary Zen tabs.*
 
-Открытая папка **вытекает в широкую плоскость своего цвета**, и её плитки лежат внутри этой
-плоскости. Отдельной «шапки» и дублирующей плитки больше нет: папка показана ровно один раз.
-Несколько папок можно держать открытыми одновременно — самая свежая (та, что открыли последней)
-стоит выше остальных.
+An open folder **spills out into a wide plane of its own colour**, and its tiles sit inside that
+plane. There is no separate "header" and no duplicated tile any more: a folder is shown exactly
+once. Several folders can be open at the same time — the newest one (the one you opened last)
+sits above the others.
 
-Папки можно **вкладывать друг в друга** (на любую глубину), **менять местами** и **переставлять
-плитки внутри** — всё обычным перетаскиванием мышью.
+Folders can be **nested inside each other** (to any depth), **reordered** and **rearranged
+within** — all with ordinary mouse drag & drop.
 
-![Панель с плитками-папками в сетке «Важных» Zen Browser](images/panel.png)
+![The Essentials panel of Zen Browser with folder tiles](images/panel.png)
 
-**Язык:** русский · [English](README.en.md)
+**Language:** English · [Russian](README.ru.md)
 
-## Что умеет
+## What it does
 
-- **Плитки-папки** в сетке «Важных»: иконка, название, цвет, счётчик вкладок.
-- **Открытая папка — плоскость цвета.** Клик по плитке: плитка уходит из верхнего ряда
-  и разворачивается широкой цветной плоскостью, внутри которой стоят её плитки.
-  Никакого дублирования: в ряду остаются только свёрнутые папки.
-- **Свежая папка — сверху.** Та папка, которую открыли последней, стоит выше остальных открытых.
-- **Вложенные папки.** Перетащите плитку папки на плитку другой — она вложится внутрь
-  (вложенная папка помечена шевроном «›» слева от иконки). Глубина вложенности не ограничена.
-- **Перестановка папок.** Перетащите плитку за край — папка встанет рядом с той, на которую
-  бросили. Вложенную папку так же можно вытащить обратно наверх.
-- **Перестановка плиток внутри папки.** Перетащите иконку на соседнюю иконку — плитка
-  встанет перед ней или после неё, в зависимости от того, с какой стороны вы отпустили.
-- **Переносится только та вкладка, которую тянули.** Бросили иконку GitHub с одним
-  репозиторием в другую папку — переехала только она, остальные вкладки GitHub остались
-  на месте (см. «Как это работает»).
-- **Зона приёма — сама открытая папка.** Бросьте плитку в цветную область открытой папки —
-  она переедет в эту папку (из прежней папки при этом уйдёт).
-- **Перетаскивание вкладки в папку.** Бросьте вкладку (из «Важных» или из обычной панели)
-  на плитку или на область открытой папки — вкладка закрепится в «Важных» и окажется в папке.
-- **Разделитель** отделяет плитки папок от закреплённых вкладок, которые не вошли ни в одну
-  папку: бросьте туда иконку — вкладка выйдет из папки, но останется закреплённой.
-- **Правый клик по плитке** — меню: развернуть/свернуть, открыть все вкладки папки,
-  закрепить вверху, переименовать, сменить иконку, сменить цвет, вложить в другую папку,
-  вынести на верхний уровень, список сайтов, удалить, развернуть/свернуть все папки.
-  То же меню открывается и по правому клику на **шапку открытой папки** — то есть
-  открытую папку тоже можно переименовать, перекрасить или открепить.
-- **Плитка «+»** в ряду — создать новую папку прямо из панели.
-- **Поиск по папкам**: строка над плитками. Печатаете название папки или домен —
-  и остаются только совпадения. `Esc` или крестик — сбросить поиск.
-- **Закреплённая папка** (пинка в меню папки) всегда стоит в верхнем ряду, над всеми
-  остальными, и отмечена точкой в углу плитки. У открытой папки точка видна на шапке.
-- **Панель не закрывает вкладки.** Развернутые папки больше не занимают всю левую
-  панель: панель ограничена по высоте и прокручивается сама, а под ней остаётся
-  обычный список вкладок Zen (и группы вкладок) — как в браузере без мода.
-- **Открыть все вкладки папки** — вкладки папки выделяются сразу и открываются рядом.
-- **Диалог папки**: имя, цвет, иконка (штатный пикер Zen), список доменов с галочками,
-  добавление домена вручную.
-- **Цвет папки — любой.** Кроме 16 предустановленных оттенков в диалоге есть пипетка
-  (квадрат оттенка + полоса цвета), поле для точного кода (`#rrggbb`, понимает и `#rgb`)
-  и кнопка «Случайный». Выбранный цвет сразу виден на плитке папки и на её шапке.
-- **Пункт «В папку»** в меню вкладки «Важных»: положить вкладку в существующую папку
-  или сразу создать новую с этим доменом.
-- **Яркие крупные логотипы** в сетке «Важных»: 26 px вместо 16 px, без приглушения
-  Firefox и Zia. Иконки плоские, без тёмных подложек.
-- **Все логотипы одного размера.** Раньше мелкие favicon рисовались в натуральную
-  величину, и в папке они разъезжались по размеру. Теперь у каждого логотипа своя
-  одинаковая ячейка, а картинка вписывается в неё целиком.
-- **Плитки папок — отдельной полосой.** Они лежат в ряд на всю ширину панели и делят
-  эту ширину поровну: расширил сайдбар — плитки стали шире, а не добавилась ещё одна
-  в ряд. Раньше размер плитки не зависел от ширины панели совсем.
-- **Название плитки не режется.** У всех плиток одинаковая высота, длинное название
-  укорачивается многоточием, но не обрезается по вертикали.
-- **Счётчик — аккуратный бейдж** в углу плитки, а не голое число поверх иконки.
-- **Плитка «+» — отдельная кнопка** в конце ряда, а не ещё одна карточка: её не
-  спутаешь с папкой.
-- **Перетаскивание работает и с вкладками из сайдбара.** Если перетаскивание
-  началось там, мод берёт вкладку прямо из буфера перетаскивания, а не ищет её
-  по событию старта. Раньше бросок выглядел как «сюда нельзя».
-- **Подсказка вместо молчания.** Если бросок не сработал, мод объясняет почему:
-  например, «вкладка уже в этой папке».
-- **Логотипы не пропадают.** Значок сайта может приехать позже, чем панель
-  перестроилась: мод перепроверяет иконки ещё дважды после этого, и слушает
-  загрузку и ошибку — надпись «ярлык» больше не заменяет логотип навсегда.
-- **Ровная сетка внутри папки.** Иконки папки стоят в колонках одинаковой ширины
-  с одинаковым шагом — на цветной плоскости видно, где какая вкладка.
-- **Колонки тянутся на всю ширину панели.** Колонки не копятся в углу, а поровну
-  делят доступное место: шапка папки и её иконки всегда выровнены по одной линии,
-  а размер панели на это не влияет.
-- **Воздух вокруг иконок.** Внутри цветной плоскости вокруг каждого логотипа
-  одинаковые поля (10 px с каждой стороны) — иконки не прилипают ни к краю,
-  ни друг к другу.
-- **Плоскость — ровно по содержимому.** Цветная область заканчивается сразу под
-  последней иконкой папки: пустого места снизу не остаётся.
-- **Вложенная папка — отдельным рядом.** Когда папку открыли внутри другой папки,
-  её иконки стоят в своём ряду, а иконки родительской папки начинаются со следующего
-  ряда (между рядами — 12 px). Раньше они продолжали один ряд, и цветная плоскость
-  вложенной папки накрывала иконки родителя — они выглядели как содержимое вложенной
-  папки, а счётчик показывал «4», хотя в плоскости лежало больше плиток.
-- **Между открытыми папками — зазор.** Цветные области соседних открытых папок
-  больше не наезжают друг на друга и не закрывают шапку следующей папки: между
-  ними остаётся видимый зазор. Раньше плоскость каждой папки доходила до
-  следующей на 12 px и закрывала её заголовок.
-- **Видно, какая вкладка выгружена из памяти.** У выгруженной вкладки вокруг
-  логотипа появляется рамка: сразу видно, какая вкладка «спит», а какая в памяти.
-- **Если у сайта нет логотипа**, вместо пустого серого квадрата показывается первая буква
-  адреса на цветном круге — цвет у каждого сайта свой и всегда одинаковый.
-- **Видно, какая папка активна.** Та папка, в которой лежит текущая вкладка, помечена:
-  по умолчанию — пульсирующим свечением рамки. Стиль выбирается в настройках мода:
-  свечение рамки, точка, уголок или звёздочка в углу плитки.
-- **Свои настройки в одном месте.** В моде появился свой диалог «Настройки мода»:
-  21 параметр в четырёх группах — вид плиток, сетка иконок, индикаторы и поведение.
-  Всё применяется сразу, без кнопки «Сохранить».
+- **Folder tiles** in the Essentials grid: icon, name, colour, tab counter.
+- **An open folder is a colour plane.** Click a tile: the tile leaves the top row and unfolds
+  into a wide colour plane with its tiles inside. No duplication: the row keeps only collapsed
+  folders.
+- **The newest folder goes on top.** The folder you opened last sits above the other open ones.
+- **Nested folders.** Drag a folder tile onto another folder's tile — it nests inside it (a
+  nested folder is marked with a `›` chevron to the left of the icon). The nesting depth is
+  unlimited.
+- **Reordering folders.** Drag a tile by its edge — the folder lands next to the one you dropped
+  it on. A nested folder can be dragged back out to the top level the same way.
+- **Reordering tiles inside a folder.** Drag an icon onto a neighbouring icon — the tile lands
+  before or after it, depending on which side you released it.
+- **Only the tab you dragged moves.** Drop a GitHub icon with one repository into another
+  folder — only that one moved, the other GitHub tabs stayed where they were (see "How it
+  works").
+- **The drop target is the open folder itself.** Drop a tile into the colour area of an open
+  folder — it moves into that folder (and leaves its previous folder).
+- **Dragging a tab into a folder.** Drop a tab (from Essentials or from the regular panel) onto
+  a tile or onto the area of an open folder — the tab becomes pinned in Essentials and lands in
+  that folder.
+- **The separator** separates the folder tiles from the pinned tabs that are in no folder: drop
+  an icon there — the tab leaves its folder but stays pinned.
+- **Right-click a tile** — menu: expand/collapse, open all tabs of the folder, pin to top,
+  rename, change icon, change colour, nest into another folder, move to the top level, list
+  sites, delete, expand/collapse all folders. The same menu opens on a right-click of the
+  **header of an open folder** — that is, an open folder can also be renamed, recoloured or
+  unpinned.
+- **The `+` tile** in the row — create a new folder straight from the panel.
+- **Folder search**: the row above the tiles. Type a folder name or a domain — and only the
+  matches stay. `Esc` or the cross resets the search.
+- **A pinned folder** (the pin in the folder menu) always sits in the top row, above all the
+  others, and is marked with a dot in the corner of the tile. For an open folder the dot is
+  visible on the header.
+- **The panel no longer covers your tabs.** Expanded folders no longer take over the whole left
+  panel: the panel is height-limited and scrolls on its own, and below it the regular Zen tab
+  list (and tab groups) stays — just like in a browser without the mod.
+- **Open all tabs of a folder** — the tabs of the folder are selected right away and opened next
+  to each other.
+- **Folder dialog**: name, colour, icon (the standard Zen picker), a list of domains with
+  checkboxes, adding a domain manually.
+- **Any colour for a folder.** Besides 16 preset shades, the dialog has a colour picker (a
+  shade square + a colour bar), a field for an exact code (`#rrggbb`, `#rgb` is understood too)
+  and a `Random` button. The chosen colour is immediately visible on the folder tile and on its
+  header.
+- **The "Move to folder" entry** in the Essentials tab menu: put a tab into an existing folder
+  or create a new one with this domain right away.
+- **Bright, large logos** in the Essentials grid: 26 px instead of 16 px, without the Firefox
+  and Zia dimming. The icons are flat, without dark backdrops.
+- **All logos are the same size.** Small favicons used to be drawn at their natural size, so
+  inside a folder they ended up of different sizes. Now every logo has its own equal-sized cell,
+  and the picture fits into it completely.
+- **Folder tiles — in a separate strip.** They lie in a row across the full width of the panel
+  and divide that width equally: widen the sidebar and the tiles get wider, instead of one more
+  tile being added to the row. Previously the tile size did not depend on the panel width at all.
+- **Tile names are not cut off.** All tiles have the same height, a long name is shortened with
+  an ellipsis, but is not clipped vertically.
+- **The counter is a neat badge** in the corner of the tile, not a bare number on top of the
+  icon.
+- **The `+` tile is a separate button** at the end of the row, not one more card: you cannot
+  mistake it for a folder.
+- **Drag & drop also works with tabs from the sidebar.** If the drag started there, the mod
+  takes the tab straight from the drag buffer instead of looking it up by the drag-start event.
+  Previously a drop looked like "not allowed here".
+- **A hint instead of silence.** If the drop did not work, the mod explains why: for example,
+  "the tab is already in this folder".
+- **Logos do not disappear.** A site icon may arrive later than the panel was rebuilt: the mod
+  re-checks the icons twice more after that, and listens for load and error — the word "tab" no
+  longer replaces the logo for good.
+- **An even grid inside a folder.** The icons of a folder stand in columns of equal width with
+  an equal step — on the colour plane you can see which tab is where.
+- **Columns stretch across the full width of the panel.** The columns do not pile up in the
+  corner but divide the available space equally: the folder header and its icons are always
+  aligned on one line, and the panel size has no effect on it.
+- **Air around the icons.** Inside the colour plane every logo has equal padding (10 px on each
+  side) — the icons stick neither to the edge nor to each other.
+- **The plane fits its contents exactly.** The colour area ends right below the last icon of the
+  folder: no empty space is left underneath.
+- **A nested folder gets its own row.** When a folder is opened inside another folder, its
+  icons stand in their own row, and the icons of the parent folder start from the next row
+  (12 px between rows). Previously they continued a single row, and the colour plane of the
+  nested folder covered the icons of the parent — they looked like the contents of the nested
+  folder, while the counter showed "4" even though the plane held more tiles.
+- **A gap between open folders.** The colour areas of neighbouring open folders no longer
+  overlap and no longer cover the header of the next folder: a visible gap remains between
+  them. Previously the plane of each folder reached 12 px into the next one and covered its
+  title.
+- **You can see which tab was unloaded.** An unloaded tab gets a frame around its logo: you
+  immediately see which tab is "asleep" and which one is in memory.
+- **If a site has no logo**, instead of an empty grey square the first letter of the address is
+  shown on a coloured circle — every site has its own colour, and it is always the same.
+- **You can see which folder is active.** The folder that holds the current tab is marked: by
+  default with a pulsing frame glow. The style is chosen in the mod settings: frame glow, dot,
+  corner or a star in the corner of the tile.
+- **Your own settings in one place.** The mod has its own "Mod settings" dialog: 22 options in
+  five groups — language, tile look, icon grid, indicators and behaviour. Everything applies
+  immediately, without a "Save" button.
 
-## Скриншоты (Screenshots)
+## Screenshots
 
-Настоящий вид мода в Zen Browser 1.24b.
+The real look of the mod in Zen Browser 1.24b.
 
-| Ряд плиток | Открытая папка | Вложенная папка | Меню плитки | Диалог папки | «В папку» в меню вкладки |
+| Tile row | Open folder | Nested folder | Tile menu | Folder dialog | "Move to folder" in the tab menu |
 |---|---|---|---|---|---|
-| ![Ряд цветных плиток-папок с иконками, названиями и счётчиками вкладок](images/tiles.png) | ![Открытая папка, развёрнутая в широкую цветную плоскость со своими вкладками](images/expanded.png) | ![Вложенная папка: плитки родительской папки начинают новый ряд и не попадают в цвет вложенной](images/nested.png) | ![Контекстное меню плитки папки: развернуть, переименовать, сменить цвет, вложить, удалить](images/menu.png) | ![Выбор цвета папки: палитра, градиентный подбор и точный hex-код](images/dialog.png) | ![Пункт «В папку» в контекстном меню вкладки «Важных»](images/context.png) |
+| ![A row of colour-coded folder tiles with icons, names and tab counters](images/tiles.png) | ![An open folder unfolded into a wide colour plane with its tabs](images/expanded.png) | ![A nested folder: the tiles of the parent folder start a new row and stay out of the nested colour](images/nested.png) | ![The context menu of a folder tile: expand, rename, change colour, nest, delete](images/menu.png) | ![Choosing a folder colour: palette, gradient picker and an exact hex code](images/dialog.png) | ![The "Move to folder" entry in the context menu of an Essentials tab](images/context.png) |
 
-## Настройки мода
+## Mod settings
 
-В моде есть **свой диалог настроек** — открывается шестерёнкой `⚙` справа от строки
-поиска или пунктом `Настройки мода…` в меню папки.
+The mod has **its own settings dialog** — open it with the `⚙` gear to the right of the search
+row or with the `Mod settings…` entry in the folder menu.
 
-![Диалог настроек мода](images/settings.png)
+![The settings dialog of the mod](images/settings.png)
 
-Всего 21 параметр в четырёх группах:
+22 options in five groups:
 
-| Группа | Что настраивается |
+| Group | What it controls |
 |---|---|
-| **Плитки папок** | высота плитки, минимальная ширина, размер иконки папки, показывать ли названия и счётчик, вид счётчика (бейдж / точка / без), значок вложенности (шеврон / без) |
-| **Сетка иконок** | шаг иконок внутри папки, размер логотипа в «Важных», размер иконки вкладки сбоку, воздух под плоскостью и зазор между блоками, ряд плиток (полоса / сетка) |
-| **Индикаторы** | стиль активной папки (свечение / точка / уголок / звёздочка), пульсация вкл/выкл и её скорость, вид метки у выгруженной вкладки (рамка / пунктир / точка / линия / приглушение / без) |
-| **Поведение** | строка поиска, кнопка «+», подсказки при неудачном броске, свежая открытая папка всегда сверху |
+| **Language** | interface language — English by default, Russian is one click away |
+| **Folder tiles** | tile height, minimum width, folder icon size, whether names and the counter are shown, counter style (badge / dot / off), nesting marker (chevron / off) |
+| **Icon grid** | icon step inside a folder, logo size in Essentials, sidebar tab icon size, padding under the plane and the gap between blocks, tile row (strip / grid) |
+| **Indicators** | active-folder style (soft glow / dot / corner / star), pulsing on/off and its speed, unloaded-tab marker style (off by default; frame / dashed / dot / line / dimmed are available if you want to see which tabs are sleeping) |
+| **Behaviour** | search row, `+` button, hints on a failed drop, the newest open folder is always on top |
 
-Значения применяются **сразу** — ничего нажимать не нужно. Кнопка `Сбросить`
-возвращает всё к значениям по умолчанию.
+Values apply **immediately** — there is nothing to press. The `Reset` button returns everything
+to the default values.
 
-Пять старых настроек (`show-names`, `show-count`, `show-search`, `icon-size`,
-`tab-icon-size`) по-прежнему работают: если вы меняли их раньше, мод подхватит
-старое значение, а новое сохранит рядом — в одном настройке
-`zen.essentialsfolders.settings`.
+The five original settings (`show-names`, `show-count`, `show-search`, `icon-size`,
+`tab-icon-size`) still work: if you changed them before, the mod picks up the old value and
+keeps the new one next to it — all in a single `zen.essentialsfolders.settings` pref.
 
-## Индикатор активной папки
+## Active folder indicator
 
-Мод помечает папку, в которой лежит **текущая вкладка**. По умолчанию это
-пульсирующее свечение рамки: рамка видна всегда, а ореол вокруг неё мягко
-пульсирует — папка сразу видна и в светлой, и в тёмной теме, при любом цвете
-папки.
+The mod marks the folder that holds the **current tab**. By default that is a pulsing frame
+glow: the frame itself is always visible and only the halo around it pulses softly — the folder
+is immediately visible in both the light and the dark theme, with any folder colour.
 
-![Варианты индикатора активной папки](images/indicator.png)
+![Variants of the active folder indicator](images/indicator.png)
 
-| Стиль | Как выглядит |
+| Style | What it looks like |
 |---|---|
-| **Свечение рамки** (по умолчанию) | Рамка цвета папки и пульсирующий ореол вокруг неё |
-| **Точка** | Маленькая точка в правом нижнем углу плитки |
-| **Уголок** | Уголок в левом верхнем углу плитки |
-| **Звёздочка** | Звёздочка в правом нижнем углу плитки |
+| **Frame glow** (default) | A frame in the folder colour with a pulsing halo around it |
+| **Dot** | A small dot in the bottom-right corner of the tile |
+| **Corner** | A corner mark in the top-left corner of the tile |
+| **Star** | A star in the bottom-right corner of the tile |
 
-Пульсацию можно выключить — и настройкой мода, и системной настройкой
-`prefers-reduced-motion` (если в системе включено «уменьшить движение»,
-пульсация отключается сама).
+Pulsing can be switched off — both by a mod setting and by the system setting
+`prefers-reduced-motion` (if "reduce motion" is enabled in your system, the pulsing is disabled
+by itself).
 
-## Как перетаскивать
+## How to drag & drop
 
-| Куда бросили | Что получилось |
+| Where you dropped it | What happened |
 |---|---|
-| На плитку папки (в любую точку) | Плитка сайта переезжает в эту папку; плитка папки — вкладывается в неё |
-| На край плитки папки (только для папок) | Папка встаёт рядом с той, на которую бросили (обмен местами) |
-| На цветную область открытой папки | Плитка сайта переезжает в эту папку; плитка папки — вкладывается в неё |
-| На иконку внутри папки | Плитка встаёт перед этой иконкой или после неё (левая/правая половина) |
-| На разделитель под папками | Плитка сайта выходит из папки; плитка папки — выходит на верхний уровень |
+| On a folder tile (anywhere) | The site tile moves into that folder; a folder tile nests into it |
+| On the edge of a folder tile (folders only) | The folder lands next to the one you dropped it on (the two swap places) |
+| On the colour area of an open folder | The site tile moves into that folder; a folder tile nests into it |
+| On an icon inside a folder | The tile lands before that icon or after it (left/right half) |
+| On the separator below the folders | A site tile leaves its folder; a folder tile moves to the top level |
 
-### Бросок попадает в цель с первого раза
+### A drop hits the target the first time
 
-Пока тянете плитку, Zen вставляет в сетку «Важных» пустое место под вкладку — из-за этого
-плитки съезжают, и бросок попадает в это место, а не в папку. Мод запоминает раскладку плиток
-в начале перетаскивания и определяет цель по ней: даже если сетка сдвинулась, вкладка
-приземлится туда, куда вы целились. Если рядом с курсором нет ни одной плитки, мод не
-мешает Zen — бросок останется обычным.
+While you drag a tile, Zen inserts an empty slot into the Essentials grid under the tab — so the
+tiles shift, and the drop lands in that slot instead of in the folder. The mod remembers the tile
+layout at the start of the drag and resolves the target against it: even if the grid has moved,
+the tab lands where you aimed. If there is not a single tile near the cursor, the mod does not
+get in Zen's way — the drop stays an ordinary one.
 
-Сразу после броски браузер иногда присылает лишний клик — мод его гасит, поэтому папка
-не сворачивается сама и не «прыгает».
+Right after the drop the browser sometimes sends an extra click — the mod suppresses it, so the
+folder does not collapse by itself and does not "jump".
 
-### Как это работает: одна вкладка — одно правило
+### How it works: one tab — one rule
 
-Папка хранит не вкладки, а **правила**. Обычное правило — домен: `github.com` означает
-«все вкладки GitHub в этой папке». Но когда вкладку перетаскивают из папки в папку,
-мод запоминает её **точнее** — по адресу целиком:
+A folder stores not tabs, but **rules**. An ordinary rule is a domain: `github.com` means "all
+GitHub tabs in this folder". But when a tab is dragged from one folder to another, the mod
+remembers it **more precisely** — by the full address:
 
-| Правило | Что попадает в папку |
+| Rule | What lands in the folder |
 |---|---|
-| `github.com` | все вкладки GitHub |
-| `github.com/dano-/zef` | репозиторий `dano-/zef` и его внутренние страницы |
-| `github.com/` | только главная страница GitHub |
-| `!github.com/dano-/zef` | ничего: вкладка исключена из папки |
+| `github.com` | all GitHub tabs |
+| `github.com/dano-/zef` | the `dano-/zef` repository and its inner pages |
+| `github.com/` | only the GitHub home page |
+| `!github.com/dano-/zef` | nothing: the tab is excluded from the folder |
 
-Поэтому перенос выглядит так:
+So a move looks like this:
 
-- вы перетащили **одну** плитку `github.com/dano-/zef` из папки «GitHub» в папку «Работа»;
-- в «Работе» появилось правило `github.com/dano-/zef` — там лежит только эта вкладка;
-- в «GitHub» осталось правило `github.com` и добавилось исключение `!github.com/dano-/zef`
-  — остальные вкладки GitHub остались на месте.
+- you dragged **one** `github.com/dano-/zef` tile from the "GitHub" folder into the "Work"
+  folder;
+- "Work" got the rule `github.com/dano-/zef` — only that tab is in it;
+- "GitHub" kept the rule `github.com` and gained the exclusion `!github.com/dano-/zef` — the
+  other GitHub tabs stayed where they were.
 
-Если адрес совсем без пути (`https://github.com/`), правило будет `github.com/` —
-только главная страница.
+If the address has no path at all (`https://github.com/`), the rule will be `github.com/` — the
+home page only.
 
-**Весь сайт** в папку добавляется через правый клик по вкладке → `В папку`:
-там добавляется обычное доменное правило, и в папку попадают все вкладки этого сайта.
-В диалоге папки можно поставить галочку на домен — это то же самое.
+The **whole site** is added to a folder via a right-click on the tab → `Move to folder`: a plain
+domain rule is added there, and all tabs of that site join the folder. In the folder dialog you
+can tick the domain yourself — it is the same thing.
 
-Точечные правила и исключения видны в диалоге папки отдельными строками: их можно
-снять галочкой.
+Targeted rules and exclusions are visible in the folder dialog as separate rows: you can untick
+them.
 
-## Установка (Install)
+## Install
 
-Мод ставится за минуту: это готовые файлы, без сборки и без npm. Zen читает мод при старте,
-поэтому после установки его нужно перезапустить.
+The mod installs in a minute: these are ready-made files, no build step and no npm. Zen reads the
+mod at startup, so after installing it you need to restart Zen.
 
-### Быстрый старт (Quick start)
+### Quick start
 
-`Sine Mods` → `Install from repo` → вставить ссылку → перезапустить Zen:
+`Sine Mods` → `Install from repo` → paste the link → restart Zen:
 
 ```
 https://github.com/danonchek51/zen-essentials-folders
 ```
 
-Подробности — в вариантах ниже.
+Details are in the options below.
 
-### Вариант 1. Через Sine (рекомендуется)
+### Option 1. Through Sine (recommended)
 
-Sine — менеджер модов, который встроен в Zen (Настройки → Sine Mods).
+Sine is the mod manager built into Zen (Settings → Sine Mods).
 
-1. Откройте в Zen `Настройки` → `Sine Mods` → `Marketplace`.
-2. Найдите **Essentials Folders** и нажмите `Install`.
-3. Перезапустите Zen.
+1. Open `Settings` → `Sine Mods` → `Marketplace` in Zen.
+2. Find **Essentials Folders** and press `Install`.
+3. Restart Zen.
 
-Sine сам подтягивает новые версии из репозитория — обновлять вручную не нужно.
+Sine pulls new versions from the repository on its own — there is nothing to update manually.
 
-Можно и без магазина: `Sine Mods` → `Install from repo`, вставить ссылку
+It works without the store as well: `Sine Mods` → `Install from repo`, paste the link
 
 ```
 https://github.com/danonchek51/zen-essentials-folders
 ```
 
-### Вариант 2. Вручную (без менеджера модов)
+### Option 2. Manually (without a mod manager)
 
-1. Закройте Zen.
-2. Скопируйте файлы `theme.json`, `preferences.json`, `chrome.css`,
-   `essentials-folders.uc.js` в папку
+1. Close Zen.
+2. Copy the files `theme.json`, `preferences.json`, `chrome.css`,
+   `essentials-folders.uc.js` into the folder
 
    ```
-   <профиль Zen>\chrome\sine-mods\zen-essentials-folders\
+   <Zen profile>\chrome\sine-mods\zen-essentials-folders\
    ```
 
-   Профиль лежит обычно здесь:
-   `%APPDATA%\zen\Profiles\<имя-профиля>\`
+   The profile usually lives here:
+   `%APPDATA%\zen\Profiles\<profile-name>\`
 
-3. Добавьте запись в `chrome\sine-mods\mods.json` (если её ещё нет):
+3. Add an entry to `chrome\sine-mods\mods.json` (if it is not there yet):
 
    ```json
    "zen-essentials-folders": {
      "id": "zen-essentials-folders",
      "name": "Essentials Folders",
-     "description": "Плитки-папки для «Важных».",
+     "description": "Folder tiles for the Essentials panel.",
      "style": {"chrome": "chrome.css", "content": ""},
      "scripts": {
        "essentials-folders.uc.js": {"include": ["chrome://browser/content/browser.xhtml"]}
@@ -292,186 +299,182 @@ https://github.com/danonchek51/zen-essentials-folders
    }
    ```
 
-4. Запустите Zen.
+4. Start Zen.
 
-Быстрый вариант: запустите `python install.py` из папки мода — скрипт сам найдёт профиль
-Zen, скопирует файлы и поправит `mods.json`.
+Quick option: run `python install.py` from the mod folder — the script finds the Zen profile on
+its own, copies the files and fixes `mods.json`.
 
-> Перед правкой `mods.json` и `prefs.js` **закройте Zen**: он перезаписывает эти
-> файлы при выходе и может затереть изменения.
+> Before editing `mods.json` and `prefs.js` **close Zen**: it rewrites those files on exit and
+> can wipe your changes.
 
-## Как пользоваться
+## How to use
 
-1. По умолчанию мод создаёт пять папок под ваши текущие «Важные»:
-   «AI и модели», «Почта и облака», «Дизайн и заметки», «Соцсети и медиа», «Прочее».
-   Если ваши наборы другие — переименуйте, удалите и создайте свои (см. ниже).
-2. Клик по плитке — открыть папку. Она развернётся цветной плоскостью с плитками внутри.
-   Клик по шапке папки — свернуть её. Открытых папок может быть несколько, самая свежая
-   стоит выше.
-3. Закреплённые вкладки, которые не вошли ни в одну папку, лежат в самом низу —
-   за разделителем.
-4. Чтобы перенести вкладку в другую папку: правый клик по иконке вкладки →
-   `В папку` → нужная папка (переносится **весь сайт**). Либо перетащите иконку на плитку
-   или на цветную область папки — переедет **только эта вкладка**, вкладка сразу
-   закрепится в «Важных» и окажется в этой папке.
-5. Чтобы убрать вкладку из папки, перетащите её иконку на разделитель — линию под
-   папками. Вкладка останется закреплённой в «Важных», но выйдет из папки (остальные
-   вкладки того же сайта останутся в папке).
-6. Правый клик по плитке → `Удалить папку`, чтобы убрать ненужную. Вложенные папки
-   при этом не пропадут — они поднимутся на уровень выше.
-7. Над плитками есть **строка поиска**: напечатайте название папки или домен — останутся
-   только совпадения. `Esc` очищает поиск.
-8. Часто нужная папка: правый клик → `Закрепить вверху`. Такая папка всегда в верхнем ряду.
-9. Панель папок ограничена по высоте: если открытых папок много, панель прокручивается
-   сама (колесо мыши над плитками). Дошли до края панели — колесо прокручивает
-   обычный список вкладок. Под панелью — список вкладок Zen и группы вкладок,
-   до них всегда можно добраться.
-10. Свой цвет папки: правый клик по плитке → `Сменить цвет…`. В диалоге выберите
-   оттенок пипеткой, впишите код в поле (`#e11d48`) или нажмите `Случайный`,
-   потом `Сохранить` — цвет сразу поменяется. Если кнопка «Сохранить» не на виду
-   (список доменов длинный), нажмите `Ctrl+Enter` — это тот же самый «Сохранить».
-   Список доменов в папке при этом не меняется: он переписывается только если вы
-   сами поставили или сняли галочку.
+1. By default the mod creates five folders under your current Essentials: "AI and models",
+   "Mail and cloud", "Design and notes", "Social and media", "Other". If your sets are
+   different — rename them, delete them and make your own (see below).
+2. Click a tile — open the folder. It unfolds into a colour plane with tiles inside. Click the
+   folder header — collapse it. There can be several open folders, the newest one sits higher.
+3. Pinned tabs that are in no folder sit at the very bottom — behind the separator.
+4. To move a tab into another folder: right-click the tab icon → `Move to folder` → the folder
+   you need (the **whole site** moves). Or drag the icon onto a tile or onto the colour area of
+   a folder — then **only that tab** moves, the tab becomes pinned in Essentials right away and
+   lands in that folder.
+5. To take a tab out of a folder, drag its icon onto the separator — the line below the
+   folders. The tab stays pinned in Essentials but leaves the folder (the other tabs of the same
+   site stay in the folder).
+6. Right-click a tile → `Delete folder` to remove an unnecessary one. Nested folders are not
+   lost — they move up one level.
+7. Above the tiles there is a **search row**: type a folder name or a domain — and only the
+   matches stay. `Esc` clears the search.
+8. For a folder you need often: right-click → `Pin to top`. Such a folder is always in the top
+   row.
+9. The folder panel is height-limited: with many open folders the panel scrolls on its own
+   (mouse wheel over the tiles). Once you reach the edge of the panel the wheel scrolls the
+   regular tab list. Below the panel — the Zen tab list and tab groups, they are always
+   reachable.
+10. Your own folder colour: right-click a tile → `Change colour…`. In the dialog pick a shade
+    with the picker, type a code in the field (`#e11d48`) or press `Random`, then `Save` — the
+    colour changes at once. If the `Save` button is not in view (the domain list is long), press
+    `Ctrl+Enter` — it is the same `Save`. The domain list of the folder does not change at the
+    same time: it is rewritten only if you ticked or unticked a checkbox yourself.
 
-### Настройки
+### Settings
 
-Все настройки мода собраны в его собственном диалоге — см. раздел
-[«Настройки мода»](#настройки-мода) выше. Пять старых пунктов
-(`Показывать названия папок на плитках`, `Показывать количество вкладок в папке`,
-`Показывать строку поиска по папкам`, `Размер логотипа в «Важных»`,
-`Размер иконки вкладки в списке сбоку`) остались на странице настроек Zen —
-мод читает и их тоже.
+All mod settings are collected in its own dialog — see the [Mod settings](#mod-settings)
+section above. The five original entries (`Show folder names on tiles`, `Show tab count in
+folder`, `Show folder search row`, `Logo size in Essentials`, `Tab icon size in the side list`)
+stayed on the Zen settings page — the mod reads them too.
 
-Те же значения можно поменять прямо в `chrome.css` мода — в начале файла есть
-переменные `--zef-icon-size`, `--zef-folder-icon-size` и `--zef-tab-icon-size`.
+The same values can be changed directly in the `chrome.css` of the mod — at the beginning of the
+file there are the variables `--zef-icon-size`, `--zef-folder-icon-size` and
+`--zef-tab-icon-size`.
 
-### Где хранятся папки
+### Where folders are stored
 
-Данные лежат в настройках Zen, поэтому переживают перезапуск и обновление браузера:
+The data lives in the Zen preferences, so it survives restarts and browser updates:
 
-- `zen.essentialsfolders.folders` — папки: имя, цвет, иконка, родитель (`parentId`),
-  домены (`sites`) и их порядок, а также флаг `pinned` (папка закреплена вверху)
-- `zen.essentialsfolders.collapsed` — какие папки свёрнуты
-- `zen.essentialsfolders.order` — порядок открытых папок: самая свежая сверху
-- `zen.essentialsfolders.settings` — настройки мода (один JSON): вид плиток,
-  сетка иконок, индикаторы и поведение
+- `zen.essentialsfolders.folders` — folders: name, colour, icon, parent (`parentId`), domains
+  (`sites`) and their order, plus the `pinned` flag (the folder is pinned to the top)
+- `zen.essentialsfolders.collapsed` — which folders are collapsed
+- `zen.essentialsfolders.order` — the order of open folders: the newest on top
+- `zen.essentialsfolders.settings` — the mod settings (one JSON): tile look, icon grid,
+  indicators and behaviour
 
-Принадлежность вкладки к папке определяется **по правилу адреса**, а не по id вкладки:
-перезапуск браузера, смена адреса страницы и перенос вкладки ничего не ломают.
-Обычное правило — домен (`github.com`), точное — домен с адресом
-(`github.com/dano-/zef`), а `!github.com/dano-/zef` — исключение, которое убирает
-конкретную вкладку из папки. Чем правило длиннее, тем оно «главнее»: точечное правило
-побеждает доменное, поэтому вкладка, перенесённая из одной папки в другую, оказывается
-в новой, а её однофамильцы остаются в старой. При равных правилах побеждает папка,
-которая глубже вложена.
+A tab belongs to a folder **by an address rule**, and not by tab id: a browser restart, a page
+redirect and a tab move never break it. An ordinary rule is a domain (`github.com`), an exact
+one is a domain with a path (`github.com/dano-/zef`), and `!github.com/dano-/zef` is an exclusion
+that removes a specific tab from the folder. The longer the rule, the "more important" it is: an
+exact rule wins over a domain rule, so a tab moved from one folder to another ends up in the new
+one, while its namesake stays in the old one. With equal rules the folder that is nested deeper
+wins.
 
-## Частые вопросы (FAQ)
+## Frequently asked questions (FAQ)
 
-### Что такое Essentials Folders?
+### What is Essentials Folders?
 
-Essentials Folders — мод для Zen Browser, который превращает сетку «Важных» (Essentials)
-в плитки-папки. Папки вкладываются друг в друга, вкладки и папки перетаскиваются мышью,
-есть поиск по папкам и свой диалог настроек из 21 параметра.
+Essentials Folders is a mod for Zen Browser that turns the Essentials grid into folder tiles.
+Folders nest inside each other, tabs and folders are dragged around with the mouse, there is a
+search for folders and its own settings dialog with 22 options.
 
-### Нужно ли переносить вкладки в папки вручную?
+### Do I have to move tabs into folders manually?
 
-Нет. Мод ничего не переносит и не удаляет: вкладки остаются обычными вкладками Zen
-со своими закладками и историей. В папку попадают вкладки по правилу адреса — например,
-все вкладки `github.com` или только одна конкретная страница.
+No. The mod moves and deletes nothing: tabs stay ordinary Zen tabs with their bookmarks and
+history. Tabs join a folder by an address rule — for example all `github.com` tabs or just one
+specific page.
 
-### Куда мод сохраняет папки?
+### Where does the mod save the folders?
 
-В настройки Zen, поэтому они переживают перезапуск и обновление браузера: префы
-`zen.essentialsfolders.folders`, `.collapsed`, `.order` и `.settings`.
+In the Zen preferences, so they survive restarts and browser updates: the prefs
+`zen.essentialsfolders.folders`, `.collapsed`, `.order` and `.settings`.
 
-### Будет ли мод работать после обновления Zen?
+### Will the mod keep working after a Zen update?
 
-Да. Мод использует публичные API Zen (`gZenWorkspaces.getCurrentEssentialsContainer()`)
-и CSS-класс `.zen-essentials-container`; наблюдение за DOM переподключается само при смене
-пространства или вкладок.
+Yes. The mod uses public Zen APIs (`gZenWorkspaces.getCurrentEssentialsContainer()`) and the
+`.zen-essentials-container` CSS class; the DOM observation reconnects itself when the
+workspaces or the tabs change.
 
-### Совместим ли мод с другими модами?
+### Is the mod compatible with other mods?
 
-Да. Мод не трогает вкладки и их данные, а только рисует плитки. Подтверждённая совместимость —
-мод **Zen Tab Groups** (oom333) с группами вкладок.
+Yes. The mod does not touch tabs or their data, it only draws tiles. Confirmed compatibility —
+the **Zen Tab Groups** mod (oom333) with tab groups.
 
-### Нужно ли что-то настраивать?
+### Do I have to configure anything?
 
-Нет, всё работает сразу. Но если хочется: шестерёнка `⚙` справа от строки поиска (или пункт
-`Настройки мода…` в меню папки) открывает 21 параметр в четырёх группах — вид плиток,
-сетка иконок, индикаторы и поведение. Значения применяются сразу.
+No, everything works right away. But if you want to: the `⚙` gear to the right of the search row
+(or the `Mod settings…` entry in the folder menu) opens 22 options in five groups — language, tile look,
+icon grid, indicators and behaviour. Values apply immediately.
 
-### Как вернуть всё как было?
+### How do I get everything back as it was?
 
-Удалите папку `chrome\sine-mods\zen-essentials-folders` и её запись из `mods.json`, затем
-перезапустите Zen. Никакие вкладки при этом не пропадут.
+Delete the folder `chrome\sine-mods\zen-essentials-folders` and its entry from `mods.json`, then
+restart Zen. No tabs are lost in the process.
 
-### А если плитки пропали?
+### And if the tiles have disappeared?
 
-Откройте `about:support` → «Папка профиля» и проверьте, что
-`chrome\sine-mods\zen-essentials-folders\essentials-folders.uc.js` на месте. Помогает
-перезагрузка Zen: `Ctrl+Shift+R`.
+Open `about:support` → "Profile Folder" and check that
+`chrome\sine-mods\zen-essentials-folders\essentials-folders.uc.js` is in place. It helps to
+reload Zen: `Ctrl+Shift+R`.
 
-## Почему мод безопасен
+## Why the mod is safe
 
-- Мод **ничего не переносит и не удаляет**: вкладки остаются обычными вкладками Zen,
-  поэтому работают Ctrl+W (выгрузка), клик по иконке для повторной загрузки
-  и перетаскивание вкладок как обычно.
-- Мод **только рисует**: добавляет свои плитки в сетку «Важных», прячет содержимое
-  свёрнутой папки и задаёт порядок отображения через CSS `order`.
-- Ни одна вкладка не подменяется: максимум, что может случиться, — не появятся плитки;
-  все вкладки и их данные останутся на месте.
-- Скрытие содержимого свёрнутой папки сделано через CSS-атрибут, а не через inline-стили.
-- Меняются только **картинки логотипов в сетке «Важных»** и **подложка плитки**:
-  прозрачность иконок в обычном списке вкладок, у вкладок и в других местах
-  интерфейса мод не трогает.
-- Счётчик «Важных» у Zen продолжает считать только настоящие вкладки.
-- Мод переживает обновления Zen: используются публичные API
-  (`gZenWorkspaces.getCurrentEssentialsContainer()`) и CSS-класс контейнера
-  `.zen-essentials-container`, а наблюдение за DOM переподключается само при смене
-  пространства или вкладок.
+- The mod **never moves and never deletes** anything: tabs stay ordinary Zen tabs, so Ctrl+W
+  (unload), clicking the icon to reload and tab drag & drop keep working as usual.
+- The mod **only draws**: it adds its own tiles to the Essentials grid, hides the contents of a
+  collapsed folder and sets the display order through CSS `order`.
+- No tab is ever replaced: at worst the tiles do not appear, but all tabs and their data stay
+  where they are.
+- Hiding the contents of a collapsed folder is done through a CSS attribute, not through inline
+  styles.
+- Only the **logo images in the Essentials grid** and the **tile background** change: the
+  transparency of icons in the regular tab list, on tabs and in other places of the interface is
+  untouched by the mod.
+- Zen's Essentials counter keeps counting real tabs only.
+- The mod survives Zen updates: it uses public APIs
+  (`gZenWorkspaces.getCurrentEssentialsContainer()`) and the CSS class of the container
+  `.zen-essentials-container`, and the DOM observation reconnects itself when the workspaces or
+  the tabs change.
 
-## Если что-то пошло не так
+## If something goes wrong
 
-- **Плитки пропали.** Откройте `about:support` → «Папка профиля» и проверьте, что
-  `chrome\sine-mods\zen-essentials-folders\essentials-folders.uc.js` на месте.
-  Помогает простая перезагрузка Zen: `Ctrl+Shift+R` в окне браузера.
-- **Не работает меню.** Проверьте, что мод включён в Zen Mods.
-- **Откат.** Удалите папку `chrome\sine-mods\zen-essentials-folders` и удалите её запись
-  из `mods.json`, затем перезапустите Zen. Никакие вкладки при этом не пропадут.
-- В `about:support` → «Консоль браузера» можно посмотреть сообщения мода
-  (в логе они помечены префиксом `[ZEF]`).
+- **The tiles have disappeared.** Open `about:support` → "Profile Folder" and check that
+  `chrome\sine-mods\zen-essentials-folders\essentials-folders.uc.js` is in place. A simple Zen
+  reload helps: `Ctrl+Shift+R` in the browser window.
+- **The menu does not work.** Check that the mod is enabled in Zen Mods.
+- **Rollback.** Delete the folder `chrome\sine-mods\zen-essentials-folders` and its entry from
+  `mods.json`, then restart Zen. No tabs are lost in the process.
+- In `about:support` → "Browser Console" you can look at the messages of the mod (in the log
+  they are marked with the `[ZEF]` prefix).
 
-## Совместимость
+## Compatibility
 
-Мод работает рядом с другими: он не трогает ни вкладки, ни их данные, а только рисует
-свои плитки в сетке «Важных». В частности, он уживается с модом **Zen Tab Groups**
-(oom333) — группы вкладок в сайдбаре.
+The mod plays well with others: it touches neither tabs nor their data, it only draws its own
+tiles in the Essentials grid. In particular it works together with the **Zen Tab Groups** mod
+(oom333) — tab groups in the sidebar.
 
-## Лицензия
+## License
 
-MIT — см. [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
 
-## Участие в проекте (Contributing)
+## Contributing
 
-Мод бесплатный и с открытым кодом. Помочь можно по-разному:
+The mod is free and open source. You can help in different ways:
 
-- **Сообщить об ошибке** — [Issues](https://github.com/danonchek51/zen-essentials-folders/issues):
-  версия Zen, версия мода, шаги для повторения.
-- **Предложить идею** — [Discussions](https://github.com/danonchek51/zen-essentials-folders/discussions)
-  или issue с меткой `Feature`.
-- **Внести правку** — [CONTRIBUTING.md](CONTRIBUTING.md): как поставить мод к себе,
-  как проверить и как оформить pull request.
-- **Перевести** — английская версия уже есть ([README.en.md](README.en.md)),
-  другие языки приветствуются.
+- **Report a bug** — [Issues](https://github.com/danonchek51/zen-essentials-folders/issues):
+  Zen version, mod version, steps to reproduce.
+- **Suggest an idea** — [Discussions](https://github.com/danonchek51/zen-essentials-folders/discussions)
+  or an issue with the `Feature` label.
+- **Send a patch** — [CONTRIBUTING.md](CONTRIBUTING.md): how to install the mod locally, how to
+  verify it and how to open a pull request.
+- **Translate** — the English version is this file, the Russian version is here
+  ([README.ru.md](README.ru.md)), other languages are welcome.
 
-Что изменилось в каждой версии — в [CHANGELOG.md](CHANGELOG.md).
+What changed in each version — in [CHANGELOG.md](CHANGELOG.md).
 
-## Автор
+## Author
 
-**Essentials Folders** — мод для [Zen Browser](https://zen-browser.app),
-автор [@danonchek51](https://github.com/danonchek51).
+**Essentials Folders** is a mod for [Zen Browser](https://zen-browser.app) by
+[@danonchek51](https://github.com/danonchek51).
 
-Вопросы и предложения — через
+Questions and suggestions — through
 [Issues](https://github.com/danonchek51/zen-essentials-folders/issues)
-и [Discussions](https://github.com/danonchek51/zen-essentials-folders/discussions).
+and [Discussions](https://github.com/danonchek51/zen-essentials-folders/discussions).

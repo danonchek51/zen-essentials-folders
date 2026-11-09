@@ -1,27 +1,27 @@
-## Что изменилось
+## What changed
 
-<!-- Одним-двумя предложениями: какая проблема решается и как. -->
+<!-- In one or two sentences: what problem is solved and how. -->
 
-## Почему так
+## Why this way
 
-<!-- Почему именно такой способ решения. Ссылка на issue, если есть: Closes #123 -->
+<!-- Why this particular solution. Link to an issue if there is one: Closes #123 -->
 
-## Как проверить
+## How to verify
 
-<!-- Чек-лист, по которому можно повторить проверку. -->
+<!-- A checklist to reproduce the verification. -->
 
-- [ ] `node --check essentials-folders.uc.js` проходит без ошибок
-- [ ] Мод установлен в профиль (`python install.py`) и Zen перезапущен
-- [ ] Проверено на версии Zen: ____
-- [ ] Проверено на версии мода: ____
+- [ ] `node --check essentials-folders.uc.js` passes without errors
+- [ ] The mod is installed in the profile (`python install.py`) and Zen was restarted
+- [ ] Tested on Zen version: ____
+- [ ] Tested on mod version: ____
 
-## Скриншоты
+## Screenshots
 
-<!-- До / после. Для правок интерфейса приложите картинки в `images/` и вставьте их сюда. -->
+<!-- Before / after. For UI changes, add images to `images/` and embed them here. -->
 
-## Чек-лист безопасности
+## Safety checklist
 
-- [ ] Мод не переносит и не удаляет вкладки — он только рисует плитки
-- [ ] Нет новых отладочных сообщений в консоли (допустим только `console.warn` в аварийных `catch`)
-- [ ] Новые настройки читаются из существующих префов и не ломают их
-- [ ] Совместимость с модом Zen Tab Groups (oom333) не сломана
+- [ ] The mod does not move or delete tabs — it only draws tiles
+- [ ] No new debug messages in the console (only `console.warn` in emergency `catch` is allowed)
+- [ ] New settings are read from the existing prefs and do not break them
+- [ ] Compatibility with the Zen Tab Groups mod (oom333) is not broken
