@@ -1,0 +1,35 @@
+# Essentials Folders
+
+> Essentials Folders is a Zen Browser mod that turns the Essentials (pinboard) grid into folder tiles: nested folders, drag & drop, a search box for folders, and the mod's own settings dialog with 21 options. Tabs stay ordinary Zen tabs — the mod never moves or deletes anything. MIT licensed, works on Zen Browser 1.24b and newer.
+
+## Start here
+
+- [Essentials Folders — landing page](https://danonchek51.github.io/zen-essentials-folders/): what the mod does, how to install it, screenshots and answers to common questions.
+- [English README](https://github.com/danonchek51/zen-essentials-folders/blob/main/README.en.md): the full English documentation.
+
+## Documentation
+
+- [README (Русский)](https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md): полное описание мода на русском — возможности, настройки, перетаскивание, правила принадлежности вкладок, установка, решение проблем.
+- [CHANGELOG.md](https://github.com/danonchek51/zen-essentials-folders/blob/main/CHANGELOG.md): что изменилось в каждой версии, начиная с 1.10.1.
+- [CONTRIBUTING.md](https://github.com/danonchek51/zen-essentials-folders/blob/main/CONTRIBUTING.md): как поставить мод к себе, как проверить правку и как оформить pull request.
+- [FAQ](https://danonchek51.github.io/zen-essentials-folders/#faq): нужно ли переносить вкладки вручную, где хранятся папки, что делать, если плитки пропали.
+
+## Source code and releases
+
+- [Repository](https://github.com/danonchek51/zen-essentials-folders): исходники мода — `essentials-folders.uc.js`, `chrome.css`, `theme.json`, `preferences.json`.
+- [Releases](https://github.com/danonchek51/zen-essentials-folders/releases): архивы версий с заметками к выпуску.
+- [v1.10.1](https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.10.1): текущая версия.
+- [LICENSE](https://github.com/danonchek51/zen-essentials-folders/blob/main/LICENSE): MIT.
+
+## Installation
+
+- [Sine Store](https://github.com/sineorg/store): маркетплейс модов Zen — найдите «Essentials Folders» и нажмите `Install`.
+- [Install from repo](https://github.com/danonchek51/zen-essentials-folders): в Zen откройте `Sine Mods` → `Install from repo` и вставьте ссылку `https://github.com/danonchek51/zen-essentials-folders`, затем перезапустите Zen.
+
+## Notes
+
+- The mod is pure CSS and JavaScript for Zen Browser — no build step, no npm, no dependencies.
+- The mod only draws: it adds its own tiles to the Essentials grid and never touches tabs or their data.
+- Folders are stored in Zen preferences (`zen.essentialsfolders.*`), so they survive restarts and browser updates.
+- Confirmed compatibility with the Zen Tab Groups mod (oom333).
+- Author: danonchek51 — <https://github.com/danonchek51>.

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ru" data-lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essentials Folders — плитки-папки для «Важных» в Zen Browser</title>
+<meta name="description" content="Essentials Folders — мод для Zen Browser, который превращает сетку «Важных» (Essentials, pinboard) в плитки-папки: вложенность, перетаскивание мышью, поиск и 21 настройка. Вкладки остаются обычными вкладками Zen.">
+<meta name="keywords" content="zen browser, essentials, folder tiles, mod, плитки-папки, вкладки, sidebar, drag and drop, sine">
+<meta name="author" content="danonchek51">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://danonchek51.github.io/zen-essentials-folders/">
+<link rel="alternate" hreflang="ru" href="https://danonchek51.github.io/zen-essentials-folders/">
+<link rel="alternate" hreflang="en" href="https://danonchek51.github.io/zen-essentials-folders/?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://danonchek51.github.io/zen-essentials-folders/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Essentials Folders">
+<meta property="og:title" content="Essentials Folders — плитки-папки для «Важных» в Zen Browser">
+<meta property="og:description" content="Мод для Zen Browser: сетка «Важных» превращается в плитки-папки. Вложенность, перетаскивание, поиск, 21 настройка. MIT.">
+<meta property="og:url" content="https://danonchek51.github.io/zen-essentials-folders/">
+<meta property="og:image" content="https://danonchek51.github.io/zen-essentials-folders/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Essentials Folders — плитки-папки в сетке «Важных» Zen Browser">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:locale:alternate" content="en_US">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Essentials Folders — плитки-папки для Zen Browser">
+<meta name="twitter:description" content="Сетка «Важных» превращается в плитки-папки: вложенность, перетаскивание, поиск, 21 настройка.">
+<meta name="twitter:image" content="https://danonchek51.github.io/zen-essentials-folders/og.png">
+
+<link rel="icon" href="https://raw.githubusercontent.com/danonchek51/zen-essentials-folders/main/images/tiles.png">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://danonchek51.github.io/zen-essentials-folders/#app",
+      "name": "Essentials Folders",
+      "alternateName": "Zen Essentials Folders",
+      "description": "Мод для Zen Browser, который превращает сетку «Важных» (Essentials, pinboard) в плитки-папки: вложенные папки, перетаскивание мышью, поиск по папкам и 21 настройка. Вкладки остаются обычными вкладками Zen.",
+      "applicationCategory": "BrowserApplication",
+      "applicationSubCategory": "Browser Mod",
+      "operatingSystem": "Windows, macOS, Linux",
+      "softwareVersion": "1.10.1",
+      "license": "https://github.com/danonchek51/zen-essentials-folders/blob/main/LICENSE",
+      "url": "https://danonchek51.github.io/zen-essentials-folders/",
+      "downloadUrl": "https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.10.1",
+      "codeRepository": "https://github.com/danonchek51/zen-essentials-folders",
+      "image": "https://danonchek51.github.io/zen-essentials-folders/og.png",
+      "inLanguage": ["ru", "en"],
+      "author": {
+        "@type": "Person",
+        "@id": "https://github.com/danonchek51#author",
+        "name": "danonchek51",
+        "url": "https://github.com/danonchek51"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://danonchek51.github.io/zen-essentials-folders/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Что такое Essentials Folders?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Essentials Folders — мод для Zen Browser, который превращает сетку «Важных» (Essentials) в плитки-папки. Папки вкладываются друг в друга, вкладки и папки перетаскиваются мышью, есть поиск по папкам и свой диалог настроек из 21 параметра."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Нужно ли переносить вкладки в папки вручную?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Нет. Мод ничего не переносит и не удаляет: вкладки остаются обычными вкладками Zen. В папку попадают вкладки по правилу адреса — например, все вкладки github.com или только одна конкретная страница."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Где мод хранит папки?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "В настройках Zen, поэтому они переживают перезапуск и обновление браузера: префы zen.essentialsfolders.folders, .collapsed, .order и .settings."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Как установить мод?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "В Zen откройте Настройки → Sine Mods → Install from repo и вставьте ссылку https://github.com/danonchek51/zen-essentials-folders, затем перезапустите Zen. Либо скопируйте четыре файла мода в папку профиля и добавьте запись в mods.json."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Совместим ли мод с другими модами?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да. Мод не трогает вкладки и их данные, а только рисует плитки. Подтверждённая совместимость — мод Zen Tab Groups (oom333) с группами вкладок."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Что делать, если хочу вернуть всё как было?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Удалите папку chrome\\sine-mods\\zen-essentials-folders в профиле Zen и её запись из mods.json, затем перезапустите Zen. Никакие вкладки при этом не пропадут."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержимому</a>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true">▦</span>
+      <span class="brand-name">Essentials Folders</span>
+    </a>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#features" data-ru="Возможности" data-en="Features">Возможности</a>
+      <a href="#install" data-ru="Установка" data-en="Install">Установка</a>
+      <a href="#faq" data-ru="Вопросы" data-en="FAQ">Вопросы</a>
+      <a href="https://github.com/danonchek51/zen-essentials-folders" rel="noopener">GitHub</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Язык">
+      <button type="button" data-set-lang="ru" aria-pressed="true">RU</button>
+      <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero">
+    <div class="wrap hero-in">
+      <div class="hero-text">
+        <p class="eyebrow" data-ru="Мод для Zen Browser 1.24b и новее" data-en="A Zen Browser 1.24b+ mod">Мод для Zen Browser 1.24b и новее</p>
+        <h1 data-ru="Плитки-папки для «Важных»" data-en="Folder tiles for your Essentials">Плитки-папки для «Важных»</h1>
+        <p class="lead" data-ru="Essentials Folders превращает сетку «Важных» (Essentials, он же pinboard) в цветные плитки-папки. Папки вкладываются друг в друга на любую глубину, всё перетаскивается мышью, есть поиск и свой диалог настроек из 21 параметра. Вкладки остаются обычными вкладками Zen — мод ничего не переносит и не удаляет."
+           data-en="Essentials Folders turns the Essentials (pinboard) grid into colour-coded folder tiles. Folders nest to any depth, everything is rearranged by drag &amp; drop, and there is a search box plus the mod’s own dialog with 21 settings. Tabs stay ordinary Zen tabs — the mod never moves or deletes anything.">Essentials Folders превращает сетку «Важных» (Essentials, он же pinboard) в цветные плитки-папки. Папки вкладываются друг в друга на любую глубину, всё перетаскивается мышью, есть поиск и свой диалог настроек из 21 параметра. Вкладки остаются обычными вкладками Zen — мод ничего не переносит и не удаляет.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="https://github.com/danonchek51/zen-essentials-folders#установка-install" data-ru="Установить" data-en="Install">Установить</a>
+          <a class="btn" href="https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.10.1" data-ru="Скачать 1.10.1" data-en="Download 1.10.1">Скачать 1.10.1</a>
+          <a class="btn btn-ghost" href="https://github.com/danonchek51/zen-essentials-folders" rel="noopener" data-ru="Исходники" data-en="Source code">Исходники</a>
+        </div>
+        <ul class="chips">
+          <li>MIT</li>
+          <li>v1.10.1</li>
+          <li data-ru="21 настройка" data-en="21 settings">21 настройка</li>
+          <li data-ru="вложенность без ограничений" data-en="unlimited nesting">вложенность без ограничений</li>
+        </ul>
+      </div>
+      <figure class="hero-shot">
+        <img src="images/tiles.png" width="660" height="420" alt="Ряд цветных плиток-папок с иконками, названиями и счётчиками вкладок в сетке «Важных» Zen Browser" loading="eager" decoding="async">
+      </figure>
+    </div>
+  </section>
+
+  <section class="strip">
+    <div class="wrap facts">
+      <div class="fact"><b>21</b><span data-ru="параметр в четырёх группах" data-en="settings in four groups">параметр в четырёх группах</span></div>
+      <div class="fact"><b>4</b><span data-ru="стиля индикатора активной папки" data-en="active-folder indicator styles">стиля индикатора активной папки</span></div>
+      <div class="fact"><b>∞</b><span data-ru="глубина вложенности папок" data-en="folder nesting depth">глубина вложенности папок</span></div>
+      <div class="fact"><b>0</b><span data-ru="перенесённых или удалённых вкладок" data-en="tabs moved or deleted">перенесённых или удалённых вкладок</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <div class="wrap narrow">
+      <h2 data-ru="Что это за мод" data-en="What this mod is">Что это за мод</h2>
+      <p class="answer" data-ru="Essentials Folders — мод для Zen Browser, который превращает сетку «Важных» (Essentials, он же pinboard) в плитки-папки. Каждая плитка показывает иконку, название, цвет и счётчик вкладок. Клик по плитке открывает папку, правый клик вызывает меню управления."
+         data-en="Essentials Folders is a Zen Browser mod that turns the Essentials (pinboard) grid into folder tiles. Each tile shows an icon, a name, a colour and a tab counter. Click a tile to open the folder, right-click for the management menu.">Essentials Folders — мод для Zen Browser, который превращает сетку «Важных» (Essentials, он же pinboard) в плитки-папки. Каждая плитка показывает иконку, название, цвет и счётчик вкладок. Клик по плитке открывает папку, правый клик вызывает меню управления.</p>
+      <p data-ru="Открытая папка разворачивается широкой плоскостью своего цвета, и её плитки лежат внутри этой плоскости — отдельной «шапки» и дублирующей плитки нет. Несколько папок можно держать открытыми одновременно, самая свежая стоит выше остальных."
+         data-en="An open folder unfolds into a wide plane of its own colour with its tiles inside it — there is no separate header and no duplicated tile. Several folders can stay open at once, and the most recently opened one sits on top.">Открытая папка разворачивается широкой плоскостью своего цвета, и её плитки лежат внутри этой плоскости — отдельной «шапки» и дублирующей плитки нет. Несколько папок можно держать открытыми одновременно, самая свежая стоит выше остальных.</p>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="wrap">
+      <h2 data-ru="Возможности" data-en="Features">Возможности</h2>
+      <div class="grid">
+        <article class="card">
+          <h3 data-ru="Вложенные папки" data-en="Nested folders">Вложенные папки</h3>
+          <p data-ru="Перетащите плитку папки на другую — она вложится внутрь. Глубина не ограничена, вложенная папка помечена шевроном."
+             data-en="Drag a folder tile onto another one and it nests inside. The depth is unlimited and nested folders carry a chevron.">Перетащите плитку папки на другую — она вложится внутрь. Глубина не ограничена, вложенная папка помечена шевроном.</p>
+        </article>
+        <article class="card">
+          <h3 data-ru="Перетаскивание" data-en="Drag &amp; drop">Перетаскивание</h3>
+          <p data-ru="Папки меняются местами, плитки внутри папки переставляются, вкладка кидается в папку прямо из сайдбара. Переносится ровно та вкладка, которую тянули."
+             data-en="Folders swap places, tiles inside a folder reorder, and a tab can be dropped into a folder straight from the sidebar. Only the tab you dragged moves.">Папки меняются местами, плитки внутри папки переставляются, вкладка кидается в папку прямо из сайдбара. Переносится ровно та вкладка, которую тянули.</p>
+        </article>
+        <article class="card">
+          <h3 data-ru="Поиск по папкам" data-en="Folder search">Поиск по папкам</h3>
+          <p data-ru="Строка над плитками ищет по названию папки и по домену. Esc или крестик сбрасывают поиск."
+             data-en="The box above the tiles filters by folder name and by domain. Esc or the cross resets it.">Строка над плитками ищет по названию папки и по домену. Esc или крестик сбрасывают поиск.</p>
+        </article>
+        <article class="card">
+          <h3 data-ru="21 настройка" data-en="21 settings">21 настройка</h3>
+          <p data-ru="Свой диалог «Настройки мода»: вид плиток, сетка иконок, индикаторы и поведение. Значения применяются сразу, без кнопки «Сохранить»."
+             data-en="The mod’s own settings dialog: tile look, icon grid, indicators and behaviour. Values apply immediately, with no Save button.">Свой диалог «Настройки мода»: вид плиток, сетка иконок, индикаторы и поведение. Значения применяются сразу, без кнопки «Сохранить».</p>
+        </article>
+        <article class="card">
+          <h3 data-ru="Активная папка" data-en="Active folder">Активная папка</h3>
+          <p data-ru="Папка с текущей вкладкой помечается: свечением рамки, точкой, уголком или звёздочкой. Пульсацию можно выключить."
+             data-en="The folder holding the current tab is marked: a glowing frame, a dot, a corner or a star. Pulsing can be switched off.">Папка с текущей вкладкой помечается: свечением рамки, точкой, уголком или звёздочкой. Пульсацию можно выключить.</p>
+        </article>
+        <article class="card">
+          <h3 data-ru="Цвет любой" data-en="Any colour">Цвет любой</h3>
+          <p data-ru="16 оттенков, пипетка, поле для кода #rrggbb и кнопка «Случайный». Цвет сразу виден на плитке и на шапке открытой папки."
+             data-en="16 presets, a colour picker, a #rrggbb field and a Random button. The colour shows up on the tile and on the open folder header at once.">16 оттенков, пипетка, поле для кода #rrggbb и кнопка «Случайный». Цвет сразу виден на плитке и на шапке открытой папки.</p>
+        </article>
+        <article class="card">
+          <h3 data-ru="Панель не мешает" data-en="Panel stays out of the way">Панель не мешает</h3>
+          <p data-ru="Панель папок ограничена по высоте и прокручивается сама. Под ней остаётся обычный список вкладок Zen и группы вкладок."
+             data-en="The folder panel is height-limited and scrolls on its own. The regular Zen tab list and tab groups stay below it.">Панель папок ограничена по высоте и прокручивается сама. Под ней остаётся обычный список вкладок Zen и группы вкладок.</p>
+        </article>
+        <article class="card">
+          <h3 data-ru="Мод ничего не ломает" data-en="Nothing gets broken">Мод ничего не ломает</h3>
+          <p data-ru="Вкладки остаются обычными вкладками Zen: работают выгрузка, перезагрузка и перетаскивание. Папки живут в настройках браузера."
+             data-en="Tabs stay ordinary Zen tabs: unload, reload and drag &amp; drop keep working. Folders live in the browser preferences.">Вкладки остаются обычными вкладками Zen: работают выгрузка, перезагрузка и перетаскивание. Папки живут в настройках браузера.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="screens">
+    <div class="wrap">
+      <h2 data-ru="Скриншоты" data-en="Screenshots">Скриншоты</h2>
+      <div class="shots">
+        <figure><img src="images/expanded.png" width="1020" height="230" alt="Открытая папка, развёрнутая в широкую цветную плоскость со своими вкладками" loading="lazy" decoding="async"><figcaption data-ru="Открытая папка — плоскость цвета" data-en="An open folder is a plane of colour">Открытая папка — плоскость цвета</figcaption></figure>
+        <figure><img src="images/nested.png" width="600" height="248" alt="Вложенная папка: плитки родительской папки начинают новый ряд" loading="lazy" decoding="async"><figcaption data-ru="Вложенность: плитки родителя не попадают в цвет вложенной" data-en="Nesting: parent tiles stay out of the nested colour">Вложенность: плитки родителя не попадают в цвет вложенной</figcaption></figure>
+        <figure><img src="images/indicator.png" width="834" height="118" alt="Четыре стиля индикатора активной папки: свечение, точка, уголок, звёздочка" loading="lazy" decoding="async"><figcaption data-ru="Четыре стиля индикатора активной папки" data-en="Four active-folder indicator styles">Четыре стиля индикатора активной папки</figcaption></figure>
+        <figure><img src="images/settings.png" width="470" height="1060" alt="Диалог «Настройки мода» с 21 параметром в четырёх группах" loading="lazy" decoding="async"><figcaption data-ru="Диалог «Настройки мода»: 21 параметр" data-en="The mod settings dialog: 21 options">Диалог «Настройки мода»: 21 параметр</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="wrap narrow">
+      <h2 data-ru="Как вкладка попадает в папку" data-en="How a tab joins a folder">Как вкладка попадает в папку</h2>
+      <p class="answer" data-ru="Папка хранит не вкладки, а правила адреса. Обычное правило — домен: github.com означает «все вкладки GitHub в этой папке». Когда вкладку перетаскивают из папки в папку, мод запоминает её точнее — по полному адресу."
+         data-en="A folder stores address rules, not tabs. A plain rule is a domain: github.com means “every GitHub tab in this folder”. When you drag a tab from one folder to another, the mod remembers it more precisely, by full URL.">Папка хранит не вкладки, а правила адреса. Обычное правило — домен: github.com означает «все вкладки GitHub в этой папке». Когда вкладку перетаскивают из папки в папку, мод запоминает её точнее — по полному адресу.</p>
+      <table>
+        <thead><tr><th data-ru="Правило" data-en="Rule">Правило</th><th data-ru="Что попадает в папку" data-en="What lands in the folder">Что попадает в папку</th></tr></thead>
+        <tbody>
+          <tr><td><code>github.com</code></td><td data-ru="все вкладки GitHub" data-en="every GitHub tab">все вкладки GitHub</td></tr>
+          <tr><td><code>github.com/owner/repo</code></td><td data-ru="репозиторий и его внутренние страницы" data-en="that repository and its inner pages">репозиторий и его внутренние страницы</td></tr>
+          <tr><td><code>github.com/</code></td><td data-ru="только главная страница GitHub" data-en="only the GitHub home page">только главная страница GitHub</td></tr>
+          <tr><td><code>!github.com/owner/repo</code></td><td data-ru="ничего: вкладка исключена из папки" data-en="nothing: that tab is excluded from the folder">ничего: вкладка исключена из папки</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section alt" id="install">
+    <div class="wrap narrow">
+      <h2 data-ru="Установка" data-en="Install">Установка</h2>
+      <p class="answer" data-ru="Мод ставится за минуту: это готовые файлы, без сборки и без npm. Zen читает мод при старте, поэтому после установки его нужно перезапустить."
+         data-en="The mod installs in a minute: ready-made files, no build step and no npm. Zen reads the mod at startup, so restart Zen after installing.">Мод ставится за минуту: это готовые файлы, без сборки и без npm. Zen читает мод при старте, поэтому после установки его нужно перезапустить.</p>
+      <ol class="steps">
+        <li data-ru="Откройте в Zen <b>Настройки → Sine Mods → Install from repo</b>." data-en="Open <b>Settings → Sine Mods → Install from repo</b> in Zen.">Откройте в Zen <b>Настройки → Sine Mods → Install from repo</b>.</li>
+        <li data-ru="Вставьте ссылку на репозиторий:" data-en="Paste the repository link:">Вставьте ссылку на репозиторий:</li>
+      </ol>
+      <pre><code>https://github.com/danonchek51/zen-essentials-folders</code></pre>
+      <ol class="steps" start="3">
+        <li data-ru="Перезапустите Zen — мод читается при старте." data-en="Restart Zen — the mod is read at startup.">Перезапустите Zen — мод читается при старте.</li>
+      </ol>
+      <p class="note" data-ru="Можно и вручную: скопируйте <code>theme.json</code>, <code>preferences.json</code>, <code>chrome.css</code> и <code>essentials-folders.uc.js</code> в папку профиля <code>&lt;профиль Zen&gt;\chrome\sine-mods\zen-essentials-folders\</code> и добавьте запись в <code>mods.json</code>. Перед правкой <code>mods.json</code> и <code>prefs.js</code> закройте Zen — он перезаписывает их при выходе."
+         data-en="You can also install manually: copy <code>theme.json</code>, <code>preferences.json</code>, <code>chrome.css</code> and <code>essentials-folders.uc.js</code> into <code>&lt;Zen profile&gt;\chrome\sine-mods\zen-essentials-folders\</code> and add an entry to <code>mods.json</code>. Close Zen before editing <code>mods.json</code> and <code>prefs.js</code> — it rewrites them on exit.">Можно и вручную: скопируйте <code>theme.json</code>, <code>preferences.json</code>, <code>chrome.css</code> и <code>essentials-folders.uc.js</code> в папку профиля <code>&lt;профиль Zen&gt;\chrome\sine-mods\zen-essentials-folders\</code> и добавьте запись в <code>mods.json</code>. Перед правкой <code>mods.json</code> и <code>prefs.js</code> закройте Zen — он перезаписывает их при выходе.</p>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="wrap narrow">
+      <h2 data-ru="Частые вопросы" data-en="Frequently asked questions">Частые вопросы</h2>
+
+      <h3 data-ru="Нужно ли переносить вкладки в папки вручную?" data-en="Do I have to move my tabs into folders by hand?">Нужно ли переносить вкладки в папки вручную?</h3>
+      <p class="answer" data-ru="Нет. Мод ничего не переносит и не удаляет: вкладки остаются обычными вкладками Zen со своими закладками и историей. В папку попадают вкладки по правилу адреса."
+         data-en="No. The mod never moves or deletes anything: tabs stay ordinary Zen tabs with their bookmarks and history. Tabs join a folder by an address rule.">Нет. Мод ничего не переносит и не удаляет: вкладки остаются обычными вкладками Zen со своими закладками и историей. В папку попадают вкладки по правилу адреса.</p>
+
+      <h3 data-ru="Где мод хранит мои папки?" data-en="Where does the mod save my folders?">Где мод хранит мои папки?</h3>
+      <p class="answer" data-ru="В настройках Zen, поэтому они переживают перезапуск и обновление браузера: префы zen.essentialsfolders.folders, .collapsed, .order и .settings."
+         data-en="In the Zen preferences, so they survive restarts and browser updates: the zen.essentialsfolders.folders, .collapsed, .order and .settings prefs.">В настройках Zen, поэтому они переживают перезапуск и обновление браузера: префы zen.essentialsfolders.folders, .collapsed, .order и .settings.</p>
+
+      <h3 data-ru="Будет ли мод работать после обновления Zen?" data-en="Will the mod keep working after Zen updates?">Будет ли мод работать после обновления Zen?</h3>
+      <p class="answer" data-ru="Да. Мод использует публичные API Zen (gZenWorkspaces.getCurrentEssentialsContainer()) и CSS-класс .zen-essentials-container; наблюдение за DOM переподключается само."
+         data-en="Yes. It uses public Zen APIs (gZenWorkspaces.getCurrentEssentialsContainer()) and the .zen-essentials-container CSS class, and the DOM observer reconnects itself.">Да. Мод использует публичные API Zen (gZenWorkspaces.getCurrentEssentialsContainer()) и CSS-класс .zen-essentials-container; наблюдение за DOM переподключается само.</p>
+
+      <h3 data-ru="Совместим ли мод с другими модами?" data-en="Does it work with other mods?">Совместим ли мод с другими модами?</h3>
+      <p class="answer" data-ru="Да. Мод не трогает вкладки и их данные, а только рисует плитки. Подтверждённая совместимость — мод Zen Tab Groups (oom333) с группами вкладок."
+         data-en="Yes. It does not touch tabs or their data, it only draws tiles. Confirmed compatibility: the Zen Tab Groups mod (oom333).">Да. Мод не трогает вкладки и их данные, а только рисует плитки. Подтверждённая совместимость — мод Zen Tab Groups (oom333) с группами вкладок.</p>
+
+      <h3 data-ru="Что делать, если хочу вернуть всё как было?" data-en="How do I undo the install?">Что делать, если хочу вернуть всё как было?</h3>
+      <p class="answer" data-ru="Удалите папку chrome\sine-mods\zen-essentials-folders в профиле Zen и её запись из mods.json, затем перезапустите Zen. Никакие вкладки при этом не пропадут."
+         data-en="Delete the chrome\sine-mods\zen-essentials-folders folder in your Zen profile and its entry in mods.json, then restart Zen. No tab is lost.">Удалите папку chrome\sine-mods\zen-essentials-folders в профиле Zen и её запись из mods.json, затем перезапустите Zen. Никакие вкладки при этом не пропадут.</p>
+
+      <h3 data-ru="А если плитки пропали?" data-en="The tiles are gone — what now?">А если плитки пропали?</h3>
+      <p class="answer" data-ru="Откройте about:support → «Папка профиля» и проверьте, что chrome\sine-mods\zen-essentials-folders\essentials-folders.uc.js на месте. Помогает перезагрузка Zen: Ctrl+Shift+R."
+         data-en="Open about:support → “Profile Folder” and check that chrome\sine-mods\zen-essentials-folders\essentials-folders.uc.js is there. Reloading Zen with Ctrl+Shift+R often helps.">Откройте about:support → «Папка профиля» и проверьте, что chrome\sine-mods\zen-essentials-folders\essentials-folders.uc.js на месте. Помогает перезагрузка Zen: Ctrl+Shift+R.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div>
+      <p class="foot-name">Essentials Folders</p>
+      <p data-ru="Мод для Zen Browser. Автор — <a href=\"https://github.com/danonchek51\" rel=\"noopener\">danonchek51</a>. Лицензия MIT." data-en="A Zen Browser mod by <a href=\"https://github.com/danonchek51\" rel=\"noopener\">danonchek51</a>. MIT licensed.">Мод для Zen Browser. Автор — <a href="https://github.com/danonchek51" rel="noopener">danonchek51</a>. Лицензия MIT.</p>
+    </div>
+    <nav class="foot-links" aria-label="Ссылки">
+      <a href="https://github.com/danonchek51/zen-essentials-folders" rel="noopener">GitHub</a>
+      <a href="https://github.com/danonchek51/zen-essentials-folders/releases" rel="noopener" data-ru="Релизы" data-en="Releases">Релизы</a>
+      <a href="https://github.com/danonchek51/zen-essentials-folders/blob/main/CHANGELOG.md" rel="noopener" data-ru="Изменения" data-en="Changelog">Изменения</a>
+      <a href="https://github.com/danonchek51/zen-essentials-folders/blob/main/README.en.md" rel="noopener" data-ru="README (EN)" data-en="README (RU)">README (EN)</a>
+      <a href="llms.txt" rel="noopener">llms.txt</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var buttons = document.querySelectorAll('[data-set-lang]');
+
+  function apply(lang) {
+    root.setAttribute('lang', lang);
+    root.setAttribute('data-lang', lang);
+    document.querySelectorAll('[data-ru][data-en]').forEach(function (el) {
+      el.textContent = el.getAttribute(lang === 'ru' ? 'data-ru' : 'data-en');
+    });
+    buttons.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-set-lang') === lang));
+    });
+    try { localStorage.setItem('zef-lang', lang); } catch (e) {}
+    var u = new URL(window.location.href);
+    if (lang === 'en') { u.searchParams.set('lang', 'en'); } else { u.searchParams.delete('lang'); }
+    history.replaceState(null, '', u.toString());
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { apply(b.getAttribute('data-set-lang')); });
+  });
+
+  var saved = null;
+  try { saved = localStorage.getItem('zef-lang'); } catch (e) {}
+  var wanted = new URLSearchParams(window.location.search).get('lang');
+  if (wanted === 'ru' || wanted === 'en') {
+    apply(wanted);
+  } else if (saved === 'ru' || saved === 'en') {
+    apply(saved);
+  }
+})();
+</script>
+</body>
+</html>

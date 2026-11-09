@@ -1,0 +1,160 @@
+# Essentials Folders
+
+> Full-text documentation of Essentials Folders — a Zen Browser mod that turns the Essentials (pinboard) grid into folder tiles. Tabs stay ordinary Zen tabs: the mod never moves or deletes anything.
+
+## What it is
+
+Essentials Folders is a browser mod for Zen Browser (1.24b and newer). It replaces the
+Essentials grid — the pinboard panel that normally shows a flat row of pinned tabs — with
+folder tiles. Each tile carries an icon, a name, a colour and a counter of how many tabs are
+inside.
+
+Clicking a tile opens the folder: the tile leaves the top row and unfolds into a wide plane of
+its own colour, and that folder's tiles sit inside the plane. There is no separate header and
+no duplicated tile — the folder is shown exactly once. Several folders can be open at the same
+time, and the one you opened most recently sits above the others.
+
+Folders nest inside each other to any depth, and both folders and tiles are rearranged by
+ordinary mouse drag & drop.
+
+## Features
+
+- Folder tiles in the Essentials grid: icon, name, colour, tab counter.
+- An open folder is a colour plane holding its own tiles. No duplication.
+- The newest folder goes on top.
+- Nested folders, unlimited depth, marked with a chevron.
+- Rearranging folders by dragging a tile by its edge; rearranging tiles inside a folder by
+  dragging an icon next to another icon.
+- Only the dragged tab moves: drop one GitHub tab into another folder and only that tab goes,
+  the other GitHub tabs stay put.
+- Dropping onto the coloured area of an open folder moves the tile into that folder.
+- Dragging a tab from the sidebar into a folder works too — the mod reads the tab straight
+  from the drag buffer.
+- A separator below the folders holds pinned tabs that are in no folder.
+- Right-click menu on a tile: expand/collapse, open all tabs, pin to top, rename, change icon,
+  change colour, nest into another folder, move to the top level, list sites, delete,
+  expand/collapse all.
+- A `+` tile at the end of the row creates a new folder.
+- Search box above the tiles: filters by folder name or domain, `Esc` resets it.
+- A pinned folder always stays in the top row, marked with a dot.
+- The folder panel is height-limited and scrolls on its own; the regular Zen tab list and tab
+  groups stay below it.
+- Any colour for a folder: 16 presets, a colour picker, a `#rrggbb` field and a Random button.
+- Bigger, brighter logos in the Essentials grid (26 px), all in identical cells so they line up.
+- The active folder — the one holding the current tab — is marked with a glowing frame, a dot,
+  a corner or a star. Pulsing can be switched off.
+- The mod's own settings dialog: 21 options in four groups, applied immediately.
+
+## Settings
+
+The dialog opens with the `⚙` gear to the right of the search row, or with `Mod settings…` in
+the folder menu.
+
+| Group | What it controls |
+|---|---|
+| Folder tiles | tile height, minimum width, folder icon size, show names and counters, counter style (badge / dot / off), nesting chevron (on / off) |
+| Icon grid | icon step inside a folder, logo size in Essentials, sidebar tab icon size, padding under a plane and the gap between blocks, tile row (strip / grid) |
+| Indicators | active-folder style (glow / dot / corner / star), pulsing on/off and speed, unloaded-tab marker (frame / dashed / dot / line / dimmed / off) |
+| Behaviour | search row, `+` button, hints for a failed drop, newest folder always on top |
+
+Values apply immediately — there is nothing to save. `Reset` restores the defaults.
+
+The five original preferences (`show-names`, `show-count`, `show-search`, `icon-size`,
+`tab-icon-size`) still work: the mod reads an old value if you had one and keeps the new one
+next to it, all in a single `zen.essentialsfolders.settings` pref.
+
+## How membership works
+
+A folder stores rules, not tabs. A plain rule is a domain: `github.com` means "every GitHub tab
+in this folder". When you drag a tab from one folder to another, the mod remembers it more
+precisely, by full URL.
+
+| Rule | What lands in the folder |
+|---|---|
+| `github.com` | every GitHub tab |
+| `github.com/owner/repo` | that repository and its inner pages |
+| `github.com/` | only the GitHub home page |
+| `!github.com/owner/repo` | nothing: that tab is excluded from the folder |
+
+Dragging one `github.com/owner/repo` tile from "GitHub" into "Work" gives "Work" the rule
+`github.com/owner/repo` (only that tab) and leaves "GitHub" with `github.com` plus the
+exclusion `!github.com/owner/repo`. The remaining GitHub tabs stay where they were.
+
+## Installation
+
+The mod installs in a minute: ready-made files, no build step, no npm. Zen reads the mod at
+startup, so restart Zen after installing.
+
+Through Sine (the mod manager built into Zen):
+
+1. Open `Settings` → `Sine Mods` → `Marketplace` in Zen.
+2. Find **Essentials Folders** and press `Install`.
+3. Restart Zen.
+
+Or without the store: `Sine Mods` → `Install from repo`, then paste
+
+    https://github.com/danonchek51/zen-essentials-folders
+
+Manually: close Zen, copy `theme.json`, `preferences.json`, `chrome.css` and
+`essentials-folders.uc.js` into `<Zen profile>\chrome\sine-mods\zen-essentials-folders\`, add
+an entry to `chrome\sine-mods\mods.json`, and start Zen. `python install.py` does this for
+you. Close Zen before editing `mods.json` and `prefs.js` — it rewrites them on exit.
+
+## Where folders are stored
+
+The data lives in the Zen preferences, so it survives restarts and browser updates:
+
+- `zen.essentialsfolders.folders` — folders: name, colour, icon, parent (`parentId`), domains
+  (`sites`) and their order, plus the `pinned` flag
+- `zen.essentialsfolders.collapsed` — which folders are collapsed
+- `zen.essentialsfolders.order` — the order of open folders, newest first
+- `zen.essentialsfolders.settings` — the mod settings (one JSON)
+
+A tab belongs to a folder by an address rule, not by tab id: a browser restart, a page
+redirect and a tab move never break it.
+
+## FAQ
+
+**What is Essentials Folders?** A Zen Browser mod that turns the Essentials grid into folder
+tiles, with nesting, drag & drop, search and 21 settings.
+
+**Do I have to move my tabs into folders by hand?** No. The mod never moves or deletes
+anything: tabs stay ordinary Zen tabs. Tabs join a folder by an address rule.
+
+**Where does the mod save my folders?** In the Zen preferences (`zen.essentialsfolders.*`),
+so they survive restarts and browser updates.
+
+**Will the mod keep working after Zen updates?** Yes. It uses public Zen APIs
+(`gZenWorkspaces.getCurrentEssentialsContainer()`) and the `.zen-essentials-container` CSS
+class, and the DOM observer reconnects itself.
+
+**Does it work with other mods?** Yes. It does not touch tabs or their data. Confirmed
+compatibility: the Zen Tab Groups mod (oom333).
+
+**Do I have to configure anything?** No, it works out of the box. The `⚙` gear opens 21
+options in four groups if you want them.
+
+**How do I undo the install?** Delete the `chrome\sine-mods\zen-essentials-folders` folder and
+its entry in `mods.json`, then restart Zen. No tab is lost.
+
+**The tiles are gone — what now?** Open `about:support` → "Profile Folder" and check that
+`chrome\sine-mods\zen-essentials-folders\essentials-folders.uc.js` is there. Reloading Zen
+with `Ctrl+Shift+R` often helps.
+
+## Safety
+
+The mod never moves and never deletes anything: tabs remain ordinary Zen tabs, so `Ctrl+W`
+(unload), clicking the icon to reload and tab drag & drop keep working. It only draws its own
+tiles into the Essentials grid, hides the contents of a collapsed folder and sets the display
+order through CSS `order`. Zen's Essentials counter keeps counting real tabs only.
+
+## Links
+
+- Repository: https://github.com/danonchek51/zen-essentials-folders
+- Releases: https://github.com/danonchek51/zen-essentials-folders/releases
+- English README: https://github.com/danonchek51/zen-essentials-folders/blob/main/README.en.md
+- Russian README: https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md
+- Changelog: https://github.com/danonchek51/zen-essentials-folders/blob/main/CHANGELOG.md
+- Sine Store listing: https://github.com/sineorg/store
+- License: MIT
+- Author: danonchek51 — https://github.com/danonchek51
