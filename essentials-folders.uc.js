@@ -1524,7 +1524,9 @@
     if (!container.hasAttribute("zef-drop-ready")) {
       container.setAttribute("zef-drop-ready", "true");
       container.addEventListener("drop", event => {
-        if (!draggedTab) {
+        // Бросить можно и вкладку, и папку: папка тоже должна попасть
+        // в открытую папку, а не потеряться.
+        if (!draggedTab && !draggedFolderId) {
           return;
         }
         if (dropBySnapshot(event)) {
@@ -2703,21 +2705,31 @@
       return;
     }
     const items = [];
-    const tiles = container.querySelectorAll(
-      ".zef-tile, .tabbrowser-tab[zen-essential='true']"
+    // Шапки и цветные области открытых папок — тоже цели броска: в шапку
+    // или в цвет открытой папки можно перенести плитку. Без них бросок
+    // уходил в «ближайшую плитку» и папка менялась на глазах.
+    const targets = container.querySelectorAll(
+      ".zef-tile, .zef-head, .zef-plane, .tabbrowser-tab[zen-essential='true']"
     );
-    for (const el of tiles) {
+    for (const el of targets) {
       const rect = el.getBoundingClientRect();
       if (!rect.width || !rect.height) {
         continue;
       }
+      const isTile = el.classList.contains("zef-tile");
+      const isHead = el.classList.contains("zef-head");
+      const isPlane = el.classList.contains("zef-plane");
       items.push({
         el,
-        kind: el.classList.contains("zef-tile") ? "folder" : "site",
+        kind: isTile ? "folder" : isHead ? "head" : isPlane ? "plane" : "site",
         folderId: el.getAttribute("data-zef-folder") || null,
+        area: rect.width * rect.height,
         rect,
       });
     }
+    // Самая маленькая цель — самая точная: вложенная шапка и вложенная
+    // плоскость лежат внутри плоскости родителя, и в снимке видно их раньше.
+    items.sort((a, b) => a.area - b.area);
     dragLayout = items;
   }
 
@@ -2763,6 +2775,11 @@
     const folder = folderById(target.folderId);
     if (!folder) {
       return false;
+    }
+    // Шапка или цветная область открытой папки — бросаем внутрь неё.
+    if (target.kind === "head" || target.kind === "plane") {
+      handleDropIntoFolder(event, folder);
+      return true;
     }
     if (dragKind(event) === "folder") {
       handleFolderDropOnTile(event, folder, 1);

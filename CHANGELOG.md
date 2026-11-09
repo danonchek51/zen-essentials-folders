@@ -32,6 +32,14 @@ A folder is created in one click now, and the mod settings dialog opens again.
 
 ### Fixed
 
+- **Dropping a tile into an open folder now works reliably.** The coloured area of an open
+  folder is painted behind the panel, so the drop never reached it and was resolved by
+  "the nearest tile" instead — a tile aimed at a nested folder's header or at the coloured
+  area of the parent landed in whichever folder happened to be closest. The drop is now
+  resolved against the folders themselves: the smallest area under the cursor wins, so a
+  nested folder's header beats its parent's coloured area, and a coloured area beats the
+  surrounding tiles. Folders can be dropped into an open folder as well — that drop used to
+  be lost.
 - **The mod settings dialog opens again.** `Mod settings` in the folder menu did nothing: the
   panel was opened with `showPopup()`, which a XUL panel does not have. It is now opened with
   `openPopup()` against the control that triggered it, and waits for the menu to close first.
