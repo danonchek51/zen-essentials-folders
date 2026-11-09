@@ -44,6 +44,9 @@ Interface, readability and layout fixes found on the live browser.
 - **Closing a folder closes the folders inside it too.** A nested folder used to stay open, and
   its tabs then dropped into the Essentials grid as ordinary tiles. Now the whole branch closes
   at once and the tabs stay hidden until the parent is opened again.
+- **The edge of a folder no longer cuts through the tiles below it.** The empty strip under a
+  folder's icons is now only drawn where it is actually free: in a narrow panel the next block
+  started right under the icons, so the coloured plane ended in the middle of the tiles below.
 
 ---
 
