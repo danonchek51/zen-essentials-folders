@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Вопрос и обсуждение
+    url: https://github.com/danonchek51/zen-essentials-folders/discussions
+    about: Задайте вопрос или обсудите идею — обсуждения не требуют оформления issue.
+  - name: Релизы и обновления
+    url: https://github.com/danonchek51/zen-essentials-folders/releases
+    about: Что изменилось в последних версиях мода.

@@ -12,6 +12,10 @@
 
 Больше ничего заполнять не нужно — в шаблоне одно поле.
 
+Уже подана заявка: <https://github.com/sineorg/store/issues/1411>.
+Карточка мода подхватывает `theme.json` из репозитория, поэтому описание и теги
+обновятся сами; если модератор спросит — ответ готов (ниже).
+
 Если модераторы попросят пояснение, вот готовый текст:
 
 > **Essentials Folders** — плитки-папки для сетки «Важных» (Essentials) в Zen Browser.
@@ -31,6 +35,10 @@
 > **Установка:** из маркетплейса Sine (Настройки → Sine Mods → Marketplace)
 > или «Установить из репозитория» со ссылкой
 > `https://github.com/danonchek51/zen-essentials-folders`.
+>
+> **English description for the listing:**
+> Folder tiles for Zen Essentials - nesting, drag & drop, search, 21 settings.
+> English README: https://github.com/danonchek51/zen-essentials-folders/blob/main/README.en.md
 
 ## 2. Официальный реестр Zen — не подаём
 
@@ -49,7 +57,7 @@ Sine Store (раздел 1).
 (<https://github.com/zen-browser/theme-store/issues/new>):
 
 - **Name:** `Essentials Folders` (18 символов, лимит 25) ✔
-- **Description:** `Folder tiles for Zen Essentials: nesting, drag & drop, search and settings.` (75 символов, лимит 100) ✔
+- **Description:** `Zen Browser mod: folder tiles for Essentials - nesting, drag & drop, search, 21 settings.` (89 символов, лимит 100) ✔
 - **Homepage:** `https://github.com/danonchek51/zen-essentials-folders`
 - **Image:** PNG 600×400 по HTTPS (живой снимок мода в Zen)
 - **Theme Styles:** содержимое `chrome.css` (без обёртки `@-moz-document url-prefix('chrome://')`)
@@ -58,3 +66,44 @@ Sine Store (раздел 1).
 
 Скриншот 600×400 снимается из живого Zen после перезапуска с установленной
 версией мода.
+
+## 3. Другие площадки — тексты готовы
+
+Аккаунты и публикации — ваши, поэтому тексты ниже просто лежат готовыми.
+
+### Reddit (r/zen_browser)
+
+> **Essentials Folders** — мод, который превращает «Важные» в плитки-папки.
+>
+> Что получилось: вместо россыпи иконок в сетке Essentials — цветные плитки
+> с иконкой, названием и счётчиком вкладок. Папки вкладываются друг в друга
+> на любую глубину, всё переставляется перетаскиванием, есть поиск и свой
+> диалог настроек (21 параметр, применяется сразу). Плюс индикатор активной
+> папки: та, где лежит текущая вкладка, мягко пульсирует.
+>
+> Главное: мод ничего не переносит и не удаляет — вкладки остаются обычными
+> вкладками Zen, папки хранятся в настройках браузера.
+>
+> https://github.com/danonchek51/zen-essentials-folders
+
+### Список модов / Awesome
+
+Одна строка для списка:
+
+```markdown
+- [Essentials Folders](https://github.com/danonchek51/zen-essentials-folders) — плитки-папки для «Важных» в Zen Browser: вложенность, перетаскивание, поиск, настройки. MIT.
+```
+
+### Профиль GitHub
+
+Репозиторий стоит закрепить (Pin) в профиле `danonchek51` — до шести позиций.
+В описании профиля стоит упомянуть Zen Browser и моды для него: это связывает
+профиль с репозиторием и с поиском по имени.
+
+## 4. Что проверять после публикации
+
+- [ ] Мод появился в маркетплейсе Sine и ставится кнопкой `Install`.
+- [ ] В карточке видно новое описание и теги.
+- [ ] `Theme Homepage` ведёт на репозиторий, а не на 404.
+- [ ] Вкладка Releases на GitHub открывает архив, в котором есть все 4 файла мода.
+- [ ] В README на GitHub открываются картинки (все 9 в папке `images/`).

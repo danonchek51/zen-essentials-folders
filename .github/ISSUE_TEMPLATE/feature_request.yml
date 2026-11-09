@@ -1,0 +1,52 @@
+name: Предложение / Feature request
+description: Идея для мода — опишите сценарий, а не только желаемую кнопку
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Опишите, **что вы хотели сделать** и почему текущий интерфейс мешает.
+        Так проще понять, что именно нужно изменить.
+
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Сценарий
+      description: Что вы делаете по шагам и что хотите получить
+      placeholder: |
+        У меня 30 закреплённых вкладок из 8 разных проектов.
+        Хочу разложить их по папкам прямо из сетки «Важных»,
+        не открывая каждую вкладку отдельно.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Что пробовали делать
+      description: Как решаете задачу сейчас
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Область
+      options:
+        - Плитки и внешний вид
+        - Папки и вложенность
+        - Перетаскивание
+        - Поиск
+        - Настройки мода
+        - Совместимость с другими модами
+        - Другое
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives-detail
+    attributes:
+      label: Подробности
+    validations:
+      required: false

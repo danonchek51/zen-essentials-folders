@@ -1,0 +1,81 @@
+name: Ошибка / Bug report
+description: Что-то в моде работает не так — расскажите, что ожидалось и что получилось
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за отчёт! Пожалуйста, заполните поля ниже — без версий Zen и мода
+        разобраться будет трудно.
+
+  - type: input
+    id: zen-version
+    attributes:
+      label: Версия Zen
+      placeholder: "1.24b"
+    validations:
+      required: true
+
+  - type: input
+    id: mod-version
+    attributes:
+      label: Версия мода
+      placeholder: "1.10.0"
+      description: Страница мода в Zen → «Настройки мода» → или начало файла `essentials-folders.uc.js`
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Как ставили
+      options:
+        - Sine Store
+        - Sine → Install from repo
+        - Вручную (копирование файлов)
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Что произошло
+      description: Что вы делали и что получилось
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Что ожидалось
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги для повторения
+      placeholder: |
+        1. Открыть папку «Работа»
+        2. Перетащить иконку GitHub на плитку «Учеба»
+        3. Вкладка осталась в «Работе»
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Логи из консоли (если есть)
+      description: "about:support → «Консоль браузера», сообщения мода помечены префиксом [ZEF]"
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Проверки
+      options:
+        - label: Мод включён в Zen Mods
+          required: true
+        - label: После правок Zen был перезапущен
+          required: false

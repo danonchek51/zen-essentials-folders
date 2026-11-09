@@ -79,7 +79,7 @@ def main():
         "name": "Essentials Folders",
         "description": "Folder tiles for Zen Essentials: nesting, drag & drop, search and settings.",
         "author": "danonchek51",
-        "version": "1.10.0",
+        "version": "1.10.1",
         "homepage": "https://github.com/danonchek51/zen-essentials-folders",
         "readme": "https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md",
         "style": {"chrome": "chrome.css", "content": ""},
