@@ -2068,9 +2068,28 @@
       plane.style.left = headRect.left - containerRect.left + scrollLeft + "px";
       plane.style.width = headRect.width + "px";
       plane.style.top = headRect.top - containerRect.top + scrollTop + "px";
-      // Плоскость заканчивается сразу под содержимым папки: пустого места
-      // снизу нет, а воздух между иконками и краем — 12 px.
-      plane.style.height = Math.max(0, bottom + planeAir(container) - headRect.top) + "px";
+      // Воздух под иконками есть только там, где он свободен. В узкой
+      // панели следующий блок начинается сразу под иконками, и без этого
+      // ограничения край плоскости проходил прямо по его плиткам.
+      let limit = Infinity;
+      for (const el of container.children) {
+        if (el === plane || el === head) {
+          continue;
+        }
+        const rect = el.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) {
+          continue;
+        }
+        // Берём только то, что начинается ниже содержимого папки.
+        if (rect.top >= bottom - 1) {
+          limit = Math.min(limit, rect.top);
+        }
+      }
+      let planeBottom = bottom + planeAir(container);
+      if (Number.isFinite(limit)) {
+        planeBottom = Math.min(planeBottom, Math.max(bottom, limit - 2));
+      }
+      plane.style.height = Math.max(0, planeBottom - headRect.top) + "px";
     }
   }
 
