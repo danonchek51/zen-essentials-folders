@@ -58,6 +58,13 @@
    * ------------------------------------------------------------------ */
 
   const PREF_SETTINGS = "zen.essentialsfolders.settings";
+  // Отчёт о последнем броске: по нему видно, что произошло, даже если
+  // консоль закрыта.
+  const PREF_LAST_DROP = "zen.essentialsfolders.lastdrop";
+
+  /** Версия мода. Показывается в окне настроек: сразу видно, что
+   *  обновление действительно применилось. */
+  const MOD_VERSION = "1.14.4";
 
 
   /* ------------------------------------------------------------------ *
@@ -126,6 +133,12 @@
     "search.clear": { en: "Clear search", ru: "Очистить поиск" },
     "search.empty": { en: "Nothing found: \u00ab{query}\u00bb", ru: "Ничего не найдено: \u00ab{query}\u00bb" },
     "settings.title": { en: "Mod settings", ru: "Настройки мода" },
+    "settings.hint": {
+      en: "The same options are in Zen's mod manager (Sine Mods): both places work with the"
+        + " same setting, so a change made in one is visible in the other at once.",
+      ru: "Те же параметры есть в менеджере модов Zen (Sine Mods): оба места работают с одной"
+        + " настройкой, поэтому изменение сразу видно в обоих.",
+    },
     "settings.reset": { en: "Reset", ru: "Сбросить" },
     "settings.close": { en: "Close", ru: "Закрыть" },
 
@@ -217,6 +230,7 @@
           labelKey: "set.lang",
           type: "select",
           def: "en",
+          pref: "zen.essentialsfolders.lang",
           options: [
             { value: "en", labelKey: "lang.en" },
             { value: "ru", labelKey: "lang.ru" },
@@ -227,9 +241,9 @@
     {
       groupKey: "group.tiles",
       items: [
-        { id: "tileHeight", labelKey: "set.tileHeight", type: "number", def: 46, min: 36, max: 64, unit: "px" },
-        { id: "tileMinWidth", labelKey: "set.tileMinWidth", type: "number", def: 23, min: 12, max: 50, unit: "%" },
-        { id: "folderIconSize", labelKey: "set.folderIconSize", type: "number", def: 22, min: 14, max: 34, unit: "px" },
+        { id: "tileHeight", labelKey: "set.tileHeight", type: "number", def: 46, min: 36, max: 64, unit: "px", pref: "zen.essentialsfolders.tile-height" },
+        { id: "tileMinWidth", labelKey: "set.tileMinWidth", type: "number", def: 23, min: 12, max: 50, unit: "%", pref: "zen.essentialsfolders.tile-min-width" },
+        { id: "folderIconSize", labelKey: "set.folderIconSize", type: "number", def: 22, min: 14, max: 34, unit: "px", pref: "zen.essentialsfolders.folder-icon-size" },
         { id: "showNames", labelKey: "set.showNames", type: "bool", def: true, legacy: PREF_SHOW_NAMES },
         { id: "showCount", labelKey: "set.showCount", type: "bool", def: true, legacy: PREF_SHOW_COUNT },
         {
@@ -237,6 +251,7 @@
           labelKey: "set.countStyle",
           type: "select",
           def: "badge",
+          pref: "zen.essentialsfolders.count-style",
           options: [
             { value: "badge", labelKey: "opt.badge" },
             { value: "dot", labelKey: "opt.dot" },
@@ -248,17 +263,19 @@
           labelKey: "set.tilesRow",
           type: "select",
           def: "strip",
+          pref: "zen.essentialsfolders.tiles-row",
           options: [
             { value: "strip", labelKey: "opt.strip" },
             { value: "grid", labelKey: "opt.grid" },
           ],
         },
-        { id: "showPlus", labelKey: "set.showPlus", type: "bool", def: true },
+        { id: "showPlus", labelKey: "set.showPlus", type: "bool", def: true, pref: "zen.essentialsfolders.show-plus" },
         {
           id: "nestedMarker",
           labelKey: "set.nestedMarker",
           type: "select",
           def: "chevron",
+          pref: "zen.essentialsfolders.nested-marker",
           options: [
             { value: "chevron", labelKey: "opt.chevron" },
             { value: "none", labelKey: "opt.noMarker" },
@@ -269,11 +286,11 @@
     {
       groupKey: "group.grid",
       items: [
-        { id: "iconStep", labelKey: "set.iconStep", type: "number", def: 12, min: 6, max: 30, unit: "%" },
+        { id: "iconStep", labelKey: "set.iconStep", type: "number", def: 12, min: 6, max: 30, unit: "%", pref: "zen.essentialsfolders.icon-step" },
         { id: "iconSize", labelKey: "set.iconSize", type: "string", def: "26px", legacy: PREF_ICON_SIZE },
         { id: "tabIconSize", labelKey: "set.tabIconSize", type: "string", def: "18px", legacy: PREF_TAB_ICON_SIZE },
-        { id: "planeAir", labelKey: "set.planeAir", type: "number", def: 12, min: 0, max: 40, unit: "px" },
-        { id: "blockGap", labelKey: "set.blockGap", type: "number", def: 4, min: 0, max: 24, unit: "px" },
+        { id: "planeAir", labelKey: "set.planeAir", type: "number", def: 12, min: 0, max: 40, unit: "px", pref: "zen.essentialsfolders.plane-air" },
+        { id: "blockGap", labelKey: "set.blockGap", type: "number", def: 4, min: 0, max: 24, unit: "px", pref: "zen.essentialsfolders.block-gap" },
       ],
     },
     {
@@ -284,6 +301,7 @@
           labelKey: "set.activeStyle",
           type: "select",
           def: "glow",
+          pref: "zen.essentialsfolders.active-style",
           options: [
             { value: "glow", labelKey: "opt.glow" },
             { value: "dot", labelKey: "opt.dot" },
@@ -292,13 +310,14 @@
             { value: "off", labelKey: "opt.off" },
           ],
         },
-        { id: "pulse", labelKey: "set.pulse", type: "bool", def: true },
-        { id: "pulseSpeed", labelKey: "set.pulseSpeed", type: "number", def: 1600, min: 600, max: 4000, unitKey: "unit.ms" },
+        { id: "pulse", labelKey: "set.pulse", type: "bool", def: true, pref: "zen.essentialsfolders.pulse" },
+        { id: "pulseSpeed", labelKey: "set.pulseSpeed", type: "number", def: 1600, min: 600, max: 4000, unitKey: "unit.ms", pref: "zen.essentialsfolders.pulse-speed" },
         {
           id: "unloadStyle",
           labelKey: "set.unloadStyle",
           type: "select",
           def: "off",
+          pref: "zen.essentialsfolders.unload-style",
           options: [
             { value: "frame", labelKey: "opt.frame" },
             { value: "dash", labelKey: "opt.dashed" },
@@ -314,8 +333,8 @@
       groupKey: "group.behaviour",
       items: [
         { id: "showSearch", labelKey: "set.showSearch", type: "bool", def: true, legacy: PREF_SHOW_SEARCH },
-        { id: "hints", labelKey: "set.hints", type: "bool", def: true },
-        { id: "freshOnTop", labelKey: "set.freshOnTop", type: "bool", def: true },
+        { id: "hints", labelKey: "set.hints", type: "bool", def: true, pref: "zen.essentialsfolders.hints" },
+        { id: "freshOnTop", labelKey: "set.freshOnTop", type: "bool", def: true, pref: "zen.essentialsfolders.fresh-on-top" },
       ],
     },
   ];
@@ -483,50 +502,136 @@
    * жива). Остальные — в одном префе с JSON.
    * ------------------------------------------------------------------ */
 
+  /** Имя префа настройки: у старых настроек оно уже было. */
+  function prefOf(item) {
+    return item.pref || item.legacy;
+  }
+
+  /** Значение настройки из её префа. undefined — префа ещё нет.
+   *
+   *  Тип значения в префе может отличаться от ожидаемого: менеджер модов
+   *  пишет числа как строки, и наоборот. Поэтому читаем осторожно. */
+  function readSettingPref(item) {
+    const name = prefOf(item);
+    if (!name) {
+      return undefined;
+    }
+    try {
+      if (!Services.prefs.prefHasUserValue(name)) {
+        return undefined;
+      }
+      const type = Services.prefs.getPrefType(name);
+      if (item.type === "bool") {
+        return type === Services.prefs.PREF_BOOL
+          ? Services.prefs.getBoolPref(name, item.def)
+          : Services.prefs.getStringPref(name, "") === "true";
+      }
+      if (item.type === "number") {
+        const raw =
+          type === Services.prefs.PREF_INT
+            ? Services.prefs.getIntPref(name, item.def)
+            : Number(Services.prefs.getStringPref(name, ""));
+        return Number.isFinite(raw) ? raw : item.def;
+      }
+      const raw =
+        type === Services.prefs.PREF_INT
+          ? String(Services.prefs.getIntPref(name, item.def))
+          : Services.prefs.getStringPref(name, "");
+      return raw.trim() || undefined;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
   /** Текущие значения всех настроек. */
   function readSettings() {
     const stored = readJSONPref(PREF_SETTINGS, {});
     const values = {};
     for (const group of SETTINGS) {
       for (const item of group.items) {
-        if (item.legacy) {
-          values[item.id] =
-            item.type === "bool"
-              ? readBoolPref(item.legacy, item.def)
-              : readStringPref(item.legacy, item.def);
+        const fresh = readSettingPref(item);
+        if (fresh !== undefined) {
+          values[item.id] = fresh;
           continue;
         }
-        const value = stored?.[item.id];
-        values[item.id] = value === undefined || value === null ? item.def : value;
+        // Префа ещё нет — берём значение из старого общего хранилища.
+        const old = stored?.[item.id];
+        values[item.id] = old === undefined || old === null ? item.def : old;
       }
     }
     return values;
   }
 
-  /** Сохраняет настройки и применяет их. */
+  /** Сохраняет настройки и применяет их.
+   *
+   *  values может быть неполным: меняются переданные значения, остальные
+   *  остаются как есть. Иначе сохранение одной настройки сбрасывало бы
+   *  все остальные. */
   function saveSettings(values) {
+    const merged = Object.assign({}, readSettings(), values || {});
     const stored = {};
     for (const group of SETTINGS) {
       for (const item of group.items) {
-        const value = values[item.id];
-        if (item.legacy) {
+        const value = merged[item.id];
+        const name = prefOf(item);
+        if (name) {
           try {
             if (item.type === "bool") {
-              Services.prefs.setBoolPref(item.legacy, Boolean(value));
+              Services.prefs.setBoolPref(name, Boolean(value));
+            } else if (item.type === "number") {
+              const number = Math.round(Number(value));
+              Services.prefs.setIntPref(
+                name,
+                Number.isFinite(number) ? number : item.def
+              );
             } else {
-              Services.prefs.setStringPref(item.legacy, String(value));
+              Services.prefs.setStringPref(name, String(value));
             }
           } catch (e) {}
-          continue;
         }
         stored[item.id] = value;
       }
     }
+    // Старое общее хранилище тоже обновляем: вдруг мод откатят на прежнюю
+    // версию — настройки останутся на месте.
     writeJSONPref(PREF_SETTINGS, stored);
     const previousLang = uiLang;
     applySettings();
     if (uiLang !== previousLang) {
       refreshLanguage();
+    }
+  }
+
+  /** Заполняем префы настроек значениями по умолчанию — один раз.
+   *
+   *  Так менеджер модов Zen сразу показывает те же значения, что видит мод,
+   *  и настройку можно менять в любом из двух мест. */
+  function ensureSettingPrefs() {
+    const values = readSettings();
+    for (const group of SETTINGS) {
+      for (const item of group.items) {
+        const name = prefOf(item);
+        if (!name) {
+          continue;
+        }
+        try {
+          if (Services.prefs.prefHasUserValue(name)) {
+            continue;
+          }
+          const value = values[item.id];
+          if (item.type === "bool") {
+            Services.prefs.setBoolPref(name, Boolean(value));
+          } else if (item.type === "number") {
+            const number = Math.round(Number(value));
+            Services.prefs.setIntPref(
+              name,
+              Number.isFinite(number) ? number : item.def
+            );
+          } else {
+            Services.prefs.setStringPref(name, String(value));
+          }
+        } catch (e) {}
+      }
     }
   }
 
@@ -1406,7 +1511,7 @@
       const settingsButton = document.createElement("button");
       settingsButton.type = "button";
       settingsButton.className = "zef-search-settings";
-      settingsButton.title = t("settings.title");
+      settingsButton.title = `${t("settings.title")} · v${MOD_VERSION}`;
       settingsButton.textContent = "⚙";
       settingsButton.addEventListener("mousedown", event => event.stopPropagation());
       settingsButton.addEventListener("click", event => {
@@ -2794,6 +2899,9 @@
    *  window.__zenEssentialsFolders.lastDrop */
   function recordDrop(info) {
     lastDrop = Object.assign({ at: Date.now() }, info || {});
+    // Отчёт о броске пишем в преф: его видно и без консоли — по файлу
+    // prefs.js в профиле.
+    writeJSONPref(PREF_LAST_DROP, lastDrop);
     try {
       if (window[INSTANCE_KEY]) {
         window[INSTANCE_KEY].lastDrop = lastDrop;
@@ -4403,8 +4511,14 @@
 
     const title = document.createElement("div");
     title.className = "zef-dialog-title";
-    title.textContent = t("settings.title");
+    title.textContent = `${t("settings.title")} · v${MOD_VERSION}`;
     box.appendChild(title);
+
+    // Подсказка: те же параметры есть и в менеджере модов Zen.
+    const hint = document.createElement("div");
+    hint.className = "zef-dialog-hint";
+    hint.textContent = t("settings.hint");
+    box.appendChild(hint);
 
     const values = readSettings();
 
@@ -4495,7 +4609,7 @@
         }
         const gear = searchRow.querySelector(".zef-search-settings");
         if (gear) {
-          gear.title = t("settings.title");
+          gear.title = `${t("settings.title")} · v${MOD_VERSION}`;
         }
       }
       sync(true);
@@ -4650,6 +4764,7 @@
     onWindow("contextmenu", onWindowContextMenu, true);
 
     // Настройки мода: размеры, индикаторы, раскладка плиток.
+    ensureSettingPrefs();
     applySettings();
     for (const name of [PREF_ICON_SIZE, PREF_TAB_ICON_SIZE, PREF_SETTINGS]) {
       const onChange = () => {
@@ -4660,14 +4775,27 @@
       Services.prefs.addObserver(name, onChange);
       sizeObservers.push([name, onChange]);
     }
-    // Поиск меняем на лету — без перезапуска Zen.
-    for (const name of [PREF_SHOW_SEARCH]) {
-      const onChange = () => {
-        lastSignature = null;
-        sync(true);
-      };
-      Services.prefs.addObserver(name, onChange);
-      sizeObservers.push([name, onChange]);
+    // Каждая настройка живёт в своём префе: если её поменяли в менеджере
+    // модов Zen — мод подхватывает это сразу, без перезапуска.
+    for (const group of SETTINGS) {
+      for (const item of group.items) {
+        const name = prefOf(item);
+        if (!name || sizeObservers.some(([known]) => known === name)) {
+          continue;
+        }
+        const onChange = () => {
+          const previousLang = uiLang;
+          settings = readSettings();
+          applySettings();
+          if (uiLang !== previousLang) {
+            refreshLanguage();
+          }
+          lastSignature = null;
+          sync(true);
+        };
+        Services.prefs.addObserver(name, onChange);
+        sizeObservers.push([name, onChange]);
+      }
     }
 
     // Плоскости раскрытых папок — абсолютные элементы. Как только сетка

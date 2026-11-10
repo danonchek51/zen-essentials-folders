@@ -1,5 +1,36 @@
 [
   {
+    "property": "zen.essentialsfolders.lang",
+    "label": "Язык интерфейса",
+    "type": "dropdown",
+    "defaultValue": "en",
+    "options": [
+      { "value": "en", "label": "English" },
+      { "value": "ru", "label": "Русский" }
+    ]
+  },
+  {
+    "property": "zen.essentialsfolders.tile-height",
+    "label": "Высота плитки папки (px)",
+    "type": "string",
+    "value": "num",
+    "defaultValue": "46"
+  },
+  {
+    "property": "zen.essentialsfolders.tile-min-width",
+    "label": "Минимальная ширина плитки (% от панели)",
+    "type": "string",
+    "value": "num",
+    "defaultValue": "23"
+  },
+  {
+    "property": "zen.essentialsfolders.folder-icon-size",
+    "label": "Размер иконки папки (px)",
+    "type": "string",
+    "value": "num",
+    "defaultValue": "22"
+  },
+  {
     "property": "zen.essentialsfolders.show-names",
     "label": "Показывать названия папок на плитках",
     "type": "checkbox",
@@ -12,10 +43,48 @@
     "defaultValue": true
   },
   {
-    "property": "zen.essentialsfolders.show-search",
-    "label": "Показывать строку поиска по папкам",
+    "property": "zen.essentialsfolders.count-style",
+    "label": "Счётчик на плитке",
+    "type": "dropdown",
+    "defaultValue": "badge",
+    "options": [
+      { "value": "badge", "label": "Бейдж (как сейчас)" },
+      { "value": "dot", "label": "Точка" },
+      { "value": "none", "label": "Не показывать" }
+    ]
+  },
+  {
+    "property": "zen.essentialsfolders.tiles-row",
+    "label": "Плитки папок в панели",
+    "type": "dropdown",
+    "defaultValue": "strip",
+    "options": [
+      { "value": "strip", "label": "Отдельной полосой" },
+      { "value": "grid", "label": "В общей сетке" }
+    ]
+  },
+  {
+    "property": "zen.essentialsfolders.show-plus",
+    "label": "Показывать кнопку «+»",
     "type": "checkbox",
     "defaultValue": true
+  },
+  {
+    "property": "zen.essentialsfolders.nested-marker",
+    "label": "Значок вложенной папки",
+    "type": "dropdown",
+    "defaultValue": "chevron",
+    "options": [
+      { "value": "chevron", "label": "Шеврон «›»" },
+      { "value": "none", "label": "Без значка" }
+    ]
+  },
+  {
+    "property": "zen.essentialsfolders.icon-step",
+    "label": "Шаг иконок внутри папки (%)",
+    "type": "string",
+    "value": "num",
+    "defaultValue": "12"
   },
   {
     "property": "zen.essentialsfolders.icon-size",
@@ -28,5 +97,77 @@
     "label": "Размер иконки вкладки в списке сбоку (например 18px)",
     "type": "string",
     "defaultValue": "18px"
+  },
+  {
+    "property": "zen.essentialsfolders.plane-air",
+    "label": "Воздух под цветной областью папки (px)",
+    "type": "string",
+    "value": "num",
+    "defaultValue": "12"
+  },
+  {
+    "property": "zen.essentialsfolders.block-gap",
+    "label": "Зазор между папками (px)",
+    "type": "string",
+    "value": "num",
+    "defaultValue": "4"
+  },
+  {
+    "property": "zen.essentialsfolders.active-style",
+    "label": "Индикатор активной папки",
+    "type": "dropdown",
+    "defaultValue": "glow",
+    "options": [
+      { "value": "glow", "label": "Мягкое свечение" },
+      { "value": "dot", "label": "Точка" },
+      { "value": "corner", "label": "Уголок" },
+      { "value": "badge", "label": "Значок Zen" },
+      { "value": "off", "label": "Выключить" }
+    ]
+  },
+  {
+    "property": "zen.essentialsfolders.pulse",
+    "label": "Пульсация индикатора",
+    "type": "checkbox",
+    "defaultValue": true
+  },
+  {
+    "property": "zen.essentialsfolders.pulse-speed",
+    "label": "Скорость пульсации (мс)",
+    "type": "string",
+    "value": "num",
+    "defaultValue": "1600"
+  },
+  {
+    "property": "zen.essentialsfolders.unload-style",
+    "label": "Метка выгруженной вкладки",
+    "type": "dropdown",
+    "defaultValue": "off",
+    "options": [
+      { "value": "frame", "label": "Рамка" },
+      { "value": "dashed", "label": "Пунктир" },
+      { "value": "dot", "label": "Точка" },
+      { "value": "line", "label": "Линия" },
+      { "value": "dimmed", "label": "Приглушение" },
+      { "value": "off", "label": "Выключить" }
+    ]
+  },
+  {
+    "property": "zen.essentialsfolders.show-search",
+    "label": "Показывать строку поиска по папкам",
+    "type": "checkbox",
+    "defaultValue": true
+  },
+  {
+    "property": "zen.essentialsfolders.hints",
+    "label": "Подсказки при неудачном броске",
+    "type": "checkbox",
+    "defaultValue": true
+  },
+  {
+    "property": "zen.essentialsfolders.fresh-on-top",
+    "label": "Свежая папка сверху",
+    "type": "checkbox",
+    "defaultValue": true
   }
 ]

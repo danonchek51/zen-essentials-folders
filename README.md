@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.12.0](https://img.shields.io/badge/version-1.14.3-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.14.4](https://img.shields.io/badge/version-1.14.4-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -164,6 +164,10 @@ The mod has **its own settings dialog** — open it with the `⚙` gear to the r
 row or with the `Mod settings…` entry in the folder menu.
 
 ![The settings dialog of the mod](images/settings.png)
+
+The same options are also in **the mod manager of Zen** (Settings → Sine Mods →
+Essentials Folders → the gear button): both places read and write the same preference, so a
+change made in one is visible in the other at once — no restart needed.
 
 22 options in five groups:
 

@@ -10,6 +10,25 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.14.4] — 2026-11-10
+
+The settings are visible in the mod manager of Zen now, and the mod shows its version.
+
+### Added
+
+- **The settings are in the mod manager of Zen.** Every option lives in its own preference
+  (`zen.essentialsfolders.*`), so the manager of Zen shows all 22 of them — and a change
+  made there is applied at once, without a restart.
+- **The mod shows its version.** The window of the settings now says `Mod settings · v1.14.4`,
+  so it is visible that the update has been applied.
+- **A hint in the settings window**: the same options are in the mod manager of Zen, both
+  places share one setting.
+
+### Fixed
+
+- **The report of the last drop is kept in a preference** (`zen.essentialsfolders.lastdrop`),
+  so a failed drop can be read from `prefs.js` without opening the console.
+
 ## [1.14.3] — 2026-11-10
 
 Dropping a tab into a folder now really moves it. The folder opens to show the tile, the tab

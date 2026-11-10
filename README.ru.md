@@ -1,6 +1,6 @@
 # Essentials Folders — плитки-папки для «Важных» в Zen Browser
 
-[![Версия 1.12.0](https://img.shields.io/badge/version-1.14.3-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Версия 1.14.4](https://img.shields.io/badge/version-1.14.4-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![Лицензия MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -157,6 +157,10 @@ nested folders, drag & drop, search, and 22 settings. Tabs stay ordinary Zen tab
 поиска или пунктом `Настройки мода…` в меню папки.
 
 ![Диалог настроек мода](images/settings.png)
+
+Те же параметры есть и в **менеджере модов Zen** (Настройки → Sine Mods →
+Essentials Folders → шестерёнка): оба места читают и пишут одну и ту же настройку,
+поэтому изменение сразу видно в обоих — перезапускать Zen не нужно.
 
 Всего 22 параметра в пяти группах:
 

@@ -41,6 +41,9 @@ its own colour, and the strip of its icons carries a thin line of the same colou
   closed lid. A tab dropped from the sidebar is made essential by the mod itself or by the
   browser, whichever can do it first. The rule of a folder follows the tab when it changes
   its address.
+- Every option of the mod lives in its own preference, so the mod manager of Zen shows all
+  22 of them, and a change made there is applied at once, without a restart. The mod shows
+  its own version in the settings window.
 - Rearranging folders by dragging a tile by its edge; rearranging tiles inside a folder by
   dragging an icon next to another icon.
 - Only the dragged tab moves: drop one GitHub tab into another folder and only that tab goes,
