@@ -10,6 +10,31 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.13.0] — 2026-11-10
+
+A nested folder no longer takes a block of its own — it stays a tile, and its icons lie in a
+compact strip.
+
+### Changed
+
+- **Nested folders are tiles only.** A folder nested into another one keeps no header and no
+  colour plane of its own: it stays a tile in the row under the parent, exactly like a collapsed
+  one. When it is open, its icons show as a dense strip right under that row, inside the colour
+  area of the parent. Before, an open nested folder took as much vertical space as the main
+  folder — with a few nested folders the panel grew twice as tall for nothing. The same set of
+  folders now takes about 40% less height.
+- **An open nested folder is marked.** Its tile is underlined with the colour of the folder, and
+  the strip of its icons carries a thin line of the same colour on the left — so it is clear at a
+  glance which icons belong to which nested folder.
+- **The strip of a nested folder is a drop target.** A tile dropped on it moves into that nested
+  folder, by the same rule as everywhere else.
+
+### Fixed
+
+- **Removing the mod no longer loses icons.** The icons of an open nested folder lie in a strip,
+  and when the mod was removed the strip went away together with them. They are now put back into
+  the panel first.
+
 ## [1.12.0] — 2026-11-09
 
 A folder is created in one click now, and the mod settings dialog opens again.

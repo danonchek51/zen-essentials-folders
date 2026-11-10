@@ -37,7 +37,7 @@ If the moderators ask for clarification, here is the ready-made text:
 > `https://github.com/danonchek51/zen-essentials-folders`.
 >
 > **Short listing description:**
-> Folder tiles for Zen Essentials - nesting, drag & drop, search, 21 settings.
+> Folder tiles for Zen Essentials - nesting, drag & drop, search, 22 settings.
 >
 > **English README:** https://github.com/danonchek51/zen-essentials-folders/blob/main/README.md
 > **Russian README:** https://github.com/danonchek51/zen-essentials-folders/blob/main/README.ru.md
@@ -59,7 +59,7 @@ is made with the `create-theme` template
 (<https://github.com/zen-browser/theme-store/issues/new>):
 
 - **Name:** `Essentials Folders` (18 characters, limit 25) ✔
-- **Description:** `Zen Browser mod: folder tiles for Essentials - nesting, drag & drop, search, 21 settings.` (89 characters, limit 100) ✔
+- **Description:** `Zen Browser mod: folder tiles for Essentials - nesting, drag & drop, search, 22 settings.` (89 characters, limit 100) ✔
 - **Homepage:** `https://github.com/danonchek51/zen-essentials-folders`
 - **Image:** PNG 600×400 over HTTPS (a live snapshot of the mod in Zen)
 - **Theme Styles:** the contents of `chrome.css` (without the `@-moz-document url-prefix('chrome://')` wrapper)

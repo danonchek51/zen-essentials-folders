@@ -15,7 +15,10 @@ no duplicated tile — the folder is shown exactly once. Several folders can be 
 time, and the one you opened most recently sits above the others.
 
 Folders nest inside each other to any depth, and both folders and tiles are rearranged by
-ordinary mouse drag & drop.
+ordinary mouse drag & drop. A nested folder keeps no header and no colour plane of its own: it
+stays a tile in the row under its parent, and when it is open its icons appear as a dense strip
+right under that row, inside the parent's colour plane. The open nested folder is underlined with
+its own colour, and the strip of its icons carries a thin line of the same colour on the left.
 
 ## Features
 
@@ -23,6 +26,7 @@ ordinary mouse drag & drop.
 - An open folder is a colour plane holding its own tiles. No duplication.
 - The newest folder goes on top.
 - Nested folders, unlimited depth, marked with a chevron.
+- An open nested folder shows its icons in a dense strip under the row — it takes no block of its own.
 - Rearranging folders by dragging a tile by its edge; rearranging tiles inside a folder by
   dragging an icon next to another icon.
 - Only the dragged tab moves: drop one GitHub tab into another folder and only that tab goes,
@@ -116,7 +120,7 @@ redirect and a tab move never break it.
 ## FAQ
 
 **What is Essentials Folders?** A Zen Browser mod that turns the Essentials grid into folder
-tiles, with nesting, drag & drop, search and 21 settings.
+tiles, with nesting, drag & drop, search and 22 settings.
 
 **Do I have to move my tabs into folders by hand?** No. The mod never moves or deletes
 anything: tabs stay ordinary Zen tabs. Tabs join a folder by an address rule.

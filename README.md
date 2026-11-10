@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.12.0](https://img.shields.io/badge/version-1.12.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.12.0](https://img.shields.io/badge/version-1.13.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -47,6 +47,10 @@ within** — all with ordinary mouse drag & drop.
 - **Nested folders.** Drag a folder tile onto another folder's tile — it nests inside it (a
   nested folder is marked with a `›` chevron to the left of the icon). The nesting depth is
   unlimited.
+- **A nested folder stays a tile.** It keeps no header and no colour plane of its own: open it
+  and its icons appear as a dense strip right under the row, inside the colour area of the parent.
+  The open nested folder is underlined with its own colour, and the strip of its icons carries a
+  thin line of that colour — so it is clear at a glance whose icons these are.
 - **Reordering folders.** Drag a tile by its edge — the folder lands next to the one you dropped
   it on. A nested folder can be dragged back out to the top level the same way.
 - **Reordering tiles inside a folder.** Drag an icon onto a neighbouring icon — the tile lands
@@ -128,11 +132,10 @@ within** — all with ordinary mouse drag & drop.
   side) — the icons stick neither to the edge nor to each other.
 - **The plane fits its contents exactly.** The colour area ends right below the last icon of the
   folder: no empty space is left underneath.
-- **A nested folder gets its own row.** When a folder is opened inside another folder, its
-  icons stand in their own row, and the icons of the parent folder start from the next row
-  (12 px between rows). Previously they continued a single row, and the colour plane of the
-  nested folder covered the icons of the parent — they looked like the contents of the nested
-  folder, while the counter showed "4" even though the plane held more tiles.
+- **A nested folder stays a tile.** When a folder is opened inside another folder, it does not
+  get a block of its own any more: its icons stand in a dense strip right under the row of
+  nested tiles, inside the colour plane of the parent. Previously the nested folder took as much
+  vertical space as the main one, and a panel with a few nested folders grew twice as tall.
 - **A gap between open folders.** The colour areas of neighbouring open folders no longer
   overlap and no longer cover the header of the next folder: a visible gap remains between
   them. Previously the plane of each folder reached 12 px into the next one and covered its
@@ -154,7 +157,7 @@ The real look of the mod in Zen Browser 1.24b.
 
 | Tile row | Open folder | Nested folder | Tile menu | Folder dialog | "Move to folder" in the tab menu |
 |---|---|---|---|---|---|
-| ![A row of colour-coded folder tiles with icons, names and tab counters](images/tiles.png) | ![An open folder unfolded into a wide colour plane with its tabs](images/expanded.png) | ![A nested folder: the tiles of the parent folder start a new row and stay out of the nested colour](images/nested.png) | ![The context menu of a folder tile: expand, rename, change colour, nest, delete](images/menu.png) | ![Choosing a folder colour: palette, gradient picker and an exact hex code](images/dialog.png) | ![The "Move to folder" entry in the context menu of an Essentials tab](images/context.png) |
+| ![A row of colour-coded folder tiles with icons, names and tab counters](images/tiles.png) | ![An open folder unfolded into a wide colour plane with its tabs](images/expanded.png) | ![A nested folder: it stays a tile, and its icons lie in a dense strip inside the parent's colour](images/nested.png) | ![The context menu of a folder tile: expand, rename, change colour, nest, delete](images/menu.png) | ![Choosing a folder colour: palette, gradient picker and an exact hex code](images/dialog.png) | ![The "Move to folder" entry in the context menu of an Essentials tab](images/context.png) |
 
 ## Mod settings
 
