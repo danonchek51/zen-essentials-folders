@@ -27,6 +27,10 @@ its own colour, and the strip of its icons carries a thin line of the same colou
 - The newest folder goes on top.
 - Nested folders, unlimited depth, marked with a chevron.
 - An open nested folder shows its icons in a dense strip under the row — it takes no block of its own.
+- An expanded nested folder is marked: the chevron points down and the tile glows in the colour
+  of the folder.
+- The colour of a folder is set from its context menu (`Change colour…`); there is no strip over
+  the panel.
 - Rearranging folders by dragging a tile by its edge; rearranging tiles inside a folder by
   dragging an icon next to another icon.
 - Only the dragged tab moves: drop one GitHub tab into another folder and only that tab goes,

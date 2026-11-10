@@ -150,8 +150,6 @@
     "folder.nameLabel": { en: "Folder name", ru: "Название папки" },
     "folder.namePlaceholder": { en: "Folder name\u2026", ru: "Название папки\u2026" },
     "folder.renameHint": { en: "Double-click to rename", ru: "Двойной клик — переименовать" },
-    "folder.inlineColours": { en: "Folder colour", ru: "Цвет папки" },
-    "folder.inlineAdvanced": { en: "Advanced\u2026", ru: "Подробнее\u2026" },
     "folder.iconButton": { en: "Change icon", ru: "Сменить иконку" },
     "folder.sitesLabel": { en: "Sites in this folder", ru: "Сайты в папке" },
     "folder.rulePlaceholder": { en: "add a domain and press Enter", ru: "добавить домен и Enter" },
@@ -408,14 +406,6 @@
   const windowListeners = [];
   // Правка названия прямо на плитке: папка, поле ввода и прежнее имя.
   let inlineEdit = null;
-  // Полоска цветов у плитки: сама полоса и папка, к которой она относится.
-  let swatchStrip = null;
-  let swatchFolderId = null;
-  let swatchHideTimer = 0;
-  // Где последний раз был курсор: по этому понимаем, что полоска ещё
-  // нужна (мышь над плиткой или над самой полоской).
-  let pointerX = -1;
-  let pointerY = -1;
   // Задержка перед открытием папки кликом по названию: за это время
   // понятно, не будет ли второго клика (двойной клик — это правка).
   const DOUBLE_CLICK_DELAY = 250;
@@ -1811,10 +1801,9 @@
     // размеры после того, как браузер разложил сетку.
     layoutPlanes();
 
-    // Правка названия и полоска цветов должны пережить перерисовку:
-    // панель перестраивается целиком, а поле правки — часть плитки.
+    // Правка названия должна пережить перерисовку: панель перестраивается
+    // целиком, а поле правки — часть плитки.
     reattachInlineEdit();
-    positionSwatchStrip();
   }
 
   /* ------------------------------------------------------------------ *
@@ -1853,8 +1842,6 @@
 
     // Название — зона правки: двойной клик открывает поле ввода.
     attachNameEditing(name, folder, () => toggleFolder(folder.id));
-    // Наведение показывает полоску цветов рядом с плиткой.
-    attachColourStrip(tile, folder);
 
     const badge = document.createElement("div");
     badge.className = "zef-tile-count";
@@ -2054,7 +2041,6 @@
 
     // Название шапки — та же зона правки, что и у плитки.
     attachNameEditing(name, folder, () => toggleFolder(folder.id));
-    attachColourStrip(head, folder);
 
     const badge = document.createElement("div");
     badge.className = "zef-head-count";
@@ -2216,7 +2202,6 @@
       done: false,
     };
     focusInlineInput(input);
-    showSwatchStrip(host, folder);
   }
 
   /** Ставит курсор в поле правки. */
@@ -2256,7 +2241,6 @@
         folder.name = state.previous;
         persist();
       }
-      hideSwatchStrip();
       return;
     }
     folder.name = value;
@@ -2280,7 +2264,6 @@
     // Новую папку отменяем целиком — она была создана «на лету».
     if (state.isNew) {
       deleteFolder(folder);
-      hideSwatchStrip();
       return;
     }
     folder.name = state.previous;
@@ -2305,7 +2288,6 @@
     nameEl.replaceWith(state.input);
     state.input.value = value;
     focusInlineInput(state.input);
-    showSwatchStrip(host, folderById(state.folderId));
   }
 
   /** Название папки: двойной клик — правка на месте, одиночный клик —
@@ -2339,189 +2321,6 @@
     });
     // Перетаскивание не должно превращаться в открытие папки.
     nameEl.addEventListener("dragstart", cancel);
-  }
-
-  /** Полоска цветов рядом с плиткой: цвет меняется одним кликом.
-   *  Живёт внутри панели, но вне сетки — иначе плитки поедут. */
-  function ensureSwatchStrip() {
-    const container = getContainer();
-    if (!container) {
-      return null;
-    }
-    if (!swatchStrip) {
-      swatchStrip = document.createElement("div");
-      swatchStrip.className = "zef-inline-swatches";
-      swatchStrip.hidden = true;
-      for (const color of PALETTE) {
-        const swatch = document.createElement("button");
-        swatch.type = "button";
-        swatch.className = "zef-swatch";
-        swatch.style.backgroundColor = color;
-        swatch.title = color;
-        swatch.setAttribute("data-zef-color", color);
-        swatch.addEventListener("click", event => {
-          event.preventDefault();
-          event.stopPropagation();
-          applyInlineColor(swatch.getAttribute("data-zef-color"));
-        });
-        swatchStrip.appendChild(swatch);
-      }
-      // Сложные случаи (иконка, точный hex, правила сайтов) — в диалоге.
-      const more = document.createElement("button");
-      more.type = "button";
-      more.className = "zef-inline-more";
-      more.textContent = t("folder.inlineAdvanced");
-      more.title = t("folder.inlineAdvanced");
-      more.addEventListener("click", event => {
-        event.preventDefault();
-        event.stopPropagation();
-        const folder = folderById(swatchFolderId);
-        if (folder) {
-          openFolderDialog(folder, "color", folderElement(folder.id));
-        }
-      });
-      swatchStrip.appendChild(more);
-      // Мышь должна успеть переехать с плитки на полоску — иначе полоска
-      // прячется раньше, чем до неё дотянулись.
-      swatchStrip.addEventListener("mouseenter", () => {
-        if (swatchHideTimer) {
-          clearTimeout(swatchHideTimer);
-          swatchHideTimer = 0;
-        }
-      });
-      swatchStrip.addEventListener("mouseleave", () => hideSwatchStrip(0));
-      // Курсор запоминаем: после перерисовки панели по нему решаем,
-      // показывать ли полоску.
-      container.addEventListener("mousemove", event => {
-        pointerX = event.clientX;
-        pointerY = event.clientY;
-      });
-    }
-    if (swatchStrip.parentElement !== container) {
-      container.appendChild(swatchStrip);
-    }
-    return swatchStrip;
-  }
-
-  /** Показывает полоску цветов у плитки папки. */
-  function showSwatchStrip(element, folder) {
-    if (!element || !folder) {
-      return;
-    }
-    const strip = ensureSwatchStrip();
-    if (!strip) {
-      return;
-    }
-    swatchFolderId = folder.id;
-    strip.hidden = false;
-    strip.title = t("folder.inlineColours");
-    for (const swatch of strip.querySelectorAll(".zef-swatch")) {
-      const color = swatch.getAttribute("data-zef-color") || "";
-      swatch.classList.toggle(
-        "zef-selected",
-        color.toLowerCase() === String(folder.color || "").toLowerCase()
-      );
-    }
-    positionSwatchStrip();
-  }
-
-  /** Ставит полоску под плиткой. Панель прокручивается, поэтому координаты
-   *  считаем от содержимого, а не от видимой части. */
-  function positionSwatchStrip() {
-    const container = getContainer();
-    const strip = swatchStrip;
-    if (!container || !strip || strip.hidden || !swatchFolderId) {
-      return;
-    }
-    const host = folderElement(swatchFolderId);
-    if (!host) {
-      strip.hidden = true;
-      return;
-    }
-    // Полоска живёт, пока курсор над плиткой или над самой полоской.
-    // Иначе после перерисовки она осталась бы висеть впустую.
-    if (pointerX >= 0 && !inlineEdit) {
-      const over = document.elementFromPoint(pointerX, pointerY);
-      if (over) {
-        const onStrip = over === strip || strip.contains(over);
-        const onHost = over === host || host.contains(over);
-        if (!onStrip && !onHost) {
-          strip.hidden = true;
-          return;
-        }
-      }
-    }
-    const rect = host.getBoundingClientRect();
-    const cRect = container.getBoundingClientRect();
-    const scrollLeft = container.scrollLeft || 0;
-    const scrollTop = container.scrollTop || 0;
-    const height = strip.offsetHeight || 26;
-    const width = strip.offsetWidth || 200;
-    // Полоску ставим под плиткой. Если снизу не помещается — над ней,
-    // а если и там тесно, прижимаем к краю панели: она всё равно должна
-    // быть видна, а не уехать за край.
-    const below = cRect.bottom - rect.bottom;
-    const above = rect.top - cRect.top;
-    let viewTop;
-    if (below >= height + 8) {
-      viewTop = rect.bottom + 4;
-    } else if (above >= height + 8) {
-      viewTop = rect.top - height - 4;
-    } else {
-      viewTop = Math.max(cRect.top + 4, cRect.bottom - height - 4);
-    }
-    let left = rect.left - cRect.left + scrollLeft;
-    left = Math.max(0, Math.min(left, (container.clientWidth || 0) - width));
-    strip.style.left = left + "px";
-    strip.style.top = (viewTop - cRect.top + scrollTop) + "px";
-  }
-
-  /** Прячет полоску. С задержкой — мышь должна успеть переехать с плитки
-   *  на саму полоску. */
-  function hideSwatchStrip(delay = 0) {
-    if (swatchHideTimer) {
-      clearTimeout(swatchHideTimer);
-      swatchHideTimer = 0;
-    }
-    if (!delay) {
-      if (swatchStrip) {
-        swatchStrip.hidden = true;
-      }
-      return;
-    }
-    swatchHideTimer = setTimeout(() => {
-      swatchHideTimer = 0;
-      if (swatchStrip) {
-        swatchStrip.hidden = true;
-      }
-    }, delay);
-  }
-
-  /** Применяет цвет папки сразу — без диалога. */
-  function applyInlineColor(color) {
-    const folder = folderById(swatchFolderId);
-    if (!folder || !color) {
-      return;
-    }
-    folder.color = color;
-    // Цвет запоминаем сразу: если преф не запишется, следующая
-    // перерисовка не вернёт папке старый цвет.
-    pendingColors.set(folder.id, color);
-    persist();
-    paintFolderColor(folder.id, color);
-    showSwatchStrip(folderElement(folder.id), folder);
-  }
-
-  /** Наведение на плитку (или на шапку) показывает полоску цветов. */
-  function attachColourStrip(element, folder) {
-    element.addEventListener("mouseenter", () => {
-      if (swatchHideTimer) {
-        clearTimeout(swatchHideTimer);
-        swatchHideTimer = 0;
-      }
-      showSwatchStrip(element, folder);
-    });
-    element.addEventListener("mouseleave", () => hideSwatchStrip(200));
   }
 
   /** Воздух под иконками папки (--zef-plane-air). Разрыв ряда после
@@ -4372,15 +4171,7 @@
     if (menu) {
       menu.setAttribute("label", t("menu.intoFolder"));
     }
-    // Полоска цветов и поле правки названия — тоже с новым языком.
-    if (swatchStrip) {
-      const more = swatchStrip.querySelector(".zef-inline-more");
-      if (more) {
-        more.textContent = t("folder.inlineAdvanced");
-        more.title = t("folder.inlineAdvanced");
-      }
-      swatchStrip.title = t("folder.inlineColours");
-    }
+    // Поле правки названия — тоже с новым языком.
     if (inlineEdit?.input) {
       inlineEdit.input.placeholder = t("folder.namePlaceholder");
     }
@@ -4700,9 +4491,6 @@
       }
       tilePopup?.remove();
       dialogPanel?.remove();
-      swatchStrip?.remove();
-      swatchStrip = null;
-      swatchFolderId = null;
       inlineEdit = null;
       searchRow?.remove();
       searchRow = null;

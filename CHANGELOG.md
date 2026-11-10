@@ -10,6 +10,22 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.13.1] — 2026-11-10
+
+The hover colour strip is gone, and an expanded nested folder is now visible at a glance.
+
+### Changed
+
+- **An expanded nested folder shows it.** Its chevron points down instead of sideways, and the
+  tile glows softly in the colour of the folder, so an open folder can be told apart from a
+  closed one without opening the panel.
+
+### Removed
+
+- **The colour strip on hover.** A compact strip of the 16 palette colours used to appear next
+  to a folder tile when the pointer rested on it — and in the new layout it covered the icons of
+  the folder below. The colour is still one click away: right-click the tile → `Change colour…`.
+
 ## [1.13.0] — 2026-11-10
 
 A nested folder no longer takes a block of its own — it stays a tile, and its icons lie in a

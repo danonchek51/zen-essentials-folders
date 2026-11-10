@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.12.0](https://img.shields.io/badge/version-1.13.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.12.0](https://img.shields.io/badge/version-1.13.1-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -51,6 +51,8 @@ within** — all with ordinary mouse drag & drop.
   and its icons appear as a dense strip right under the row, inside the colour area of the parent.
   The open nested folder is underlined with its own colour, and the strip of its icons carries a
   thin line of that colour — so it is clear at a glance whose icons these are.
+- **You see which nested folder is open.** An expanded nested folder has a downward chevron
+  instead of the usual sideways one, and its tile glows softly in the colour of the folder.
 - **Reordering folders.** Drag a tile by its edge — the folder lands next to the one you dropped
   it on. A nested folder can be dragged back out to the top level the same way.
 - **Reordering tiles inside a folder.** Drag an icon onto a neighbouring icon — the tile lands
@@ -78,9 +80,6 @@ within** — all with ordinary mouse drag & drop.
 - **Renaming happens on the tile.** Double-click a folder name — on a tile or on the header of
   an open folder — and the caption turns into a text field. `Enter` or clicking away keeps the
   new name, `Esc` puts the old one back.
-- **The colour is one click away.** Hovering a folder shows a compact strip of the 16 palette
-  colours next to the tile; a single click applies the colour immediately. `Advanced…` opens
-  the full folder dialog for the exact hex value, a custom icon and site rules.
 - **Folder search**: the row above the tiles. Type a folder name or a domain — and only the
   matches stay. `Esc` or the cross resets the search.
 - **A pinned folder** (the pin in the folder menu) always sits in the top row, above all the

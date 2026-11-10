@@ -292,11 +292,22 @@
   height: 16px;
 }
 
-/* Раскрытая вложенная папка помечена подчёркиванием своего цвета. */
+/* Раскрытая вложенная папка: шеврон смотрит вниз (у свёрнутой — вправо),
+   а плитка мягко светится своим цветом. Свечение мягкое и внешнее — чтобы его
+   нельзя было спутать с рамкой активной папки. */
 .zen-essentials-container .zef-tile.zef-nested.zef-open {
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--zef-color, #8b5cf6) 60%, transparent),
-    inset 0 -2px 0 0 var(--zef-color, #8b5cf6);
+    inset 0 -2px 0 0 var(--zef-color, #8b5cf6),
+    0 0 0 1px color-mix(in srgb, var(--zef-color, #8b5cf6) 30%, transparent),
+    0 0 10px 1px color-mix(in srgb, var(--zef-color, #8b5cf6) 45%, transparent);
+}
+
+/* Шеврон вложенной папки: свёрнута — вправо, раскрыта — вниз. */
+.zen-essentials-container .zef-tile.zef-nested.zef-open::before {
+  transform: rotate(45deg);
+  margin-top: -2px;
+  opacity: 1;
 }
 
 .zen-essentials-container .zef-tiles-row {
@@ -926,54 +937,6 @@
 
 .zef-swatch.zef-selected {
   border-color: light-dark(#15141a, #fbfbfe);
-}
-
-/* ------------------------------------------------------------------
- * Полоска цветов у плитки папки
- *
- * Появляется рядом с плиткой (наведение или правка названия) и лежит
- * поверх сетки: цвет меняется одним кликом, без диалога. Позиция
- * считается от содержимого панели, поэтому ряд не ломается.
- * ------------------------------------------------------------------ */
-
-.zen-essentials-container > .zef-inline-swatches {
-  position: absolute;
-  z-index: 5;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  box-sizing: border-box;
-  max-width: calc(100% - 10px);
-  padding: 5px 6px;
-  border-radius: 10px;
-  background: light-dark(#ffffff, #2b2a33);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-}
-
-.zen-essentials-container > .zef-inline-swatches[hidden] {
-  display: none;
-}
-
-.zen-essentials-container > .zef-inline-swatches .zef-swatch {
-  flex: none;
-  width: 14px;
-  height: 14px;
-  aspect-ratio: auto;
-  border-width: 1px;
-  border-radius: 4px;
-}
-
-.zen-essentials-container > .zef-inline-swatches .zef-inline-more {
-  flex: none;
-  padding: 2px 6px;
-  font: 10px/1.4 "Segoe UI", system-ui, sans-serif;
-  color: inherit;
-  white-space: nowrap;
-  background: none;
-  border: 1px solid light-dark(#d0d0d8, #4a4a56);
-  border-radius: 6px;
-  cursor: pointer;
 }
 
 /* Свой цвет: квадрат оттенка, полоса цвета, поле кода и «случайный». */
