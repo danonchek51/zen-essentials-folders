@@ -240,6 +240,65 @@
   justify-content: start;
 }
 
+/* ------------------------------------------------------------------
+ * Вложенная раскладка: вложенные папки — только плитками
+ *
+ * Раскрытая вложенная папка показывает свои иконки плотной полосой под
+ * рядом плиток — внутри цветной области родителя. Своей шапки и своей
+ * плоскости у неё нет: иначе вложенный блок занимал бы столько же места,
+ * сколько главный, и взгляд не цеплялся ни за что.
+ * ------------------------------------------------------------------ */
+
+/* Полоса иконок вложенной папки. */
+.zen-essentials-container > .zef-icon-strip {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+  gap: 2px;
+  margin: 0;
+  padding: 2px 4px 3px 8px;
+  border: 0;
+  /* Тонкая черта слева — по ней видно, чьи это иконки. */
+  border-left: 3px solid var(--zef-color, #8b5cf6);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--zef-color, #8b5cf6) 6%, transparent);
+  --zef-icon-size: 18px;
+}
+
+.zen-essentials-container > .zef-icon-strip .tabbrowser-tab[zen-essential="true"] {
+  min-width: 0;
+  padding: 0;
+}
+
+/* Полоса подсвечивается, когда в неё бросили. */
+.zen-essentials-container > .zef-icon-strip.zef-drop-over {
+  background: color-mix(in srgb, var(--zef-color, #8b5cf6) 16%, transparent);
+}
+
+/* Ряд вложенных плиток — компактнее: плитке хватает иконки и подписи. */
+.zen-essentials-container > .zef-tiles-row.zef-nested-row {
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 4px;
+}
+
+.zen-essentials-container > .zef-tiles-row.zef-nested-row > .zef-tile {
+  height: 34px;
+  padding: 2px 3px 1px;
+  gap: 0;
+}
+
+.zen-essentials-container > .zef-tiles-row.zef-nested-row > .zef-tile .zef-tile-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Раскрытая вложенная папка помечена подчёркиванием своего цвета. */
+.zen-essentials-container .zef-tile.zef-nested.zef-open {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--zef-color, #8b5cf6) 60%, transparent),
+    inset 0 -2px 0 0 var(--zef-color, #8b5cf6);
+}
+
 .zen-essentials-container .zef-tiles-row {
   grid-column: 1 / -1;
   display: grid;

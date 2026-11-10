@@ -1193,10 +1193,10 @@
     if (!container) {
       return [];
     }
-    return Array.from(container.children).filter(
-      el =>
-        el.classList?.contains("tabbrowser-tab") &&
-        el.hasAttribute("zen-essential")
+    // Иконки раскрытой вложенной папки лежат в полосе .zef-icon-strip —
+    // ищем их по всему контейнеру, а не только среди прямых детей.
+    return Array.from(
+      container.querySelectorAll(".tabbrowser-tab[zen-essential]")
     );
   }
 
@@ -1582,8 +1582,17 @@
         // останутся в панели навсегда и оставят дыры между иконками.
         child.classList?.contains("zef-row-break") ||
         // Ряд плиток папок — тоже наш: без очистки они накапливались бы.
-        child.classList?.contains("zef-tiles-row")
+        child.classList?.contains("zef-tiles-row") ||
+        // Полоса иконок вложенной папки — наш элемент.
+        child.classList?.contains("zef-icon-strip")
       ) {
+        // Иконки лежат внутри полосы: сначала вернём их в контейнер,
+        // иначе они исчезнут вместе с полосой.
+        if (child.classList?.contains("zef-icon-strip")) {
+          for (const tab of Array.from(child.children)) {
+            container.appendChild(tab);
+          }
+        }
         child.remove();
       }
     }
@@ -1690,62 +1699,68 @@
     // --- плоскости раскрытых папок ---
     // Каждая раскрытая папка — большая плоскость её цвета: шапка с
     // названием и плитки сайтов внутри. Свежая открытая папка — сверху.
-    const layoutFolder = folder => {
-      const plane = buildPlane(folder);
-      container.appendChild(plane);
+    const layoutFolder = (folder, depth = 0) => {
+      const nested = depth > 0;
 
-      const head = buildHead(folder, countOf(folder.id));
-      head.style.order = String(nextOrder());
-      // Самая верхняя шапка не отступает сверху: сверху и так есть ряд плиток
-      // (или край панели), лишний отступ там не нужен. Отступ нужен только
-      // между блоками — там он отделяет плоскости друг от друга.
-      if (!container.querySelector(".zef-head")) {
-        head.classList.add("zef-head-first");
+      // Свою шапку и свою цветную плоскость имеет только папка верхнего
+      // уровня. Вложенная папка — это плитка в ряду: своими блоками она
+      // занимала столько же места, сколько главная, и взгляд терялся.
+      if (!nested) {
+        container.appendChild(buildPlane(folder));
+
+        const head = buildHead(folder, countOf(folder.id));
+        head.style.order = String(nextOrder());
+        // Самая верхняя шапка не отступает сверху: сверху и так есть ряд
+        // плиток (или край панели), лишний отступ там не нужен. Отступ нужен
+        // только между блоками — там он отделяет плоскости друг от друга.
+        if (!container.querySelector(".zef-head")) {
+          head.classList.add("zef-head-first");
+        }
+        container.appendChild(head);
       }
-      container.appendChild(head);
 
-      // Вложенные папки — плиткой сразу под шапкой родителя:
-      // так структура видна сразу, а не теряется в конце ряда.
+      // Вложенные папки — плитками в своём ряду: и раскрытые, и свёрнутые.
+      // Раскрытая вложенная папка остаётся плиткой, а её иконки собираются
+      // плотной полосой под рядом — внутри цветной области родителя.
       //
       // Плитки вложенных папок лежат отдельным рядом, а не прямо в общей
       // сетке Zen. В общей сетке такая плитка вставала в свободную ячейку
       // чужого ряда — и папка выглядела лежащей в другой папке. Вдобавок её
       // высота больше высоты ряда Zen, и плитки наезжали друг на друга.
-      let hasExpandedChild = false;
-      let nestedRow = null;
-      for (const child of childrenOf(folder.id)) {
-        if (isHiddenByCollapse(child.id)) {
-          if (!nestedRow) {
-            nestedRow = document.createElement("div");
-            nestedRow.className = "zef-tiles-row zef-nested-row";
-            nestedRow.style.order = String(nextOrder());
-            container.appendChild(nestedRow);
-          }
+      const children = childrenOf(folder.id);
+      if (children.length) {
+        const nestedRow = document.createElement("div");
+        nestedRow.className = "zef-tiles-row zef-nested-row";
+        nestedRow.style.order = String(nextOrder());
+        nestedRow.setAttribute("data-zef-owner", folder.id);
+        container.appendChild(nestedRow);
+        for (const child of children) {
           const tile = buildTile(child, countOf(child.id), true);
           tile.setAttribute("data-zef-parent", folder.id);
           tile.style.order = String(nestedRow.children.length);
+          // Раскрытую вложенную папку помечаем: её иконки лежат рядом.
+          if (!isHiddenByCollapse(child.id)) {
+            tile.classList.add("zef-open");
+          }
           nestedRow.appendChild(tile);
-        } else {
-          // Раскрытая вложенная папка разрывает ряд: следующие вложенные
-          // плитки соберутся в новый ряд.
-          nestedRow = null;
-          layoutFolder(child);
-          hasExpandedChild = true;
+        }
+        // Раскрытые вложенные папки: их иконки — плотной полосой под рядом.
+        for (const child of children) {
+          if (isHiddenByCollapse(child.id)) {
+            continue;
+          }
+          const strip = buildIconStrip(child, groups.get(child.id) || []);
+          strip.style.order = String(nextOrder());
+          container.appendChild(strip);
+          layoutFolder(child, depth + 1);
         }
       }
 
-      // Разрыв ряда: иконки родителя не должны продолжать ряд вложенной
-      // папки — иначе они выглядят как содержимое вложенной папки.
-      if (hasExpandedChild) {
-        const rowBreak = document.createElement("div");
-        rowBreak.className = "zef-row-break";
-        rowBreak.style.order = String(nextOrder());
-        container.appendChild(rowBreak);
-      }
-
       // Плитки сайтов папки.
-      for (const item of groups.get(folder.id) || []) {
-        item.tab.style.order = String(nextOrder());
+      if (!nested) {
+        for (const item of groups.get(folder.id) || []) {
+          item.tab.style.order = String(nextOrder());
+        }
       }
     };
 
@@ -1920,6 +1935,61 @@
     });
 
     return tile;
+  }
+
+  /** Полоса иконок раскрытой вложенной папки: плотный ряд под плитками,
+   *  внутри цветной области родителя. Отдельной шапки у вложенной папки
+   *  нет — иначе она занимала бы столько же места, сколько главная. */
+  function buildIconStrip(folder, items) {
+    const strip = document.createElement("div");
+    strip.className = "zef-icon-strip";
+    strip.setAttribute("data-zef-owner", folder.id);
+    strip.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
+    let index = 0;
+    for (const item of items || []) {
+      const tab = item.tab;
+      tab.style.order = String(index++);
+      strip.appendChild(tab);
+    }
+    // Сама полоса — зона приёма: плитка сайта попадёт в папку,
+    // папка — внутрь неё.
+    strip.addEventListener("dragover", event => {
+      if (!dragKind(event)) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      event.dataTransfer.dropEffect = "move";
+      strip.classList.add("zef-drop-over");
+    });
+    strip.addEventListener("dragleave", event => {
+      if (event.relatedTarget && strip.contains(event.relatedTarget)) {
+        return;
+      }
+      strip.classList.remove("zef-drop-over");
+    });
+    strip.addEventListener("drop", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      strip.classList.remove("zef-drop-over");
+      const current = folderById(folder.id) || folder;
+      handleDropIntoFolder(event, current);
+    });
+    return strip;
+  }
+
+  /** Вложена ли папка в другую (на любом уровне). */
+  function isDescendantFolder(childId, ancestorId) {
+    let current = folderById(childId);
+    const seen = new Set();
+    while (current && current.parentId && !seen.has(current.id)) {
+      seen.add(current.id);
+      if (current.parentId === ancestorId) {
+        return true;
+      }
+      current = folderById(current.parentId);
+    }
+    return false;
   }
 
   /** Большая плоскость цвета раскрытой папки. Живёт под плитками —
@@ -2483,21 +2553,22 @@
     for (const plane of container.querySelectorAll(".zef-plane")) {
       const folderId = plane.getAttribute("data-zef-folder");
       const head = container.querySelector(`.zef-head[data-zef-folder="${folderId}"]`);
-      const icons = Array.from(container.children).filter(
-        el =>
-          el.classList?.contains("tabbrowser-tab") &&
-          el.getAttribute("data-zef-folder") === folderId &&
-          el.getAttribute("data-zef-open") === "true"
-      );
-      // Плитки вложенных папок тоже лежат внутри плоскости родителя.
-      // Ищём по всему контейнеру: вложенные плитки лежат в своём ряду.
-      const nested = Array.from(
-        container.querySelectorAll('.zef-tile[data-zef-parent]')
-      ).filter(el => el.getAttribute("data-zef-parent") === folderId);
       if (!head) {
         plane.style.display = "none";
         continue;
       }
+      // Иконки папки: они могут лежать в полосах вложенных папок, поэтому
+      // ищем по всему контейнеру, а не среди прямых детей.
+      const icons = container.querySelectorAll(
+        `.tabbrowser-tab[data-zef-folder="${folderId}"][data-zef-open="true"]`
+      );
+      // Плитки вложенных папок тоже лежат внутри плоскости родителя.
+      // Ищём по всему контейнеру: вложенные плитки лежат в своём ряду.
+      const nested = container.querySelectorAll(
+        `.zef-tile[data-zef-parent="${folderId}"]`
+      );
+      // И полосы иконок вложенных папок — тоже внутри плоскости родителя.
+      const strips = container.querySelectorAll(".zef-icon-strip");
       plane.style.display = "block";
       const headRect = head.getBoundingClientRect();
       // Плитки папки могут не поместиться в одну строку и перенестись
@@ -2510,6 +2581,13 @@
       }
       for (const tile of nested) {
         bottom = Math.max(bottom, tile.getBoundingClientRect().bottom);
+      }
+      for (const strip of strips) {
+        const owner = strip.getAttribute("data-zef-owner");
+        if (owner !== folderId && !isDescendantFolder(owner, folderId)) {
+          continue;
+        }
+        bottom = Math.max(bottom, strip.getBoundingClientRect().bottom);
       }
       plane.style.left = headRect.left - containerRect.left + scrollLeft + "px";
       plane.style.width = headRect.width + "px";
@@ -2709,7 +2787,8 @@
     // или в цвет открытой папки можно перенести плитку. Без них бросок
     // уходил в «ближайшую плитку» и папка менялась на глазах.
     const targets = container.querySelectorAll(
-      ".zef-tile, .zef-head, .zef-plane, .tabbrowser-tab[zen-essential='true']"
+      ".zef-tile, .zef-head, .zef-plane, .zef-icon-strip, " +
+      ".tabbrowser-tab[zen-essential='true']"
     );
     for (const el of targets) {
       const rect = el.getBoundingClientRect();
@@ -2719,9 +2798,16 @@
       const isTile = el.classList.contains("zef-tile");
       const isHead = el.classList.contains("zef-head");
       const isPlane = el.classList.contains("zef-plane");
+      const isStrip = el.classList.contains("zef-icon-strip");
       items.push({
         el,
-        kind: isTile ? "folder" : isHead ? "head" : isPlane ? "plane" : "site",
+        kind: isTile
+          ? "folder"
+          : isHead
+            ? "head"
+            : isPlane || isStrip
+              ? "plane"
+              : "site",
         folderId: el.getAttribute("data-zef-folder") || null,
         area: rect.width * rect.height,
         rect,
@@ -4591,8 +4677,16 @@
           child.classList?.contains("zef-plane") ||
           child.classList?.contains("zef-divider") ||
           child.classList?.contains("zef-row-break") ||
-          child.classList?.contains("zef-tiles-row")
+          child.classList?.contains("zef-tiles-row") ||
+          child.classList?.contains("zef-icon-strip")
         ) {
+          // Иконки лежат внутри полосы: сначала вернём их в контейнер,
+          // иначе они исчезнут из панели вместе с полосой.
+          if (child.classList?.contains("zef-icon-strip")) {
+            for (const tab of Array.from(child.children)) {
+              container.appendChild(tab);
+            }
+          }
           child.remove();
         }
       }
