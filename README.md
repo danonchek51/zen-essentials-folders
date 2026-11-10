@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.12.0](https://img.shields.io/badge/version-1.13.1-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.12.0](https://img.shields.io/badge/version-1.14.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -222,6 +222,14 @@ get in Zen's way — the drop stays an ordinary one.
 Right after the drop the browser sometimes sends an extra click — the mod suppresses it, so the
 folder does not collapse by itself and does not "jump".
 
+While you drag, the target under the cursor is highlighted: the tile, the header of an open
+folder or the icon strip of a nested folder. It is clear where the tile will land before you
+release the mouse.
+
+If a drop does not work, the mod remembers what happened. Open the Zen console (`Ctrl+Shift+J`)
+and run `copy(JSON.stringify(window.__zenEssentialsFolders.lastDrop))` — the result says what
+was dragged, what was under the cursor and where the tile ended up.
+
 ### How it works: one tab — one rule
 
 A folder stores not tabs, but **rules**. An ordinary rule is a domain: `github.com` means "all
@@ -422,6 +430,13 @@ icon grid, indicators and behaviour. Values apply immediately.
 
 Delete the folder `chrome\sine-mods\zen-essentials-folders` and its entry from `mods.json`, then
 restart Zen. No tabs are lost in the process.
+
+### Dragging a tile into a folder does not work
+
+The drop target is highlighted while you drag — if nothing is highlighted, the cursor is not over
+a folder. If the tile still does not land where you aimed, open the Zen console (`Ctrl+Shift+J`)
+and run `copy(JSON.stringify(window.__zenEssentialsFolders.lastDrop))`, then send the result:
+it says what was dragged, what was under the cursor and where the tile ended up.
 
 ### And if the tiles have disappeared?
 

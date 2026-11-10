@@ -10,6 +10,41 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.14.0] — 2026-11-10
+
+Dragging a tile into a folder works in Zen itself again, the target under the cursor is
+highlighted before you release the mouse, and the mod now records what happened with the last
+drop.
+
+### Fixed
+
+- **Dropping a tile into a folder works again.** Zen intercepts drops over the Essentials panel:
+  it replaces the dragged tab with its own copy, which travels under the cursor, so the drop
+  arrived at Zen's copy instead of the folder tile and the mod never saw it. The drop is now
+  caught at the window level, before Zen, and the target is found from the layout snapshot taken
+  at the start of the drag. A tile lands in the folder you aimed at: a folder tile, the icon
+  strip of an open nested folder, or the coloured area of an open folder.
+- **A drop in empty space is left to Zen.** The mod used to grab a drop up to 36 px away from a
+  tile, so a drop between two tiles moved the tab into a neighbouring folder. The tolerance is
+  now 10 px and only inside the panel — everywhere else the drop stays Zen's business.
+- **The icon strip of an open nested folder accepts drops again.** The layout snapshot looked for
+  the folder in the wrong attribute, so a drop on that strip was ignored.
+
+### Added
+
+- **The target of a drop is highlighted.** While you drag, the tile, the header of an open folder
+  or the icon strip under the cursor is marked, so it is clear where the tile will land before
+  you release the mouse.
+- **The mod remembers the last drop.** `window.__zenEssentialsFolders.lastDrop` holds what was
+  dragged, what was under the cursor and where the tile ended up. If a drop does not work, this
+  says why — read it in the Zen console (`Ctrl+Shift+J`).
+
+### Removed
+
+- Dead code: a function that moved a tab into a folder was never called, the translation key of
+  the "New folder…" menu item was unused, and the row break of the old layout is gone with it —
+  its markup, its styles and its cleanup.
+
 ## [1.13.1] — 2026-11-10
 
 The hover colour strip is gone, and an expanded nested folder is now visible at a glance.

@@ -1,6 +1,6 @@
 # Essentials Folders — плитки-папки для «Важных» в Zen Browser
 
-[![Версия 1.12.0](https://img.shields.io/badge/version-1.13.1-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Версия 1.12.0](https://img.shields.io/badge/version-1.14.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![Лицензия MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -216,6 +216,13 @@ nested folders, drag & drop, search, and 22 settings. Tabs stay ordinary Zen tab
 
 Сразу после броски браузер иногда присылает лишний клик — мод его гасит, поэтому папка
 не сворачивается сама и не «прыгает».
+
+Пока тянете, цель под курсором подсвечивается: плитка, шапка открытой папки или полоса иконок
+вложенной папки. Видно, куда ляжет плитка, ещё до того, как вы отпустите мышь.
+
+Если бросок не сработал, мод запомнил, что произошло. Откройте консоль Zen (`Ctrl+Shift+J`) и
+выполните `copy(JSON.stringify(window.__zenEssentialsFolders.lastDrop))` — в ответе будет, что
+тащили, что было под курсором и куда плитка в итоге попала.
 
 ### Как это работает: одна вкладка — одно правило
 
