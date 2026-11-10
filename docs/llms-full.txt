@@ -37,6 +37,10 @@ its own colour, and the strip of its icons carries a thin line of the same colou
   `window.__zenEssentialsFolders.lastDrop` holds the result of the last drop.
 - A rule of a folder is matched with the address of a tab without regard to letter case, so
   an address with capitals in the path lands in the folder it was dropped into.
+- A folder opens right after a tile is dropped into it, so the tile is not hidden under a
+  closed lid. A tab dropped from the sidebar is made essential by the mod itself or by the
+  browser, whichever can do it first. The rule of a folder follows the tab when it changes
+  its address.
 - Rearranging folders by dragging a tile by its edge; rearranging tiles inside a folder by
   dragging an icon next to another icon.
 - Only the dragged tab moves: drop one GitHub tab into another folder and only that tab goes,

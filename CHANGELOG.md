@@ -10,6 +10,30 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.14.3] — 2026-11-10
+
+Dropping a tab into a folder now really moves it. The folder opens to show the tile, the tab
+is made essential by the browser itself if the mod cannot do it, and the rule of the folder
+follows the tab when it changes its address.
+
+### Fixed
+
+- **A dropped tab no longer disappears.** The folder of a drop was not opened, so the tile
+  landed inside a closed folder: the folder looked empty and the tab seemed to be gone. The
+  folder and its parents are opened now, right after the drop.
+- **A tab dropped from the sidebar becomes essential.** The mod caught the drop before the
+  browser did, and only the browser knows how to move a tab from the sidebar into the
+  Essentials. The mod tries to do it itself and, if that fails, lets the drop through.
+- **"This tab is already in the folder" is not a dead end.** The mod looks where the tile
+  really is: if it is inside the folder it says so, and if it is not, the move is finished.
+- **A rule follows its tab.** When a tab changed its address, the rule of the folder stayed
+  on the old address and the tile fell out of the folder. The rule is updated now.
+
+### Added
+
+- The report of the last drop (`window.__zenEssentialsFolders.lastDrop`) says whether the tab
+  became essential (`essential`).
+
 ## [1.14.2] — 2026-11-10
 
 A tile dropped into a folder now stays there. The rule of a folder is matched with the

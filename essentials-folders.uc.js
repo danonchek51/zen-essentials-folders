@@ -186,6 +186,8 @@
     "hint.dragFailed": { en: "Could not tell which tab was dragged", ru: "Не понял, какую вкладку перетащили" },
     "hint.alreadyIn": { en: "This tab is already in \u00ab{name}\u00bb", ru: "Вкладка уже в папке \u00ab{name}\u00bb" },
     "hint.moveFailed": { en: "Could not move the tab", ru: "Не получилось перенести вкладку" },
+    "hint.movedIn": { en: "Moved into \u00ab{name}\u00bb", ru: "Перенесено в папку \u00ab{name}\u00bb" },
+    "hint.pinFailed": { en: "The tab stayed in the sidebar", ru: "Вкладка осталась в сайдбаре" },
   };
 
   /** Текущий язык интерфейса: английский по умолчанию, русский — по выбору. */
@@ -382,6 +384,8 @@
   // бросок попадает в это место вместо нужной папки. По снимку мы понимаем,
   // куда целился пользователь на самом деле.
   let dragLayout = null;
+  // Бросок уже разобран на уровне окна — контейнеру не надо его трогать.
+  let dropHandled = false;
   // Момент окончания последнего перетаскивания: сразу после броски
   // браузер может прислать «click» — его надо игнорировать, иначе
   // папка лишний раз свернётся.
@@ -973,7 +977,7 @@
         return null;
       }
     }
-    return { ruleIndex, length };
+    return { ruleIndex, length, rule: sites[ruleIndex] };
   }
 
   /** Папка, которой принадлежит адрес. При равенстве правил побеждает
@@ -986,6 +990,7 @@
     let bestLength = -1;
     let bestDepth = -1;
     let bestRuleIndex = -1;
+    let bestRule = null;
     for (const folder of folders) {
       const match = bestRuleMatch(folder, url);
       if (!match) {
@@ -1000,9 +1005,10 @@
         bestLength = match.length;
         bestDepth = depth;
         bestRuleIndex = match.ruleIndex;
+        bestRule = match.rule;
       }
     }
-    return best ? { folder: best, ruleIndex: bestRuleIndex } : null;
+    return best ? { folder: best, ruleIndex: bestRuleIndex, rule: bestRule } : null;
   }
 
   function folderForUrl(url) {
@@ -1541,6 +1547,11 @@
       container.addEventListener("drop", event => {
         // Бросить можно и вкладку, и папку: папка тоже должна попасть
         // в открытую папку, а не потеряться.
+        if (dropHandled) {
+          // Бросок уже разобран на уровне окна: дальше его ведёт Zen.
+          dropHandled = false;
+          return;
+        }
         if (!draggedTab && !draggedFolderId) {
           return;
         }
@@ -1616,19 +1627,29 @@
     const groups = new Map();
     const free = [];
     tabs.forEach((tab, index) => {
+      // Что было до пересборки: в какой папке вкладка лежала и по какому
+      // правилу. Если адрес поменялся — правило обновим, иначе значок
+      // выпадет из папки («вкладка исчезла»).
+      const previousFolderId = tab.getAttribute("data-zef-folder");
+      const previousRule = tab.getAttribute("data-zef-rule");
       tab.removeAttribute("data-zef-folder");
+      tab.removeAttribute("data-zef-rule");
       tab.removeAttribute("data-zef-open");
       tab.removeAttribute("data-zef-hidden");
       tab.style.removeProperty("--zef-color");
 
       const match = matches[index];
       if (!match) {
+        refreshFolderRule(previousFolderId, previousRule, tabUrl(tab));
         free.push(tab);
         attachSiteDropHandlers(tab);
         return;
       }
       const folder = match.folder;
       tab.setAttribute("data-zef-folder", folder.id);
+      if (match.rule) {
+        tab.setAttribute("data-zef-rule", match.rule);
+      }
       tab.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
       if (isHiddenByCollapse(folder.id)) {
         tab.setAttribute("data-zef-hidden", "true");
@@ -1932,6 +1953,10 @@
       tile.classList.remove("zef-drop-before", "zef-drop-into", "zef-drop-after");
     });
     tile.addEventListener("drop", event => {
+      if (dropHandled) {
+        // Бросок уже разобран на уровне окна — ведёт его Zen.
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
       const kind = dragKind(event);
@@ -2819,9 +2844,9 @@
     }
     // Шапка или цветная область открытой папки — бросаем внутрь неё.
     if (target.kind === "head" || target.kind === "plane") {
-      handleDropIntoFolder(event, folder);
-      recordDrop({ result: "into-folder", target: target.kind, folder: folder.id });
-      return true;
+      const info = handleDropIntoFolder(event, folder) || {};
+      recordDrop(Object.assign({ target: target.kind, folder: folder.id }, info));
+      return info;
     }
     if (kind === "folder") {
       const zone = dropZoneOf(event, target.el, 0.3);
@@ -2829,9 +2854,9 @@
       recordDrop({ result: "folder-drop", target: "tile", folder: folder.id, zone: zone });
       return true;
     }
-    handleSiteDropOnTile(event, folder);
-    recordDrop({ result: "site-into-folder", target: "tile", folder: folder.id });
-    return true;
+    const info = handleSiteDropOnTile(event, folder) || {};
+    recordDrop(Object.assign({ target: "tile", folder: folder.id }, info));
+    return info;
   }
 
   /** Бросок по снимку: плитка папки — внутрь, плитка сайта — рядом. */
@@ -2974,16 +2999,23 @@
     return true;
   }
 
-  /** Сделать обычную вкладку «Важной», чтобы она появилась в панели. */
+  /** Сделать обычную вкладку «Важной», чтобы она появилась в панели.
+   *
+   *  Возвращает правду: вкладка действительно стала «Важной». Если нет —
+   *  бросок надо отдать Zen: только он умеет переносить вкладку из
+   *  сайдбара в «Важные». */
   function pinTabAsEssential(tab) {
-    if (!tab || tab.hasAttribute?.("zen-essential")) {
+    if (!tab) {
       return false;
+    }
+    if (tab.hasAttribute?.("zen-essential")) {
+      return true;
     }
     try {
       const manager = window.gZenPinnedTabManager;
       if (manager?.addToEssentials) {
         manager.addToEssentials(tab);
-        return true;
+        return Boolean(tab.hasAttribute?.("zen-essential"));
       }
     } catch (e) {
       console.warn("[ZEF] could not pin the tab", e);
@@ -3105,28 +3137,137 @@
     return true;
   }
 
+  /** Вкладка уже нарисована внутри этой папки? */
+  function tabIsInFolder(tab, folderId) {
+    if (!tab || !folderId) {
+      return false;
+    }
+    const owner = tab.getAttribute?.("data-zef-folder");
+    return Boolean(owner) && owner === folderId;
+  }
+
+  /** Раскрыть папку и всех её родителей.
+   *
+   *  Иначе значок перенесённой вкладки прячется под крышкой свёрнутой
+   *  папки: правило есть, а видно — пусто. Именно это выглядит как
+   *  «вкладка исчезла». */
+  function revealFolder(folderId) {
+    const set = new Set(readJSONPref(PREF_COLLAPSED, []));
+    let changed = false;
+    const seen = new Set();
+    let current = folderById(folderId);
+    while (current && !seen.has(current.id)) {
+      seen.add(current.id);
+      if (set.delete(current.id)) {
+        changed = true;
+      }
+      current = current.parentId ? folderById(current.parentId) : null;
+    }
+    if (!changed) {
+      return false;
+    }
+    writeJSONPref(PREF_COLLAPSED, [...set]);
+    collapsed = set;
+    lastSignature = null;
+    scheduleSync(60);
+    return true;
+  }
+
+  /** Бросок отдан Zen: если он не справился — закрепляем вкладку сами.
+   *
+   *  Так перенос получается однозначным: значок окажется в папке в любом
+   *  случае, и пользователю не надо гадать, что сломалось. */
+  function ensureEssentialSoon(tab) {
+    if (!tab) {
+      return;
+    }
+    setTimeout(() => {
+      if (tab.hasAttribute?.("zen-essential")) {
+        return;
+      }
+      if (!pinTabAsEssential(tab)) {
+        showHint(t("hint.pinFailed"));
+      }
+    }, 400);
+  }
+
+  /** Вкладка перешла на другой адрес, но осталась в своей папке: правило
+   *  папки обновляем — иначе значок выпадет из папки («вкладка исчезла»). */
+  function refreshFolderRule(folderId, oldRule, url) {
+    if (!folderId || !oldRule || !url) {
+      return false;
+    }
+    const folder = folderById(folderId);
+    if (!folder) {
+      return false;
+    }
+    const sites = folder.sites || [];
+    const index = sites.indexOf(oldRule);
+    if (index < 0) {
+      return false;
+    }
+    const fresh = specificRuleFor(url);
+    if (!fresh || normalizeSite(fresh) === normalizeSite(oldRule)) {
+      return false;
+    }
+    sites[index] = fresh;
+    persist();
+    return true;
+  }
+
   /** Бросили плитку сайта на плитку папки — сайт переезжает в папку. */
   function handleSiteDropOnTile(event, folder) {
     const tab = draggedTabFrom(event) || draggedTab;
     const url = tab ? tabUrl(tab) : urlFromData(event);
     if (!url) {
       showHint(t("hint.dragFailed"));
-      return;
+      return { url: "", result: "no-url" };
     }
     const source = folderForUrl(url);
     if (source && source.id === folder.id) {
-      showHint(t("hint.alreadyIn", { name: folder.name || "…" }));
-      return;
+      // Правило уже указывает на эту папку. Но значок может быть не там:
+      // вкладка ещё не «Важная» (лежит в сайдбаре) — папка выглядит пустой,
+      // а перенос кажется неработающим. Если значок действительно внутри
+      // папки — честно говорим «уже здесь». Если нет — доводим перенос до
+      // конца: вкладка становится «Важной», а папка раскрывается.
+      if (tabIsInFolder(tab, folder.id)) {
+        showHint(t("hint.alreadyIn", { name: folder.name || "…" }));
+        return { url: url, targetFolder: folder.id, result: "already-in" };
+      }
+      const pinned = pinTabAsEssential(tab);
+      if (!pinned && tab) {
+        ensureEssentialSoon(tab);
+      }
+      revealFolder(folder.id);
+      showHint(t("hint.movedIn", { name: folder.name || "…" }));
+      return {
+        url: url,
+        targetFolder: folder.id,
+        result: pinned ? "pinned-in-folder" : "rule-only",
+        essential: tab ? pinned : null,
+      };
     }
-    if (moveSiteToFolder(url, folder, -1, true)) {
-      persist();
-    } else {
+    if (!moveSiteToFolder(url, folder, -1, true)) {
       showHint(t("hint.moveFailed"));
+      return { url: url, targetFolder: folder.id, result: "move-failed" };
     }
+    persist();
     // Обычная вкладка сразу становится «Важной» — и попадает в папку.
-    if (tab) {
-      pinTabAsEssential(tab);
+    const pinned = pinTabAsEssential(tab);
+    if (!pinned && tab) {
+      // Наша попытка не вышла — бросок отдан Zen, но и сами подстрахуемся.
+      ensureEssentialSoon(tab);
     }
+    // Папку раскрываем: значок не должен прятаться под крышкой.
+    revealFolder(folder.id);
+    showHint(t("hint.movedIn", { name: folder.name || "…" }));
+    return {
+      url: url,
+      source: source?.id || null,
+      targetFolder: folder.id,
+      result: pinned ? "site-into-folder" : "rule-only",
+      essential: tab ? pinned : null,
+    };
   }
 
   /** Бросили папку на плитку папки: в середину — вложить, с краю — поменять
@@ -3162,14 +3303,21 @@
     const tab = draggedTabFrom(event) || draggedTab;
     const url = tab ? tabUrl(tab) : urlFromData(event);
     if (!url) {
-      return;
+      return { url: "", result: "no-url" };
     }
     if (moveSiteToFolder(url, folder, -1, true)) {
       persist();
     }
-    if (tab) {
-      pinTabAsEssential(tab);
+    const pinned = pinTabAsEssential(tab);
+    if (!pinned && tab) {
+      ensureEssentialSoon(tab);
     }
+    return {
+      url: url,
+      targetFolder: folder.id,
+      result: pinned ? "into-folder" : "rule-only",
+      essential: tab ? pinned : null,
+    };
   }
 
   /** Бросили плитку сайта на другую плитку сайта:
@@ -3302,6 +3450,10 @@
       tab.classList.remove("zef-drop-before", "zef-drop-after");
     });
     tab.addEventListener("drop", event => {
+      if (dropHandled) {
+        // Бросок уже разобран на уровне окна — ведёт его Zen.
+        return;
+      }
       if (dragKind(event) !== "site") {
         return;
       }
@@ -4433,7 +4585,7 @@
       // discarded и pending — вкладку выгрузили из памяти или вернули;
       // linkedpanel — у выгруженной вкладки панель браузера исчезает:
       // рамка вокруг выгруженной иконки должна появляться сразу.
-      attributeFilter: ["zen-essential", "discarded", "pending", "linkedpanel"],
+      attributeFilter: ["zen-essential", "discarded", "pending", "linkedpanel", "uri"],
     });
   }
 
@@ -4545,6 +4697,7 @@
         draggedTab = tab || null;
         draggedTabIsEssential = Boolean(tab?.hasAttribute?.("zen-essential"));
         dragInProgress = true;
+        dropHandled = false;
         if (draggedTabIsEssential) {
           document.documentElement.classList.add("zef-drag-active");
         }
@@ -4596,6 +4749,16 @@
           return;
         }
         event.preventDefault();
+        // Вкладку из сайдбара ведёт Zen: только он умеет сделать её
+        // «Важной». Если перехватить бросок, вкладка останется в сайдбаре,
+        // а папка будет выглядеть пустой. Поэтому такой бросок не гасим.
+        if (!draggedTabIsEssential) {
+          try {
+            event.dataTransfer.dropEffect = "move";
+          } catch (e) {}
+          markDropTarget(target, event);
+          return;
+        }
         event.stopPropagation();
         try {
           event.dataTransfer.dropEffect = "move";
@@ -4630,9 +4793,20 @@
           return;
         }
         event.preventDefault();
-        event.stopPropagation();
         clearDropMarks();
-        applyDropToTarget(event, target);
+        const info = applyDropToTarget(event, target) || {};
+        // Если вкладку не удалось сделать «Важной» — отдаём бросок Zen:
+        // он переносит вкладку из сайдбара в «Важные» как умеет.
+        if (info.essential === false) {
+          dropHandled = true;
+          // Страховка: если бросок не дошёл до нашего контейнера, флаг
+          // не должен помешать следующему перетаскиванию.
+          setTimeout(() => {
+            dropHandled = false;
+          }, 0);
+          return;
+        }
+        event.stopPropagation();
       },
       true
     );
@@ -4723,6 +4897,7 @@
       }
       for (const tab of essentialTabs(container)) {
         tab.removeAttribute("data-zef-folder");
+        tab.removeAttribute("data-zef-rule");
         tab.removeAttribute("data-zef-open");
         tab.removeAttribute("data-zef-hidden");
         tab.removeAttribute("zef-drop-ready");
