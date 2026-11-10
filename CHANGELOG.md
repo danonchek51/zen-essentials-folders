@@ -10,6 +10,28 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.14.2] — 2026-11-10
+
+A tile dropped into a folder now stays there. The rule of a folder is matched with the
+address of the tab without regard to letter case, so an address like
+`.../ark/region:ap-southeast-1/apiKey` is caught by its own rule.
+
+### Fixed
+
+- **Dropping a tile into a folder works.** The rule of a folder is kept in lower case, but
+  the path of the address was compared as it is. An address with capitals in the path
+  (`.../apiKey`) never matched its own rule, so the tile stayed in the grid instead of
+  moving into the folder — and the folder list grew with every attempt.
+- **A repeated drop no longer piles up rules.** A rule that is already in the folder is not
+  added a second time. One folder of a user had twenty identical rules, another one ten.
+- **Leftover copies are cleaned up.** When the mod reads the folders, identical rules are
+  dropped — the duplicates left by earlier attempts disappear on their own.
+
+### Added
+
+- The report of the last drop (`window.__zenEssentialsFolders.lastDrop`) now says which
+  address was dragged, which folder owned it and which folder was the target.
+
 ## [1.14.1] — 2026-11-10
 
 A dropped tile now lands in the folder it was aimed at, even though Zen moves the Essentials

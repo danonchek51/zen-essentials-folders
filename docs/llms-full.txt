@@ -35,6 +35,8 @@ its own colour, and the strip of its icons carries a thin line of the same colou
   cursor is highlighted while you drag, and it is measured again at the moment of the drop —
   Zen shifts the Essentials grid while you drag, so the tile under the cursor moves.
   `window.__zenEssentialsFolders.lastDrop` holds the result of the last drop.
+- A rule of a folder is matched with the address of a tab without regard to letter case, so
+  an address with capitals in the path lands in the folder it was dropped into.
 - Rearranging folders by dragging a tile by its edge; rearranging tiles inside a folder by
   dragging an icon next to another icon.
 - Only the dragged tab moves: drop one GitHub tab into another folder and only that tab goes,

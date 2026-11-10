@@ -585,7 +585,7 @@
           icon: raw.icon || DEFAULT_ICON,
           parentId,
           pinned: Boolean(raw.pinned),
-          sites: [...(raw.sites || [])],
+          sites: uniqueRules(raw.sites),
         };
       }
       folder.name = raw.name || "";
@@ -593,9 +593,28 @@
       folder.icon = raw.icon || DEFAULT_ICON;
       folder.parentId = parentId;
       folder.pinned = Boolean(raw.pinned);
-      folder.sites = [...(raw.sites || [])];
+      folder.sites = uniqueRules(raw.sites);
       return folder;
     });
+  }
+
+  /** Убрать одинаковые правила: после прежних бросков в папках копились
+   *  повторы одного и того же адреса. Совпадение — без учёта регистра,
+   *  как и при сопоставлении правила с адресом. */
+  function uniqueRules(list) {
+    const seen = new Set();
+    const out = [];
+    for (const item of list || []) {
+      const key = isExclusionRule(item)
+        ? "!" + normalizeSite(ruleBody(item))
+        : normalizeSite(item);
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      out.push(item);
+    }
+    return out;
   }
 
   /** Папка по id из текущего состояния — плитки хранят ссылки, но вдруг. */
@@ -886,7 +905,10 @@
     if (hostOf(url) !== ruleHost) {
       return false;
     }
-    const urlPath = pathOf(url);
+    // Путь сравниваем без учёта регистра: правило приводится к нижнему
+    // регистру, а адрес остаётся как есть — иначе «.../apiKey» и
+    // «.../apikey» не совпали бы, и вкладка не попадала бы в папку.
+    const urlPath = pathOf(url).toLowerCase();
     if (!rulePath) {
       // «example.com/» — только главная страница, без пути.
       return urlPath === "";
@@ -2786,8 +2808,8 @@
     }
     const kind = dragKind(event);
     if (target.kind === "site") {
-      handleDropOnSite(event, target.el);
-      recordDrop({ result: "reordered", target: "site" });
+      const info = handleDropOnSite(event, target.el) || {};
+      recordDrop(Object.assign({ result: "reordered", target: "site" }, info));
       return true;
     }
     const folder = folderById(target.folderId);
@@ -2993,6 +3015,17 @@
 
   /** Вставить правило на место указанного правила папки. */
   function insertRule(sites, rule, targetRuleIndex, before) {
+    // Такое правило уже есть — второй раз не добавляем. Раньше повторный
+    // бросок копил копии одного и того же правила, и настройки папок
+    // разрастались с каждым броском.
+    const same = normalizeSite(rule);
+    if (
+      sites.some(
+        item => !isExclusionRule(item) && normalizeSite(item) === same
+      )
+    ) {
+      return;
+    }
     let at = sites.length;
     if (targetRuleIndex >= 0 && targetRuleIndex < sites.length) {
       at = before ? targetRuleIndex : targetRuleIndex + 1;
@@ -3145,28 +3178,34 @@
   function handleDropOnSite(event, targetTab) {
     const tab = draggedTabFrom(event) || draggedTab;
     if (!tab || tab === targetTab) {
-      return;
+      return { error: "нечего перетаскивать" };
     }
     const url = tabUrl(tab);
     if (!url) {
-      return;
+      return { error: "нет адреса вкладки" };
     }
     const targetUrl = tabUrl(targetTab);
     const targetFolder = folderForUrl(targetUrl);
+    const source = folderForUrl(url);
     if (!targetFolder) {
       // Цель — свободная плитка: перетаскиваемый выходит из своей папки.
-      const current = folderForUrl(url);
+      const current = source;
       if (current && removeSiteFromFolder(current, url)) {
         persist();
       }
-      return;
+      return { url: url, targetUrl: targetUrl, source: current?.id || null,
+               result: "out-of-folder" };
     }
     const targetRuleIndex = bestRuleMatch(targetFolder, targetUrl)?.ruleIndex ?? -1;
     const before = dropZoneOf(event, targetTab, 0.5) === 0;
-    if (moveSiteToFolder(url, targetFolder, targetRuleIndex, before)) {
+    const moved = moveSiteToFolder(url, targetFolder, targetRuleIndex, before);
+    if (moved) {
       persist();
     }
     pinTabAsEssential(tab);
+    return { url: url, targetUrl: targetUrl, source: source?.id || null,
+             targetFolder: targetFolder.id, ruleIndex: targetRuleIndex,
+             before: before, moved: moved };
   }
 
   /** Бросили на разделитель: вкладка остаётся «Важной», но уходит из папки,
