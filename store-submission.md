@@ -62,13 +62,15 @@ is made with the `create-theme` template
 - **Name:** `Essentials Folders` (18 characters, limit 25) ✔
 - **Description:** `Zen Browser mod: folder tiles for Essentials - nesting, drag & drop, search, 22 settings.` (89 characters, limit 100) ✔
 - **Homepage:** `https://github.com/danonchek51/zen-essentials-folders`
-- **Image:** PNG 600×400 over HTTPS (a live snapshot of the mod in Zen)
+- **Image:** PNG 600×400 over HTTPS — `images/store-card.png` in the repository
+  (the Essentials panel with folder tiles, drawn by the mod itself)
 - **Theme Styles:** the contents of `chrome.css` (without the `@-moz-document url-prefix('chrome://')` wrapper)
 - **Readme:** the contents of `README.md`
 - **Preferences:** the contents of `preferences.json`
 
-The 600×400 screenshot is taken from a live Zen after a restart with the installed
-version of the mod.
+The 600×400 image is `images/store-card.png`: the panel is drawn by the mod itself
+(real `chrome.css` and script), with neutral folder names — no personal names of
+folders or bookmarks appear in the public files.
 
 ## 3. Other platforms — texts are ready
 
@@ -109,7 +111,8 @@ profile to the repository and to name-based search.
 - [ ] The new description and tags are visible on the card.
 - [ ] `Theme Homepage` leads to the repository, not to a 404.
 - [ ] The Releases tab on GitHub opens an archive that contains all 4 mod files.
-- [ ] The images open in the README on GitHub (all 9 in the `images/` folder).
+- [ ] The images open in the README on GitHub (all 9 in the `images/` folder,
+      plus `store-card.png` — the 600×400 card image).
 
 ## 5. Release 1.14.0 — what changed for the submission
 
