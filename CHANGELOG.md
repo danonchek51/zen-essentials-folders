@@ -10,6 +10,22 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.14.7] — 2026-11-10
+
+The mod now recognises the dragged tab even when the drag does not start on a tab of the browser.
+
+### Fixed
+
+- **A drag from the sidebar of Zen is understood.** The start of such a drag comes from the list of
+  Zen in the sidebar, not from a tab of the browser, so the mod did not know what was being
+  dragged and let the drop pass. The tab is always in the drag data, and the mod takes it from
+  there now.
+
+### Added
+
+- The report of the last drop lists the types of the drag data (`types`), so it is visible what
+  was being dragged when the mod could not tell.
+
 ## [1.14.6] — 2026-11-10
 
 A tab now lands in the folder that was highlighted while dragging — not in the tile that happened

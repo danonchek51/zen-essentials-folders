@@ -65,7 +65,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.14.6";
+  const MOD_VERSION = "1.14.7";
 
 
   /* ------------------------------------------------------------------ *
@@ -3022,6 +3022,17 @@
     return true;
   }
 
+  /** Типы данных в буфере перетаскивания — для разбора, когда мод не поняла,
+   *  что именно тянут. */
+  function dragTypes(event) {
+    try {
+      const types = event.dataTransfer?.types;
+      return types ? Array.from(types).slice(0, 6) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   /** Цель из последнего наведения — запасной путь для броска.
    *
    *  Берём её, только если плитка ещё на месте, папка существует и
@@ -4985,13 +4996,12 @@
     onWindow(
       "dragover",
       event => {
-        if (!dragInProgress && !draggedFolderId) {
-          // Начало перетаскивания могло пройти мимо нас — тогда мод не знает,
-          // что кто-то что-то тащит, и пропускает бросок. По буферу
-          // перетаскивания видно, что тащат вкладку: значит, разбирать надо.
-          if (!adoptDragFromData(event)) {
-            return;
-          }
+        // Вкладку могли начать тащить не с вкладки в браузере — например, из
+        // списка Zen в сайдбаре: тогда dragstart приходит от другого
+        // элемента, и мод вкладку не знает. Но вкладка всегда лежит в буфере
+        // перетаскивания — достаём её оттуда.
+        if (!draggedTab && !draggedFolderId && !adoptDragFromData(event)) {
+          return;
         }
         const target = resolveDropTarget(event);
         if (!target) {
@@ -5025,10 +5035,11 @@
     onWindow(
       "drop",
       event => {
-        if (!dragInProgress && !draggedTab && !draggedFolderId) {
-          if (!adoptDragFromData(event)) {
-            return;
-          }
+        // Вкладку могли начать тащить не с вкладки в браузере (например, из
+        // списка Zen в сайдбаре) — тогда мод её не знает. Но вкладка всегда
+        // лежит в буфере перетаскивания: достаём её оттуда.
+        if (!draggedTab && !draggedFolderId && !adoptDragFromData(event)) {
+          return;
         }
         lastDropPoint = { x: event.clientX, y: event.clientY };
         const target = resolveDropTarget(event) || hoverTargetFor(event);
@@ -5057,6 +5068,7 @@
             dragged: draggedTab ? "site" : draggedFolderId ? "folder" : "none",
             draggedUrl: draggedTabUrl,
             near: nearestTargetDistance(),
+            types: dragTypes(event),
           });
           return;
         }
