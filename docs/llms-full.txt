@@ -31,9 +31,10 @@ its own colour, and the strip of its icons carries a thin line of the same colou
   of the folder.
 - The colour of a folder is set from its context menu (`Change colour…`); there is no strip over
   the panel.
-- Drops are caught at the window level, before the browser's own handling: the target is found
-  from the layout snapshot taken at the start of the drag, and the target under the cursor is
-  highlighted. `window.__zenEssentialsFolders.lastDrop` holds the result of the last drop.
+- Drops are caught at the window level, before the browser's own handling: the target under the
+  cursor is highlighted while you drag, and it is measured again at the moment of the drop —
+  Zen shifts the Essentials grid while you drag, so the tile under the cursor moves.
+  `window.__zenEssentialsFolders.lastDrop` holds the result of the last drop.
 - Rearranging folders by dragging a tile by its edge; rearranging tiles inside a folder by
   dragging an icon next to another icon.
 - Only the dragged tab moves: drop one GitHub tab into another folder and only that tab goes,
@@ -54,7 +55,7 @@ its own colour, and the strip of its icons carries a thin line of the same colou
 - Bigger, brighter logos in the Essentials grid (26 px), all in identical cells so they line up.
 - The active folder — the one holding the current tab — is marked with a glowing frame, a dot,
   a corner or a star. Pulsing can be switched off.
-- The mod's own settings dialog: 21 options in four groups, applied immediately.
+- The mod's own settings dialog: 22 options in five groups, applied immediately.
 
 ## Settings
 

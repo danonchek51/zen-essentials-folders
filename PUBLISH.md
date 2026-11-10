@@ -183,7 +183,7 @@ images/                 — screenshots for the README
 - [ ] A tab from the sidebar can be dragged into a folder (the drop is allowed)
 - [ ] If the drop did not work, the mod explains why
 - [ ] There are no debug statements in the code (pref logging, `console.log`)
-- [ ] The mod settings dialog has 21 options in 4 groups, everything applies at once
+- [ ] The mod settings dialog has 22 options in 5 groups, everything applies at once
 - [ ] The `⚙` gear next to the search row opens the settings
 - [ ] The active folder (the one holding the current tab) is marked and pulses
 - [ ] The pulsing is switched off by the system "reduce motion" setting

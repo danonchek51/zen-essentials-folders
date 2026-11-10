@@ -1,6 +1,6 @@
 # Essentials Folders
 
-> Essentials Folders is a Zen Browser mod that turns the Essentials (pinboard) grid into folder tiles: nested folders, drag & drop, a search box for folders, and the mod's own settings dialog with 21 options. Tabs stay ordinary Zen tabs — the mod never moves or deletes anything. MIT licensed, works on Zen Browser 1.24b and newer.
+> Essentials Folders is a Zen Browser mod that turns the Essentials (pinboard) grid into folder tiles: nested folders, drag & drop, a search box for folders, and the mod's own settings dialog with 22 options. Tabs stay ordinary Zen tabs — the mod never moves or deletes anything. MIT licensed, works on Zen Browser 1.24b and newer.
 
 ## Start here
 
@@ -18,7 +18,7 @@
 
 - [Repository](https://github.com/danonchek51/zen-essentials-folders): the mod sources — `essentials-folders.uc.js`, `chrome.css`, `theme.json`, `preferences.json`.
 - [Releases](https://github.com/danonchek51/zen-essentials-folders/releases): version archives with release notes.
-- [v1.14.0](https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.14.0): the current release.
+- [v1.14.1](https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.14.1): the current release.
 - [LICENSE](https://github.com/danonchek51/zen-essentials-folders/blob/main/LICENSE): MIT.
 
 ## Installation

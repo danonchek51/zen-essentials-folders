@@ -10,6 +10,22 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.14.1] — 2026-11-10
+
+A dropped tile now lands in the folder it was aimed at, even though Zen moves the Essentials
+grid while you drag.
+
+### Fixed
+
+- **A dropped tile lands in the folder you aimed at.** While you drag, Zen makes room in the
+  Essentials grid and shifts the tiles. The mod looked for the target in the layout recorded
+  at the start of the drag, so by the time you released the mouse the tile had moved away:
+  the tile either stayed where it was or ended up in a neighbouring folder. The target is now
+  measured again at the moment of the drop, so it is the one under the cursor.
+- **A drop next to a tile no longer breaks silently.** The drop handler asked the panel for
+  its rectangle through a variable that did not exist there, and the whole handler fell over
+  — that is why the mod sometimes said nothing at all about a failed drop.
+
 ## [1.14.0] — 2026-11-10
 
 Dragging a tile into a folder works in Zen itself again, the target under the cursor is

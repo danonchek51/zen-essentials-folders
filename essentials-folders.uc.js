@@ -2625,34 +2625,111 @@
     dragLayout = items;
   }
 
-  /** Куда целился пользователь: ищем по снимку раскладки. Если рядом плитки
-   *  нет — значит, целился в пустое место, и мы не мешаем Zen. */
+  /** Цели броска, перемеренные прямо сейчас.
+   *
+   *  Зачем: пока вкладку тащат, Zen вставляет в сетку «Важных» пустое место
+   *  и сдвигает плитки. Снимок раскладки, снятый в начале броска, к моменту
+   *  отпускания мыши уже не совпадает с тем, что видно на экране: плитка, в
+   *  которую целятся, успевает уехать из-под курсора. */
+  function measureDragTargets() {
+    const container = getContainer();
+    if (!container) {
+      return [];
+    }
+    const items = [];
+    // Шапки и цветные области открытых папок — тоже цели броска: в шапку
+    // или в цвет открытой папки можно перенести плитку.
+    const targets = container.querySelectorAll(
+      ".zef-tile, .zef-head, .zef-plane, .zef-icon-strip, " +
+      ".tabbrowser-tab[zen-essential='true']"
+    );
+    for (const el of targets) {
+      // Тащут вкладку — она едет под курсором, целью быть не может.
+      if (el === draggedTab || el.contains(draggedTab)) {
+        continue;
+      }
+      const rect = el.getBoundingClientRect();
+      if (!rect.width || !rect.height) {
+        continue;
+      }
+      const isTile = el.classList.contains("zef-tile");
+      const isHead = el.classList.contains("zef-head");
+      const isPlane = el.classList.contains("zef-plane");
+      const isStrip = el.classList.contains("zef-icon-strip");
+      items.push({
+        el,
+        kind: isTile
+          ? "folder"
+          : isHead
+            ? "head"
+            : isPlane || isStrip
+              ? "plane"
+              : "site",
+        folderId:
+          el.getAttribute("data-zef-folder") ||
+          // У полосы иконок папка лежит в data-zef-owner — своя папка,
+          // в которую полоса и вложена.
+          el.getAttribute("data-zef-owner") ||
+          null,
+        area: rect.width * rect.height,
+        rect,
+      });
+    }
+    // Самая маленькая цель — самая точная: вложенная шапка и вложенная
+    // плоскость лежат внутри плоскости родителя, и её видно раньше.
+    items.sort((a, b) => a.area - b.area);
+    return items;
+  }
+
+  /** Куда целился пользователь.
+   *
+   *  Сначала ищем по свежим замерам целей (см. measureDragTargets): сетку
+   *  «Важных» во время перетаскивания двигает сам Zen, и снимок раскладки
+   *  устаревает. Снимок оставлен запасным вариантом — на случай, если панель
+   *  сейчас не на месте.
+   *
+   *  Если рядом плитки нет — значит, целился в пустое место, и мы не мешаем
+   *  Zen. */
   function resolveDropTarget(event) {
     const x = event.clientX;
     const y = event.clientY;
-    const items = dragLayout || [];
-    let nearest = null;
-    for (const item of items) {
-      if (item.el === draggedTab) {
-        continue;
+
+    // Ближайшая цель и точное попадание среди указанных.
+    const nearestIn = (items) => {
+      let nearest = null;
+      for (const item of items) {
+        if (item.el === draggedTab) {
+          continue;
+        }
+        const r = item.rect;
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+          return { item: item, dist: 0 };
+        }
+        const dist = Math.hypot(
+          x - (r.left + r.right) / 2,
+          y - (r.top + r.bottom) / 2
+        );
+        if (!nearest || dist < nearest.dist) {
+          nearest = { item: item, dist: dist };
+        }
       }
-      const r = item.rect;
-      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
-        return item;
-      }
-      const dist = Math.hypot(
-        x - (r.left + r.right) / 2,
-        y - (r.top + r.bottom) / 2
-      );
-      if (!nearest || dist < nearest.dist) {
-        nearest = { item, dist };
-      }
+      return nearest;
+    };
+
+    const live = nearestIn(measureDragTargets());
+    if (live && live.dist === 0) {
+      return live.item;
     }
+    const old = nearestIn(dragLayout || []);
+    if (old && old.dist === 0) {
+      return old.item;
+    }
+    const nearest = live && (!old || live.dist <= old.dist) ? live : old;
     if (nearest && nearest.dist <= 10) {
       // Совсем рядом с плиткой — считаем промахом по краю и берём её.
       // Но только внутри панели: бросок в пустое место (или вовсе мимо
       // панели) — это не наша зона, там разбирается Zen.
-      const cRect = container?.getBoundingClientRect();
+      const cRect = getContainer()?.getBoundingClientRect();
       if (
         cRect &&
         x >= cRect.left &&
