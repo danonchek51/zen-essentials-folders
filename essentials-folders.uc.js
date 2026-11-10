@@ -61,10 +61,11 @@
   // Отчёт о последнем броске: по нему видно, что произошло, даже если
   // консоль закрыта.
   const PREF_LAST_DROP = "zen.essentialsfolders.lastdrop";
+  const PREF_LAST_DRAG = "zen.essentialsfolders.lastdrag";
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.14.4";
+  const MOD_VERSION = "1.14.5";
 
 
   /* ------------------------------------------------------------------ *
@@ -403,8 +404,21 @@
   // бросок попадает в это место вместо нужной папки. По снимку мы понимаем,
   // куда целился пользователь на самом деле.
   let dragLayout = null;
+  // Цель, найденная при последнем наведении. Пока вкладку тащат, Zen
+  // перестраивает сетку «Важных» и плитка папки уезжает из-под курсора —
+  // в момент отпускания кнопки её уже не найти. Подсвеченная цель — это
+  // ровно то, куда целился пользователь.
+  let hoverTarget = null;
+  // Адрес вкладки, которую тянут: запоминаем в начале перетаскивания,
+  // когда вкладка ещё точно доступна.
+  let draggedTabUrl = "";
   // Бросок уже разобран на уровне окна — контейнеру не надо его трогать.
   let dropHandled = false;
+  // Точка последнего броска: нужна для разбора, когда цель не нашлась.
+  let lastDropPoint = null;
+  // Откуда взялась цель в последнем броске: по координатам, из наведения или
+  // ниоткуда. Пишется в отчёт о броске.
+  let currentDropSource = "";
   // Момент окончания последнего перетаскивания: сразу после броски
   // браузер может прислать «click» — его надо игнорировать, иначе
   // папка лишний раз свернётся.
@@ -2898,7 +2912,13 @@
   /** Запомнить, что произошло с последним броском. Читается из консоли:
    *  window.__zenEssentialsFolders.lastDrop */
   function recordDrop(info) {
-    lastDrop = Object.assign({ at: Date.now() }, info || {});
+    // Источник цели и адрес вкладки — часть любого отчёта о броске:
+    // по ним видно, откуда взялась цель и что именно тянули.
+    lastDrop = Object.assign(
+      { at: Date.now() },
+      { targetSource: currentDropSource, draggedUrl: draggedTabUrl },
+      info || {}
+    );
     // Отчёт о броске пишем в преф: его видно и без консоли — по файлу
     // prefs.js в профиле.
     writeJSONPref(PREF_LAST_DROP, lastDrop);
@@ -2965,6 +2985,72 @@
     const info = handleSiteDropOnTile(event, folder) || {};
     recordDrop(Object.assign({ target: "tile", folder: folder.id }, info));
     return info;
+  }
+
+  /** Подхватить перетаскивание, если начало мы пропустили.
+   *
+   *  Начало перетаскивания мод ловит на dragstart, но браузер отдаёт это
+   *  событие не всегда: Zen перехватывает его у себя, и тогда мод решает,
+   *  что никто ничего не тащит, и пропускает бросок мимо. По буферу
+   *  перетаскивания вкладка видна всегда — по нему и узнаём, что бросок
+   *  нужно разбирать. */
+  function adoptDragFromData(event) {
+    const tab = draggedTabFrom(event);
+    if (!tab) {
+      return false;
+    }
+    draggedTab = tab;
+    draggedTabUrl = tabUrl(tab);
+    draggedTabIsEssential = Boolean(tab?.hasAttribute?.("zen-essential"));
+    dragInProgress = true;
+    dropHandled = false;
+    if (!dragLayout) {
+      snapshotDragLayout();
+    }
+    return true;
+  }
+
+  /** Цель из последнего наведения — запасной путь для броска.
+   *
+   *  Берём её, только если плитка ещё на месте, папка существует и
+   *  курсор рядом: если пользователь уводил мышь в сторону, подсвеченная
+   *  папка уже не та, в которую он целялся. */
+  function hoverTargetFor(event) {
+    if (!hoverTarget) {
+      return null;
+    }
+    const el = hoverTarget.el;
+    if (!el || !el.isConnected) {
+      return null;
+    }
+    if (!folderById(hoverTarget.folderId)) {
+      return null;
+    }
+    const rect = el.getBoundingClientRect();
+    const distance = Math.hypot(
+      event.clientX - (rect.left + rect.width / 2),
+      event.clientY - (rect.top + rect.height / 2)
+    );
+    return distance <= 80 ? hoverTarget : null;
+  }
+
+  /** Расстояние до ближайшей цели — для разбора, когда цель не нашлась. */
+  function nearestTargetDistance() {
+    const items = dragLayout || [];
+    if (!items.length || !lastDropPoint) {
+      return null;
+    }
+    let best = Infinity;
+    for (const item of items) {
+      const rect = item.rect;
+      if (!rect) {
+        continue;
+      }
+      const dx = Math.max(rect.left - lastDropPoint.x, 0, lastDropPoint.x - rect.right);
+      const dy = Math.max(rect.top - lastDropPoint.y, 0, lastDropPoint.y - rect.bottom);
+      best = Math.min(best, Math.round(Math.hypot(dx, dy)));
+    }
+    return Number.isFinite(best) ? best : null;
   }
 
   /** Бросок по снимку: плитка папки — внутрь, плитка сайта — рядом. */
@@ -3326,7 +3412,9 @@
   /** Бросили плитку сайта на плитку папки — сайт переезжает в папку. */
   function handleSiteDropOnTile(event, folder) {
     const tab = draggedTabFrom(event) || draggedTab;
-    const url = tab ? tabUrl(tab) : urlFromData(event);
+    // Адрес вкладки запомнили в начале перетаскивания — он надёжнее,
+    // чем разбирать буфер перетаскивания в момент броска.
+    const url = tab ? tabUrl(tab) : draggedTabUrl || urlFromData(event);
     if (!url) {
       showHint(t("hint.dragFailed"));
       return { url: "", result: "no-url" };
@@ -3339,6 +3427,9 @@
       // папки — честно говорим «уже здесь». Если нет — доводим перенос до
       // конца: вкладка становится «Важной», а папка раскрывается.
       if (tabIsInFolder(tab, folder.id)) {
+        // Значок уже лежит в папке. Показываем её: под свёрнутой крышкой
+        // переноса не видно, и кажется, что бросок ничего не сделал.
+        revealFolder(folder.id);
         showHint(t("hint.alreadyIn", { name: folder.name || "…" }));
         return { url: url, targetFolder: folder.id, result: "already-in" };
       }
@@ -4823,9 +4914,20 @@
       event => {
         const tab = event.target?.closest?.(".tabbrowser-tab");
         draggedTab = tab || null;
+        draggedTabUrl = tab ? tabUrl(tab) : "";
         draggedTabIsEssential = Boolean(tab?.hasAttribute?.("zen-essential"));
         dragInProgress = true;
         dropHandled = false;
+        hoverTarget = null;
+        // Начало перетаскивания — тоже часть разбора: пишем его в
+        // отдельный преф, чтобы было видно, что мод вообще видела
+        // перетаскивание и что именно тянули.
+        writeJSONPref(PREF_LAST_DRAG, {
+          at: Date.now(),
+          url: draggedTabUrl,
+          essential: draggedTabIsEssential,
+          target: tab ? "tab" : "other",
+        });
         if (draggedTabIsEssential) {
           document.documentElement.classList.add("zef-drag-active");
         }
@@ -4846,6 +4948,8 @@
         draggedFolderId = null;
         dragInProgress = false;
         dragLayout = null;
+        hoverTarget = null;
+        draggedTabUrl = "";
         lastDragEnd = Date.now();
         document.documentElement.classList.remove("zef-drag-active");
         clearDropMarks();
@@ -4870,12 +4974,20 @@
       "dragover",
       event => {
         if (!dragInProgress && !draggedFolderId) {
-          return;
+          // Начало перетаскивания могло пройти мимо нас — тогда мод не знает,
+          // что кто-то что-то тащит, и пропускает бросок. По буферу
+          // перетаскивания видно, что тащат вкладку: значит, разбирать надо.
+          if (!adoptDragFromData(event)) {
+            return;
+          }
         }
         const target = resolveDropTarget(event);
         if (!target) {
           return;
         }
+        // Запоминаем цель: к моменту броска сетка может перестроиться,
+        // и плитка уедет из-под курсора.
+        hoverTarget = target;
         event.preventDefault();
         // Вкладку из сайдбара ведёт Zen: только он умеет сделать её
         // «Важной». Если перехватить бросок, вкладка останется в сайдбаре,
@@ -4899,9 +5011,16 @@
       "drop",
       event => {
         if (!dragInProgress && !draggedTab && !draggedFolderId) {
-          return;
+          if (!adoptDragFromData(event)) {
+            return;
+          }
         }
-        const target = resolveDropTarget(event);
+        lastDropPoint = { x: event.clientX, y: event.clientY };
+        const live = resolveDropTarget(event);
+        // Цель из последнего наведения — запасной путь: сетка «Важных»
+        // к моменту броска могла перестроиться, и плитка уехала.
+        const target = live || hoverTargetFor(event);
+        const targetSource = live ? "live" : target ? "hover" : "none";
         if (!target) {
           // Бросок не в нашу зону. Если он вообще был в панели — запомним,
           // чтобы было видно: мод не сработал или это был не наш бросок.
@@ -4915,13 +5034,17 @@
             event.clientY <= rect.bottom;
           recordDrop({
             result: inPanel ? "no-target" : "outside-panel",
+            targetSource: targetSource,
             at: { x: Math.round(event.clientX), y: Math.round(event.clientY) },
             dragged: draggedTab ? "site" : draggedFolderId ? "folder" : "none",
+            draggedUrl: draggedTabUrl,
+            near: nearestTargetDistance(),
           });
           return;
         }
         event.preventDefault();
         clearDropMarks();
+        currentDropSource = targetSource;
         const info = applyDropToTarget(event, target) || {};
         // Если вкладку не удалось сделать «Важной» — отдаём бросок Zen:
         // он переносит вкладку из сайдбара в «Важные» как умеет.

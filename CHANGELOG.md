@@ -10,6 +10,31 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.14.5] — 2026-11-10
+
+Dropping a tab into a folder now works even when the browser does not tell the mod that a drag
+has started. The mod used to wait for that event, and when it did not arrive the drop was
+silently ignored.
+
+### Fixed
+
+- **A drop is no longer ignored when the start of the drag is missed.** The browser does not
+  always deliver the start of a drag — Zen takes that event for itself. The mod then thought
+  that nobody was dragging anything and let the drop pass in silence. The drag is now
+  recognised by the drag data itself, so the tab lands in the folder.
+- **The target of the drop is remembered from the hover.** While a tab is being dragged, Zen
+  rebuilds the Essentials grid and the tile of the folder moves away from the cursor. The
+  folder that was highlighted is the one the user aimed at, and the mod uses it now.
+- **The address of the dragged tab is remembered from the start of the drag**, so the transfer
+  no longer depends on reading the drag buffer at the moment of the drop.
+- **The folder opens when the tile is already in it.** The tile was there, but under the lid of
+  a closed folder, so the transfer looked like it had failed.
+
+### Added
+
+- The start of a drag is written to the preference `zen.essentialsfolders.lastdrag`, and the
+  report of the drop says where the target came from (`targetSource`: `live`, `hover` or `none`).
+
 ## [1.14.4] — 2026-11-10
 
 The settings are visible in the mod manager of Zen now, and the mod shows its version.
