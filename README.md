@@ -169,6 +169,19 @@ The same options are also in **the mod manager of Zen** (Settings → Sine Mods 
 Essentials Folders → the gear button): both places read and write the same preference, so a
 change made in one is visible in the other at once — no restart needed.
 
+### If a drop does not work
+
+The mod keeps a report of the last drop in the browser preferences — `zen.essentialsfolders.lastdrop` —
+and the start of the last drag in `zen.essentialsfolders.lastdrag`. Both are plain text in the
+`prefs.js` file of the profile, so the reason can be read without the developer console:
+
+| Field | What it says |
+|---|---|
+| `result` | what happened: `site-into-folder` (the tab went into the folder), `already-in` (the tile was already there), `no-target` (no folder under the cursor), `outside-panel` (the drop was not over the panel) |
+| `targetSource` | where the target came from: `live` (found by the coordinates), `hover` (remembered from the highlight while dragging), `none` (not found) |
+| `draggedUrl` | the address of the tab that was dragged |
+| `essential` | whether the tab really became an Essential tab |
+
 22 options in five groups:
 
 | Group | What it controls |
