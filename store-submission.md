@@ -114,16 +114,24 @@ profile to the repository and to name-based search.
 - [ ] The images open in the README on GitHub (all 9 in the `images/` folder,
       plus `store-card.png` — the 600×400 card image).
 
-## 5. Release 1.14.0 — what changed for the submission
+## 5. Release 1.14.3 — what changed for the submission
 
 The card description is pulled from `theme.json`, so it updates on its own: the version is
-`1.14.0` and the description already says "22 settings". Nothing has to be retyped there.
+`1.14.3` and the description already says "22 settings". Nothing has to be retyped there.
 
 Two things are worth doing by hand after the user restarts Zen:
 
 - **A fresh 600×400 screenshot** of the live panel (the card image and the registry entry).
-  The layout did not change in 1.14.0, so the current images still look right, but a fresh
+  The layout did not change in 1.14.3, so the current images still look right, but a fresh
   shot proves the fixed version runs.
-- **A note in the Sine issue** that dragging into a folder now works in Zen itself and that
-  the drop target is highlighted. If a moderator asks what changed, the ready-made text in
+- **A note in the Sine issue** that dragging a tab into a folder now works in Zen itself and
+  that the drop target is highlighted. If a moderator asks what changed, the ready-made text in
   section 1 already covers it.
+
+### What 1.14.3 fixed (for the issue comment)
+
+> **Drag & drop of tabs into folders.** A tab dropped into a folder is moved for real now:
+> the folder opens to show the tile, a tab dragged from the sidebar becomes essential (the
+> browser does it, the mod only adds the rule), and the rule of a folder follows the tab when
+> it changes its address. Earlier versions could leave the folder looking empty — the tile was
+> hidden under a closed lid.
