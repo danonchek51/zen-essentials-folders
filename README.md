@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.14.5](https://img.shields.io/badge/version-1.14.5-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.14.6](https://img.shields.io/badge/version-1.14.6-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)

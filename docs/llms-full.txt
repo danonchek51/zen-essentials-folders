@@ -47,6 +47,8 @@ its own colour, and the strip of its icons carries a thin line of the same colou
 - A tab dropped into a folder lands there even when the browser does not report the start of
   the drag: the drag is recognised by the drag data, and the folder that was highlighted while
   dragging is the one the tab goes into.
+- A tab dropped into a folder lands in the folder that was highlighted while dragging, even if
+  the grid moved and another tile ended up under the cursor.
 - Rearranging folders by dragging a tile by its edge; rearranging tiles inside a folder by
   dragging an icon next to another icon.
 - Only the dragged tab moves: drop one GitHub tab into another folder and only that tab goes,

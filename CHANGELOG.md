@@ -10,6 +10,25 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.14.6] — 2026-11-10
+
+A tab now lands in the folder that was highlighted while dragging — not in the tile that happened
+to be under the cursor when the button was released.
+
+### Fixed
+
+- **The highlighted folder wins.** While a tab is being dragged, Zen rebuilds the Essentials grid
+  and another tile can end up under the cursor. The mod used to take that tile and moved the tab
+  into a folder the user never aimed at. The highlighted tile is the one the user aimed at, and
+  the mod moves the tab there.
+- **A highlight that went stale is dropped.** When the cursor leaves the tiles, the old highlight
+  is forgotten instead of being used for the drop.
+
+### Added
+
+- The report of the last drop says which target was picked (`picked`) and where it came from
+  (`targetSource`: `hover` or `live`).
+
 ## [1.14.5] — 2026-11-10
 
 Dropping a tab into a folder now works even when the browser does not tell the mod that a drag

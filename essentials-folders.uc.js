@@ -65,7 +65,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.14.5";
+  const MOD_VERSION = "1.14.6";
 
 
   /* ------------------------------------------------------------------ *
@@ -419,6 +419,8 @@
   // Откуда взялась цель в последнем броске: по координатам, из наведения или
   // ниоткуда. Пишется в отчёт о броске.
   let currentDropSource = "";
+  // Какая именно цель выбрана: папка или значок — тоже в отчёт.
+  let currentDropTarget = "";
   // Момент окончания последнего перетаскивания: сразу после броски
   // браузер может прислать «click» — его надо игнорировать, иначе
   // папка лишний раз свернётся.
@@ -2884,6 +2886,12 @@
 
     const live = nearestIn(measureDragTargets());
     if (live && live.dist === 0) {
+      // Под курсором может стоять уже другая плитка: Zen перестроил сетку
+      // и подставил свою копию вкладки. Но подсвечена та, в которую целился
+      // пользователь, — ей и надо верить, иначе перенос уходит не туда.
+      if (hoverTarget && hoverTarget.el !== live.item.el && hoverTarget.el?.isConnected) {
+        return hoverTarget;
+      }
       return live.item;
     }
     const old = nearestIn(dragLayout || []);
@@ -2916,7 +2924,11 @@
     // по ним видно, откуда взялась цель и что именно тянули.
     lastDrop = Object.assign(
       { at: Date.now() },
-      { targetSource: currentDropSource, draggedUrl: draggedTabUrl },
+      {
+        targetSource: currentDropSource,
+        draggedUrl: draggedTabUrl,
+        picked: currentDropTarget,
+      },
       info || {}
     );
     // Отчёт о броске пишем в преф: его видно и без консоли — по файлу
@@ -4983,6 +4995,9 @@
         }
         const target = resolveDropTarget(event);
         if (!target) {
+          // Цели под курсором нет — значит, подсветка (если была) устарела:
+          // пользователь увёл мышь, и брать её при броске уже нельзя.
+          hoverTarget = null;
           return;
         }
         // Запоминаем цель: к моменту броска сетка может перестроиться,
@@ -5016,11 +5031,14 @@
           }
         }
         lastDropPoint = { x: event.clientX, y: event.clientY };
-        const live = resolveDropTarget(event);
-        // Цель из последнего наведения — запасной путь: сетка «Важных»
-        // к моменту броска могла перестроиться, и плитка уехала.
-        const target = live || hoverTargetFor(event);
-        const targetSource = live ? "live" : target ? "hover" : "none";
+        const target = resolveDropTarget(event) || hoverTargetFor(event);
+        // Откуда взялась выбранная цель: подсветка (значит, пользователь целился
+        // именно в неё) или текущие координаты.
+        const targetSource = !target
+          ? "none"
+          : hoverTarget && target.el === hoverTarget.el
+            ? "hover"
+            : "live";
         if (!target) {
           // Бросок не в нашу зону. Если он вообще был в панели — запомним,
           // чтобы было видно: мод не сработал или это был не наш бросок.
@@ -5045,6 +5063,7 @@
         event.preventDefault();
         clearDropMarks();
         currentDropSource = targetSource;
+        currentDropTarget = target ? target.folderId || target.kind || "" : "";
         const info = applyDropToTarget(event, target) || {};
         // Если вкладку не удалось сделать «Важной» — отдаём бросок Zen:
         // он переносит вкладку из сайдбара в «Важные» как умеет.
