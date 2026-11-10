@@ -21,10 +21,11 @@ If the moderators ask for clarification, here is the ready-made text:
 > **Essentials Folders** — folder tiles for the Essentials (pinboard) grid in Zen Browser.
 >
 > What it does:
-> - nested folders of any depth, drag & drop of tabs and tiles with the mouse;
+> - nested folders of any depth, drag & drop of tabs and tiles with the mouse: the target
+>   under the cursor is highlighted, and the tile lands in the folder you aimed at;
 > - folder search, pinning a folder to the top, a "+" button to create a new folder;
-> - its own settings dialog: 21 options in four groups (tile appearance, icon grid,
->   indicators, behaviour) — applied instantly;
+> - its own settings dialog: 22 options in five groups (language, tile appearance, icon
+>   grid, indicators, behaviour) — applied instantly;
 > - active folder indicator: the folder holding the current tab is highlighted
 >   and softly pulses (frame glow, dot, corner or a small star);
 > - moves exactly one tab, not an entire site.
@@ -80,7 +81,7 @@ Accounts and publishing are yours, so the texts below are simply kept ready to u
 > What it does: instead of a scatter of icons in the Essentials grid — coloured tiles
 > with an icon, a name and a tab counter. Folders nest inside each other to any
 > depth, everything is rearranged by dragging, and there is search plus a settings
-> dialog of its own (21 options, applied instantly). On top of that, an active folder
+> dialog of its own (22 options, applied instantly). On top of that, an active folder
 > indicator: the folder that holds the current tab softly pulses.
 >
 > The main thing: the mod never moves or deletes anything — tabs stay ordinary Zen
@@ -109,3 +110,17 @@ profile to the repository and to name-based search.
 - [ ] `Theme Homepage` leads to the repository, not to a 404.
 - [ ] The Releases tab on GitHub opens an archive that contains all 4 mod files.
 - [ ] The images open in the README on GitHub (all 9 in the `images/` folder).
+
+## 5. Release 1.14.0 — what changed for the submission
+
+The card description is pulled from `theme.json`, so it updates on its own: the version is
+`1.14.0` and the description already says "22 settings". Nothing has to be retyped there.
+
+Two things are worth doing by hand after the user restarts Zen:
+
+- **A fresh 600×400 screenshot** of the live panel (the card image and the registry entry).
+  The layout did not change in 1.14.0, so the current images still look right, but a fresh
+  shot proves the fixed version runs.
+- **A note in the Sine issue** that dragging into a folder now works in Zen itself and that
+  the drop target is highlighted. If a moderator asks what changed, the ready-made text in
+  section 1 already covers it.
