@@ -132,7 +132,6 @@
     "folder.unnamed": { en: "Unnamed", ru: "Без названия" },
     "folder.new": { en: "New folder", ru: "Новая папка" },
     "folder.plural": { en: "Folder", ru: "Папка" },
-    "folder.newMenu": { en: "New folder\u2026", ru: "Новая папка\u2026" },
     "folder.rename": { en: "Rename\u2026", ru: "Переименовать\u2026" },
     "folder.icon": { en: "Change icon\u2026", ru: "Сменить иконку\u2026" },
     "folder.color": { en: "Change colour\u2026", ru: "Сменить цвет\u2026" },
@@ -387,6 +386,10 @@
   // браузер может прислать «click» — его надо игнорировать, иначе
   // папка лишний раз свернётся.
   let lastDragEnd = 0;
+  // Что произошло с последним броском: что тянули, что было под курсором
+  // и куда попало. Читается из консоли Zen — с этим разбор «перетаскивание
+  // не сработало» не гадание.
+  let lastDrop = null;
   // Домен, выбранный в меню «Новая папка…» — попадёт в новую папку сразу.
   let pendingSite = null;
   // Текст поиска по папкам. Пустая строка — поиск выключен.
@@ -1570,7 +1573,6 @@
         child.classList?.contains("zef-divider") ||
         // Разрыв ряда — тоже наш элемент. Если его не убрать, старые разрывы
         // останутся в панели навсегда и оставят дыры между иконками.
-        child.classList?.contains("zef-row-break") ||
         // Ряд плиток папок — тоже наш: без очистки они накапливались бы.
         child.classList?.contains("zef-tiles-row") ||
         // Полоса иконок вложенной папки — наш элемент.
@@ -2607,7 +2609,12 @@
             : isPlane || isStrip
               ? "plane"
               : "site",
-        folderId: el.getAttribute("data-zef-folder") || null,
+        folderId:
+          el.getAttribute("data-zef-folder") ||
+          // У полосы иконок папка лежит в data-zef-owner — своя папка,
+          // в которую полоса и вложена.
+          el.getAttribute("data-zef-owner") ||
+          null,
         area: rect.width * rect.height,
         rect,
       });
@@ -2641,10 +2648,91 @@
         nearest = { item, dist };
       }
     }
-    if (nearest && nearest.dist <= 36) {
-      return nearest.item;
+    if (nearest && nearest.dist <= 10) {
+      // Совсем рядом с плиткой — считаем промахом по краю и берём её.
+      // Но только внутри панели: бросок в пустое место (или вовсе мимо
+      // панели) — это не наша зона, там разбирается Zen.
+      const cRect = container?.getBoundingClientRect();
+      if (
+        cRect &&
+        x >= cRect.left &&
+        x <= cRect.right &&
+        y >= cRect.top &&
+        y <= cRect.bottom
+      ) {
+        return nearest.item;
+      }
     }
     return null;
+  }
+
+  /** Запомнить, что произошло с последним броском. Читается из консоли:
+   *  window.__zenEssentialsFolders.lastDrop */
+  function recordDrop(info) {
+    lastDrop = Object.assign({ at: Date.now() }, info || {});
+    try {
+      if (window[INSTANCE_KEY]) {
+        window[INSTANCE_KEY].lastDrop = lastDrop;
+      }
+    } catch (e) {}
+  }
+
+  /** Подсветить цель броска. Тот же вид, что и раньше, но цель берётся
+   *  из снимка раскладки, а не из того элемента, под которым оказался
+   *  курсор: в Zen под курсором едет его собственная копия вкладки. */
+  function markDropTarget(target, event) {
+    clearDropMarks();
+    if (!target) {
+      return;
+    }
+    if (target.kind === "site") {
+      const zone = dropZoneOf(event, target.el, 0.5);
+      target.el.classList.add(zone === 0 ? "zef-drop-before" : "zef-drop-after");
+      return;
+    }
+    if (target.kind === "head" || target.kind === "plane") {
+      target.el.classList.add("zef-drop-over");
+      return;
+    }
+    const kind = dragKind(event);
+    const zone = kind === "site" ? 1 : dropZoneOf(event, target.el, 0.3);
+    target.el.classList.add(
+      zone === 0 ? "zef-drop-before" : zone === 2 ? "zef-drop-after" : "zef-drop-into"
+    );
+  }
+
+  /** Выполнить бросок по найденной цели: плитка сайта — внутрь папки,
+   *  плитка папки — в неё же или рядом, иконка — перестановка внутри. */
+  function applyDropToTarget(event, target) {
+    if (!target) {
+      return false;
+    }
+    const kind = dragKind(event);
+    if (target.kind === "site") {
+      handleDropOnSite(event, target.el);
+      recordDrop({ result: "reordered", target: "site" });
+      return true;
+    }
+    const folder = folderById(target.folderId);
+    if (!folder) {
+      recordDrop({ result: "no-folder", target: target.kind });
+      return false;
+    }
+    // Шапка или цветная область открытой папки — бросаем внутрь неё.
+    if (target.kind === "head" || target.kind === "plane") {
+      handleDropIntoFolder(event, folder);
+      recordDrop({ result: "into-folder", target: target.kind, folder: folder.id });
+      return true;
+    }
+    if (kind === "folder") {
+      const zone = dropZoneOf(event, target.el, 0.3);
+      handleFolderDropOnTile(event, folder, zone);
+      recordDrop({ result: "folder-drop", target: "tile", folder: folder.id, zone: zone });
+      return true;
+    }
+    handleSiteDropOnTile(event, folder);
+    recordDrop({ result: "site-into-folder", target: "tile", folder: folder.id });
+    return true;
   }
 
   /** Бросок по снимку: плитка папки — внутрь, плитка сайта — рядом. */
@@ -2653,25 +2741,7 @@
     if (!target) {
       return false;
     }
-    if (target.kind === "site") {
-      handleDropOnSite(event, target.el);
-      return true;
-    }
-    const folder = folderById(target.folderId);
-    if (!folder) {
-      return false;
-    }
-    // Шапка или цветная область открытой папки — бросаем внутрь неё.
-    if (target.kind === "head" || target.kind === "plane") {
-      handleDropIntoFolder(event, folder);
-      return true;
-    }
-    if (dragKind(event) === "folder") {
-      handleFolderDropOnTile(event, folder, 1);
-      return true;
-    }
-    handleSiteDropOnTile(event, folder);
-    return true;
+    return applyDropToTarget(event, target);
   }
 
   /** Вкладка, которую сейчас тянут мышью. */
@@ -2923,11 +2993,6 @@
       reorderInFolder(folder, url, targetRuleIndex, before);
     }
     return true;
-  }
-
-  /** Перенести вкладку в папку: домен добавляется в неё и убирается из других. */
-  function moveTabToFolder(url, folder) {
-    return moveSiteToFolder(url, folder, -1, true);
   }
 
   /** Бросили плитку сайта на плитку папки — сайт переезжает в папку. */
@@ -4396,6 +4461,66 @@
       true
     );
 
+    // --- Перехват броска на окне, в фазе захвата ---
+    //
+    // Zen перехватывает бросок в панели «Важных»: он подменяет вкладку
+    // своей копией (landing element) и едет с ней под курсором. Поэтому
+    // событие броска приходит не нашей плитке, а копией Zen — и обработчики
+    // на плитках не срабатывают вообще. Окно в фазе захвата — первое, что
+    // видит событие, поэтому ловим его здесь, а цель ищем по снимку
+    // раскладки, а не по event.target.
+    onWindow(
+      "dragover",
+      event => {
+        if (!dragInProgress && !draggedFolderId) {
+          return;
+        }
+        const target = resolveDropTarget(event);
+        if (!target) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        try {
+          event.dataTransfer.dropEffect = "move";
+        } catch (e) {}
+        markDropTarget(target, event);
+      },
+      true
+    );
+    onWindow(
+      "drop",
+      event => {
+        if (!dragInProgress && !draggedTab && !draggedFolderId) {
+          return;
+        }
+        const target = resolveDropTarget(event);
+        if (!target) {
+          // Бросок не в нашу зону. Если он вообще был в панели — запомним,
+          // чтобы было видно: мод не сработал или это был не наш бросок.
+          const container = getContainer();
+          const rect = container?.getBoundingClientRect();
+          const inPanel =
+            rect &&
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom;
+          recordDrop({
+            result: inPanel ? "no-target" : "outside-panel",
+            at: { x: Math.round(event.clientX), y: Math.round(event.clientY) },
+            dragged: draggedTab ? "site" : draggedFolderId ? "folder" : "none",
+          });
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        clearDropMarks();
+        applyDropToTarget(event, target);
+      },
+      true
+    );
+
     // Бросок иногда «догоняет» кликом: браузер шлёт click сразу после
     // drop. Помечаем момент броски, чтобы папка не свернулась сама.
     onWindow(
@@ -4467,7 +4592,6 @@
           child.classList?.contains("zef-head") ||
           child.classList?.contains("zef-plane") ||
           child.classList?.contains("zef-divider") ||
-          child.classList?.contains("zef-row-break") ||
           child.classList?.contains("zef-tiles-row") ||
           child.classList?.contains("zef-icon-strip")
         ) {
@@ -4511,6 +4635,9 @@
       readSettings,
       saveSettings,
       applySettings,
+      // Что произошло с последним броском — для разбора, когда
+      // перетаскивание не сработало.
+      lastDrop,
     };
 
     try {
