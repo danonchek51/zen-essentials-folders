@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.14.7](https://img.shields.io/badge/version-1.14.7-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.14.9](https://img.shields.io/badge/version-1.14.9-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -117,6 +117,12 @@ within** — all with ordinary mouse drag & drop.
 - **Drag & drop also works with tabs from the sidebar.** If the drag started there, the mod
   takes the tab straight from the drag buffer instead of looking it up by the drag-start event.
   Previously a drop looked like "not allowed here".
+- **The icon you drag never hides the folder you aim at.** Zen puts a copy of the dragged icon
+  under the cursor while you drag. The mod looks past that copy and takes the folder tile that is
+  really under the pointer, so the icon lands in the folder you aimed at.
+- **The dragged tab is found by the pointer.** Zen replaces the tab with a copy of it when a drag
+  starts in the Essentials panel, so the drag no longer starts on the tab itself. The mod asks the
+  document which tab stands under the cursor — the real tab is exactly where the icon was taken.
 - **A hint instead of silence.** If the drop did not work, the mod explains why: for example,
   "the tab is already in this folder".
 - **Logos do not disappear.** A site icon may arrive later than the panel was rebuilt: the mod

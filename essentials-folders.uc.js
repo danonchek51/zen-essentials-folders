@@ -65,7 +65,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.14.7";
+  const MOD_VERSION = "1.14.9";
 
 
   /* ------------------------------------------------------------------ *
@@ -412,6 +412,9 @@
   // Адрес вкладки, которую тянут: запоминаем в начале перетаскивания,
   // когда вкладка ещё точно доступна.
   let draggedTabUrl = "";
+  // Элемент, с которого начали тянуть: по нему видно, вкладку тянут или
+  // что-то другое (например, ссылку со страницы).
+  let dragSourceEl = null;
   // Бросок уже разобран на уровне окна — контейнеру не надо его трогать.
   let dropHandled = false;
   // Точка последнего броска: нужна для разбора, когда цель не нашлась.
@@ -2793,6 +2796,43 @@
     dragLayout = items;
   }
 
+  /** Это перетаскиваемая вкладка или её копия?
+   *
+   *  Zen во время броска подставляет под курсор копию перетаскиваемой вкладки.
+   *  Она едет вместе с мышью и закрывает плитку, в которую целятся. Целью
+   *  быть ей не может: бросок идёт в то, что под ней.
+   *
+   *  У копии те же признаки, что у настоящей вкладки: та же папка, то же
+   *  правило и тот же адрес. */
+  function isDraggedSite(el) {
+    if (!draggedTab) {
+      return false;
+    }
+    if (el === draggedTab || el.contains?.(draggedTab)) {
+      return true;
+    }
+    if (!el.classList?.contains("tabbrowser-tab")) {
+      return false;
+    }
+    const folder = draggedTab.getAttribute?.("data-zef-folder") || "";
+    const rule = draggedTab.getAttribute?.("data-zef-rule") || "";
+    if (
+      (folder || rule) &&
+      (el.getAttribute?.("data-zef-folder") || "") === folder &&
+      (el.getAttribute?.("data-zef-rule") || "") === rule
+    ) {
+      return true;
+    }
+    const url = draggedTabUrl || tabUrl(draggedTab);
+    if (url) {
+      const other = tabUrl(el);
+      if (other && normalizeSite(other) === normalizeSite(url)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Цели броска, перемеренные прямо сейчас.
    *
    *  Зачем: пока вкладку тащат, Zen вставляет в сетку «Важных» пустое место
@@ -2812,8 +2852,9 @@
       ".tabbrowser-tab[zen-essential='true']"
     );
     for (const el of targets) {
-      // Тащут вкладку — она едет под курсором, целью быть не может.
-      if (el === draggedTab || el.contains(draggedTab)) {
+      // Тащут вкладку — она едет под курсором, целью быть не может. Копия,
+      // которую Zen подставляет под курсор, — тоже: она закрывает плитку.
+      if (isDraggedSite(el)) {
         continue;
       }
       const rect = el.getBoundingClientRect();
@@ -3008,18 +3049,161 @@
    *  нужно разбирать. */
   function adoptDragFromData(event) {
     const tab = draggedTabFrom(event);
-    if (!tab) {
+    if (tab) {
+      draggedTab = tab;
+      draggedTabUrl = tabUrl(tab);
+      draggedTabIsEssential = Boolean(tab?.hasAttribute?.("zen-essential"));
+      dragInProgress = true;
+      dropHandled = false;
+      if (!dragLayout) {
+        snapshotDragLayout();
+      }
+      return true;
+    }
+    // В буфере может лежать только адрес: так тянут вкладку из списка Zen
+    // в сайдбаре. Вкладку узнаём по адресу. Ссылку со страницы не берём:
+    // такой бросок должен открыть ссылку, а не двигать вкладку.
+    const url = urlFromData(event);
+    const found = url && dragStartedInChrome() ? tabByUrl(url) : null;
+    if (!found) {
       return false;
     }
-    draggedTab = tab;
-    draggedTabUrl = tabUrl(tab);
-    draggedTabIsEssential = Boolean(tab?.hasAttribute?.("zen-essential"));
+    draggedTab = found;
+    draggedTabUrl = url || tabUrl(found);
+    draggedTabIsEssential = Boolean(found?.hasAttribute?.("zen-essential"));
     dragInProgress = true;
     dropHandled = false;
     if (!dragLayout) {
       snapshotDragLayout();
     }
     return true;
+  }
+
+  /** Найти вкладку по адресу: сначала среди «Важных», потом среди обычных. */
+  function tabByUrl(url) {
+    if (!url) {
+      return null;
+    }
+    const wanted = normalizeSite(url);
+    const host = hostOf(url);
+    if (!wanted || !host) {
+      return null;
+    }
+    const candidates = [
+      ...essentialTabs(getContainer()),
+      ...Array.from(document.querySelectorAll(".tabbrowser-tab")),
+    ];
+    for (const tab of candidates) {
+      if (normalizeSite(tabUrl(tab)) === wanted) {
+        return tab;
+      }
+    }
+    for (const tab of candidates) {
+      if (hostOf(tabUrl(tab)) === host) {
+        return tab;
+      }
+    }
+    return null;
+  }
+
+  /** Вкладка под курсором в момент начала перетаскивания.
+   *
+   *  Zen перехватывает начало перетаскивания и подменяет вкладку своей
+   *  копией: событие приходит уже от чужого элемента, и обычный поиск
+   *  ничего не находит. Но настоящая вкладка стоит ровно там, где
+   *  пользователь взял значок, — её и ищем.
+   *
+   *  Сначала — элемент под курсором, потом перебор вкладок: их немного,
+   *  а найти надо ту, что под указателем. */
+  function tabUnderPoint(event) {
+    const x = event.clientX;
+    const y = event.clientY;
+    if (!x && !y) {
+      return null;
+    }
+    try {
+      const element = document.elementFromPoint(x, y);
+      const tab = element?.closest?.(".tabbrowser-tab");
+      if (tab) {
+        return tab;
+      }
+    } catch (e) {}
+    try {
+      for (const tab of document.querySelectorAll(".tabbrowser-tab")) {
+        const rect = tab.getBoundingClientRect();
+        if (!rect.width || !rect.height) {
+          continue;
+        }
+        if (
+          x >= rect.left &&
+          x <= rect.right &&
+          y >= rect.top &&
+          y <= rect.bottom
+        ) {
+          return tab;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  /** Начали ли тянуть внутри панели «Важных» — там лежат значки сайтов. */
+  function dragStartedInsidePanel() {
+    const source = dragSourceEl;
+    if (!source) {
+      return false;
+    }
+    const container = getContainer();
+    return Boolean(
+      container && (container === source || container.contains(source))
+    );
+  }
+
+  /** Начали ли тянуть в оболочке браузера, а не на веб-странице.
+   *
+   *  Вкладку тянут из панели «Важных», из списка вкладок или из списка
+   *  вкладок рабочего пространства. Ссылку тянут со страницы — такой бросок
+   *  трогать нельзя: ссылка должна открыться. */
+  function dragStartedInChrome() {
+    const source = dragSourceEl;
+    if (!source) {
+      return false;
+    }
+    if (dragStartedInsidePanel()) {
+      return true;
+    }
+    try {
+      return Boolean(
+        source.closest?.(
+          "#zen-essentials, #tabbrowser-tabs, .zen-workspace-tabs, " +
+            "#zen-workspaces, .zen-sidebar-tabs, #zen-sidebar, #sidebar-box"
+        )
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** Похоже ли перетаскивание на вкладку.
+   *
+   *  Пока тащат, браузер не отдаёт содержимое буфера — только названия типов.
+   *  Поэтому вкладку узнаём по типам, а адрес добираем при броске. */
+  function looksLikeTabDrag(event) {
+    const types = dragTypes(event);
+    for (const type of types) {
+      if (
+        type === "application/x-moz-tab" ||
+        type === "text/x-moz-tab" ||
+        type === "Tabs"
+      ) {
+        return true;
+      }
+    }
+    // Адрес в буфере: вкладку тянут из панели «Важных» или из списка вкладок.
+    if (types.includes("text/uri-list") || types.includes("text/plain")) {
+      return dragStartedInChrome();
+    }
+    return false;
   }
 
   /** Типы данных в буфере перетаскивания — для разбора, когда мод не поняла,
@@ -3104,7 +3288,7 @@
     if (draggedFolderId) {
       return "folder";
     }
-    if (draggedTab) {
+    if (draggedTab || draggedTabUrl) {
       return "site";
     }
     // Вкладку могли начать тянуть в сайдбаре — там наш обработчик
@@ -3523,7 +3707,7 @@
       return;
     }
     const tab = draggedTabFrom(event) || draggedTab;
-    const url = tab ? tabUrl(tab) : urlFromData(event);
+    const url = tab ? tabUrl(tab) : draggedTabUrl || urlFromData(event);
     if (!url) {
       return { url: "", result: "no-url" };
     }
@@ -4935,7 +5119,12 @@
     onWindow(
       "dragstart",
       event => {
-        const tab = event.target?.closest?.(".tabbrowser-tab");
+        dragSourceEl = event.target || null;
+        // Вкладку ищем тремя способами: по родителю события, по элементу под
+        // курсором и по самой геометрии вкладок. Zen подменяет вкладку своей
+        // копией, поэтому одного поиска по родителю мало.
+        const tab =
+          event.target?.closest?.(".tabbrowser-tab") || tabUnderPoint(event);
         draggedTab = tab || null;
         draggedTabUrl = tab ? tabUrl(tab) : "";
         draggedTabIsEssential = Boolean(tab?.hasAttribute?.("zen-essential"));
@@ -4950,6 +5139,12 @@
           url: draggedTabUrl,
           essential: draggedTabIsEssential,
           target: tab ? "tab" : "other",
+          source: dragSourceEl ? String(dragSourceEl.tagName || "") : "",
+          sourceClass: dragSourceEl
+            ? String(dragSourceEl.className || "").slice(0, 80)
+            : "",
+          inPanel: dragStartedInsidePanel(),
+          types: dragTypes(event),
         });
         if (draggedTabIsEssential) {
           document.documentElement.classList.add("zef-drag-active");
@@ -4973,6 +5168,7 @@
         dragLayout = null;
         hoverTarget = null;
         draggedTabUrl = "";
+        dragSourceEl = null;
         lastDragEnd = Date.now();
         document.documentElement.classList.remove("zef-drag-active");
         clearDropMarks();
@@ -4998,10 +5194,13 @@
       event => {
         // Вкладку могли начать тащить не с вкладки в браузере — например, из
         // списка Zen в сайдбаре: тогда dragstart приходит от другого
-        // элемента, и мод вкладку не знает. Но вкладка всегда лежит в буфере
-        // перетаскивания — достаём её оттуда.
-        if (!draggedTab && !draggedFolderId && !adoptDragFromData(event)) {
-          return;
+        // элемента, и мод вкладку не знает. Пока тащат, браузер отдаёт только
+        // названия типов данных, поэтому вкладку узнаём по типам, а адрес
+        // добираем при броске.
+        if (!draggedTab && !draggedFolderId) {
+          if (!adoptDragFromData(event) && !looksLikeTabDrag(event)) {
+            return;
+          }
         }
         const target = resolveDropTarget(event);
         if (!target) {
@@ -5036,10 +5235,13 @@
       "drop",
       event => {
         // Вкладку могли начать тащить не с вкладки в браузере (например, из
-        // списка Zen в сайдбаре) — тогда мод её не знает. Но вкладка всегда
-        // лежит в буфере перетаскивания: достаём её оттуда.
-        if (!draggedTab && !draggedFolderId && !adoptDragFromData(event)) {
-          return;
+        // списка Zen в сайдбаре) — тогда мод её не знает. Пока тащат, браузер
+        // отдаёт только названия типов данных, поэтому вкладку узнаём по типам,
+        // а адрес добираем при броске.
+        if (!draggedTab && !draggedFolderId) {
+          if (!adoptDragFromData(event) && !looksLikeTabDrag(event)) {
+            return;
+          }
         }
         lastDropPoint = { x: event.clientX, y: event.clientY };
         const target = resolveDropTarget(event) || hoverTargetFor(event);

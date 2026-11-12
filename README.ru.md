@@ -1,6 +1,6 @@
 # Essentials Folders — плитки-папки для «Важных» в Zen Browser
 
-[![Версия 1.14.7](https://img.shields.io/badge/version-1.14.7-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Версия 1.14.9](https://img.shields.io/badge/version-1.14.9-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![Лицензия MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -109,6 +109,14 @@ nested folders, drag & drop, search, and 22 settings. Tabs stay ordinary Zen tab
 - **Перетаскивание работает и с вкладками из сайдбара.** Если перетаскивание
   началось там, мод берёт вкладку прямо из буфера перетаскивания, а не ищет её
   по событию старта. Раньше бросок выглядел как «сюда нельзя».
+- **Значок, который тянут, не прячет папку, в которую целятся.** Zen подставляет
+  копию значка под курсор, пока идёт перетаскивание. Мод смотрит сквозь эту
+  копию и берёт ту плитку, что действительно под указателем, — значок попадает
+  именно в ту папку, в которую целились.
+- **Перетаскиваемую вкладку мод находит по указателю.** При старте перетаскивания
+  в панели «Важных» Zen подменяет вкладку её копией, и событие старта приходит
+  уже не от вкладки. Мод спрашивает у документа, какая вкладка стоит под
+  курсором: настоящая вкладка ровно там, где взяли значок.
 - **Подсказка вместо молчания.** Если бросок не сработал, мод объясняет почему:
   например, «вкладка уже в этой папке».
 - **Логотипы не пропадают.** Значок сайта может приехать позже, чем панель

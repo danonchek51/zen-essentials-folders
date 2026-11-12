@@ -49,6 +49,8 @@ its own colour, and the strip of its icons carries a thin line of the same colou
   dragging is the one the tab goes into.
 - A tab dropped into a folder lands in the folder that was highlighted while dragging, even if
   the grid moved and another tile ended up under the cursor.
+  A site icon can be dragged from an open folder into a folder tile again: the tab is found
+  by the cursor, because Zen replaces the tab with a copy of it when the drag starts.
 - A drag that does not start on a tab of the browser — for example, from the list of Zen in the
   sidebar — is understood as well: the tab is taken from the drag data.
 - Rearranging folders by dragging a tile by its edge; rearranging tiles inside a folder by

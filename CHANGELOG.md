@@ -10,6 +10,31 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.14.9] — 2026-11-11
+
+A site icon can now be dragged from an open folder into a folder tile again — the case that did
+not work in the Essentials panel.
+
+### Fixed
+
+- **The copy of the dragged icon no longer hides the folder.** While a tab is dragged, Zen puts a
+  copy of it under the cursor. The mod took that copy for the target, so the drop only reordered
+  the icon inside its own folder and the folder the user aimed at stayed empty. The copy of the
+  dragged tab is not a target any more: the folder tile under the pointer wins.
+- **The dragged tab is found by the cursor.** Zen replaces the tab with a copy of it when a drag
+  starts in the Essentials panel, so the drag no longer starts on the tab and the mod did not know
+  what was being dragged. The mod now asks the document which tab stands under the cursor: the
+  real tab is exactly where the user took the icon.
+- **The dragged tab is found by its address.** When the drag data holds only an address, the mod
+  takes the address and finds the tab by it.
+- **A link from a web page is left alone.** Dropping a link on a folder tile opens the link, as
+  before: the mod only takes drags that start in the browser interface.
+
+### Added
+
+- The report of the last drag says where the drag started (`source`, `sourceClass`, `inPanel`) and
+  which kinds of data were in the drag data (`types`).
+
 ## [1.14.7] — 2026-11-10
 
 The mod now recognises the dragged tab even when the drag does not start on a tab of the browser.

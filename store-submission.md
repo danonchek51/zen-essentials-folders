@@ -114,10 +114,10 @@ profile to the repository and to name-based search.
 - [ ] The images open in the README on GitHub (all 9 in the `images/` folder,
       plus `store-card.png` — the 600×400 card image).
 
-## 5. Release 1.14.7 — what changed for the submission
+## 5. Release 1.14.9 — what changed for the submission
 
 The card description is pulled from `theme.json`, so it updates on its own: the version is
-`1.14.7` and the description already says "22 settings". Nothing has to be retyped there.
+`1.14.9` and the description already says "22 settings". Nothing has to be retyped there.
 
 The mod manager of Zen now shows all 22 options of the mod (every option has its own
 preference), and the mod shows its own version in the settings window.
