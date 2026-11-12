@@ -79,7 +79,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.15.1";
+  const MOD_VERSION = "1.15.2";
 
 
   /* ------------------------------------------------------------------ *
@@ -395,6 +395,15 @@
   let matchedRules = new Map();
   let lastSignature = null;
   let syncTimer = null;
+  // Идёт ли отрисовка. Наблюдатель за префами в Zen срабатывает сразу, и если
+  // во время отрисовки пишется преф, начинается вложенная отрисовка поверх
+  // незаконченной — в панели остаются два набора плиток. Вложенный вызов
+  // откладываем.
+  let rendering = false;
+  let syncAfterRender = false;
+  // Счётчик отрисовок и последняя запись диагностики — для разбора.
+  let renderCount = 0;
+  let lastDiag = "";
   // Отложенный первый рисунок панели: его снимает uninstall(), иначе старый
   // экземпляр нарисует панель уже после того, как новый экземпляр его убрал.
   let firstRenderTimer = 0;
@@ -1716,6 +1725,25 @@
     if (!isOwner()) {
       return;
     }
+    if (rendering) {
+      // Отрисовка уже идёт — следующую отложим, иначе панель нарисуется
+      // дважды.
+      syncAfterRender = true;
+      return;
+    }
+    rendering = true;
+    try {
+      syncInner(force);
+    } finally {
+      rendering = false;
+    }
+    if (syncAfterRender) {
+      syncAfterRender = false;
+      scheduleSync(60);
+    }
+  }
+
+  function syncInner(force = false) {
     const container = getContainer();
     if (!container) {
       return;
@@ -1753,8 +1781,11 @@
     if (
       !force &&
       signature === lastSignature &&
-      container.querySelector(".zef-tile")
+      container.querySelector("[data-zef]")
     ) {
+      // Панель уже нарисована и не изменилась — перерисовывать незачем.
+      // Раньше здесь искалась плитка папки, и если все папки открыты, петля
+      // перерисовки не прерывалась никогда.
       return;
     }
     lastSignature = signature;
@@ -1974,6 +2005,10 @@
     for (const folder of expandedFolders()) {
       layoutFolder(folder);
     }
+    // Страховка от дублей: одна папка — одна плитка.
+    removeDuplicateTiles(container);
+    renderCount += 1;
+    writeDiag(container);
 
     // Разделитель между папками и «свободными» (закреплёнными, но не вошедшими
     // ни в одну папку) вкладками. Это же — зона, куда можно перетащить вкладку,
@@ -3623,6 +3658,13 @@
     if (!box) {
       return;
     }
+    // Строка поиска стоит рядом с контейнером, а не внутри него: прежний
+    // экземпляр мог оставить свою — она бы осталась на экране.
+    for (const row of Array.from(box.parentElement?.children || [])) {
+      if (row.classList?.contains("zef-search") && row !== searchRow) {
+        row.remove();
+      }
+    }
     for (const child of Array.from(box.children)) {
       if (
         child.dataset?.zef === "1" ||
@@ -3643,6 +3685,60 @@
           }
         }
         child.remove();
+      }
+    }
+  }
+
+  /** Диагностика панели: пишется в преф, чтобы разобраться без консоли. */
+  function writeDiag(container) {
+    try {
+      const boxes = allContainers();
+      const info = {
+        owner: OWNER,
+        loads: window[OWNER_KEY] || 0,
+        renders: renderCount,
+        containers: boxes.length,
+        rows: container ? container.querySelectorAll(".zef-tiles-row").length : -1,
+        heads: container ? container.querySelectorAll(".zef-head").length : -1,
+        planes: container ? container.querySelectorAll(".zef-plane").length : -1,
+        marked: container ? container.querySelectorAll("[data-zef]").length : -1,
+        searches: document.querySelectorAll(".zef-search").length,
+      };
+      const text = JSON.stringify(info);
+      if (text !== lastDiag) {
+        lastDiag = text;
+        Services.prefs.setStringPref("zen.essentialsfolders.diag", text);
+      }
+    } catch (e) {}
+  }
+
+  /** Убрать возможные дубли плиток: одна папка — одна плитка.
+   *
+   *  Страховка на случай, если панель всё-таки нарисовалась дважды: лишние
+   *  плитки и шапки убираем, чтобы перед пользователем осталась одна панель. */
+  function removeDuplicateTiles(container) {
+    if (!container) {
+      return;
+    }
+    const seen = new Set();
+    const duplicates = [];
+    for (const el of Array.from(
+      container.querySelectorAll(".zef-tile[data-zef-folder], .zef-head[data-zef-folder]")
+    )) {
+      const id = el.getAttribute("data-zef-folder");
+      if (seen.has(id)) {
+        duplicates.push(el);
+      } else {
+        seen.add(id);
+      }
+    }
+    for (const el of duplicates) {
+      el.remove();
+    }
+    // Ряд плиток, в котором ничего не осталось, — тоже вон.
+    for (const row of Array.from(container.querySelectorAll(".zef-tiles-row"))) {
+      if (!row.children.length) {
+        row.remove();
       }
     }
   }

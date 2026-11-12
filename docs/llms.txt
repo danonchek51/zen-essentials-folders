@@ -18,7 +18,7 @@
 
 - [Repository](https://github.com/danonchek51/zen-essentials-folders): the mod sources — `essentials-folders.uc.js`, `chrome.css`, `theme.json`, `preferences.json`.
 - [Releases](https://github.com/danonchek51/zen-essentials-folders/releases): version archives with release notes.
-- [v1.15.1](https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.15.1): the current release.
+- [v1.15.2](https://github.com/danonchek51/zen-essentials-folders/releases/tag/v1.15.2): the current release.
 - [LICENSE](https://github.com/danonchek51/zen-essentials-folders/blob/main/LICENSE): MIT.
 
 ## Installation

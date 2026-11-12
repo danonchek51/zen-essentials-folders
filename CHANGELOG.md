@@ -10,6 +10,28 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.15.2] — 2026-11-12
+
+The Essentials panel is drawn once now — it used to appear twice, and the browser kept repainting it.
+
+### Fixed
+
+- **The panel is drawn once.** The mod watched the panel itself, so every repaint of the panel
+  scheduled another one — forever, every 150 ms. A repaint that started while another one was
+  still running (the watcher of the preferences in Zen fires at once) then drew a second set of
+  tiles over the first one: two rows of tiles and two folder headers. The panel now waits for the
+  current repaint to finish, and a leftover duplicate is removed after it.
+- **The panel stops repainting itself.** The early exit from a repaint only worked when the panel
+  had a folder tile in it. With every top-level folder open there is no tile, and the panel
+  repainted itself endlessly.
+- **The search row of a previous copy of the mod is cleaned up.** It stands next to the panel, not
+  inside it, and used to stay on screen.
+
+### Added
+
+- The mod writes what it sees about the panel to `zen.essentialsfolders.diag`: how many copies of
+  the mod are loaded, how many Essentials panels are in the window and how many tiles are drawn.
+
 ## [1.15.1] — 2026-11-12
 
 A rule without an open page is drawn with the icon of its site and answers to the right click.
