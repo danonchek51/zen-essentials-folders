@@ -10,6 +10,20 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.15.1] — 2026-11-12
+
+A rule without an open page is drawn with the icon of its site and answers to the right click.
+
+### Fixed
+
+- **The dim tile shows the icon of the site.** A rule whose page is not open right now was drawn
+  as a globe — it looked like an icon that failed to load. It now takes the icon of the site from
+  the browser's icon cache, and falls back to the first letter of the address on a coloured circle
+  when there is no icon — the same trick the mod already uses for tabs without a favicon.
+- **The dim tile answers to the right click.** Right-clicking it opened Zen's tab menu, so the
+  rule could not be reached. It now opens the mod's menu: open the page, remove the rule from the
+  folder, open the list of sites, rename the folder.
+
 ## [1.15.0] — 2026-11-12
 
 Dragging a site icon from an open folder onto a folder tile now works the way it should, and the

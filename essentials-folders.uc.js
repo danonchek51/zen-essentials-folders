@@ -79,7 +79,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.15.0";
+  const MOD_VERSION = "1.15.1";
 
 
   /* ------------------------------------------------------------------ *
@@ -185,6 +185,11 @@
       ru: "Нет открытой страницы этого домена — правила хранятся по страницам.",
     },
     "folder.exclusion": { en: "exclusion {rule}", ru: "исключение {rule}" },
+    "ghost.open": { en: "Open the page", ru: "Открыть страницу" },
+    "ghost.remove": {
+      en: "Remove the rule from the folder",
+      ru: "Убрать правило из папки",
+    },
     "folder.dragType": { en: "folder", ru: "папка" },
     "folder.save": { en: "Save", ru: "Сохранить" },
     "folder.cancel": { en: "Cancel", ru: "Отмена" },
@@ -370,13 +375,6 @@
   }
 
   const DEFAULT_ICON = "chrome://browser/skin/zen-icons/selectable/folder.svg";
-  // Иконка плитки-призрака: глобус — страницы правила сейчас не открыто.
-  const GHOST_ICON =
-    "data:image/svg+xml;utf8," +
-    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' " +
-    "stroke='white' stroke-width='1.7' opacity='.8'>" +
-    "<circle cx='12' cy='12' r='9'/><path d='M3 12h18'/>" +
-    "<path d='M12 3c3 3.6 3 14.4 0 18M12 3c-3 3.6-3 14.4 0 18'/></svg>";
   const DEFAULT_COLOR = "#8b5cf6";
 
   const PALETTE = [
@@ -2129,31 +2127,77 @@
     return out;
   }
 
+  /** Иконка сайта для правила — из кэша иконок браузера.
+   *
+   *  Правило без открытой вкладки — это всё равно сайт: показываем его
+   *  настоящую иконку, а не глобус. Если иконки нет, покажем букву адреса
+   *  на цветном круге — как у вкладок без favicon. */
+  function faviconForRule(rule) {
+    const url = urlOfRule(rule);
+    if (!url) {
+      return Promise.resolve("");
+    }
+    try {
+      const uri = Services.io.newURI(url);
+      return Promise.resolve(PlacesUtils.favicons.getFaviconForPage(uri))
+        .then(image => image?.src || "")
+        .catch(() => "");
+    } catch (e) {
+      return Promise.resolve("");
+    }
+  }
+
   /** Бледная плитка правила, у которого нет открытой вкладки. */
   function buildGhostTile(rule, folder) {
     const ghost = document.createElement("div");
-    ghost.className = "zef-ghost";
+    ghost.className = "zef-ghost zef-no-icon";
     ghost.dataset.zef = "1";
     ghost.setAttribute("data-zef-owner", folder.id);
     ghost.setAttribute("data-zef-rule", rule);
     ghost.title = rule;
     ghost.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
-    const icon = document.createElement("div");
-    icon.className = "zef-ghost-icon";
-    icon.style.backgroundImage = `url("${GHOST_ICON}")`;
+    const host = ruleHost(rule);
+    ghost.style.setProperty(
+      "--zef-fallback-letter",
+      `"${(host || "?").charAt(0).toUpperCase()}"`
+    );
+    ghost.style.setProperty(
+      "--zef-fallback-color",
+      `hsl(${hostHue(host)} 62% 48%)`
+    );
+    const icon = document.createElement("img");
+    icon.className = "zef-ghost-img";
+    icon.alt = "";
     ghost.appendChild(icon);
+    // Иконка приезжает позже — до этого показываем букву адреса.
+    faviconForRule(rule).then(src => {
+      if (!src || !ghost.isConnected) {
+        return;
+      }
+      icon.src = src;
+      ghost.classList.remove("zef-no-icon");
+    });
     // Клик открывает страницу правила.
     ghost.addEventListener("mousedown", event => event.stopPropagation());
     ghost.addEventListener("click", event => {
       event.preventDefault();
       event.stopPropagation();
-      try {
-        gBrowser.selectedTab = gBrowser.addTab(urlOfRule(rule), {
-          triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
-        });
-      } catch (e) {}
+      openRulePage(rule);
     });
     return ghost;
+  }
+
+  /** Открыть страницу правила. */
+  function openRulePage(rule) {
+    const url = urlOfRule(rule);
+    if (!url) {
+      return;
+    }
+    try {
+      gBrowser.selectedTab = gBrowser.addTab(url, {
+        triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+      });
+    } catch (e) {}
   }
 
   /** Адрес страницы по правилу: «домен/путь». */
@@ -4122,6 +4166,44 @@
     document.documentElement.appendChild(tilePopup);
   }
 
+  /** Меню плитки-призрака: правило без открытой страницы. */
+  function openGhostMenu(rule, folder, anchor) {
+    ensureTilePanel();
+    tilePopup.replaceChildren();
+
+    const addItem = (label, action, icon) => {
+      const item = document.createXULElement("menuitem");
+      item.setAttribute("label", label);
+      if (icon) {
+        item.setAttribute("image", icon);
+      }
+      item.addEventListener("command", () => setTimeout(action, 0));
+      tilePopup.appendChild(item);
+      return item;
+    };
+    const addSeparator = () =>
+      tilePopup.appendChild(document.createXULElement("menuseparator"));
+
+    addItem(t("ghost.open"), () => openRulePage(rule));
+    addItem(t("ghost.remove"), () => {
+      const current = folderById(folder.id) || folder;
+      current.sites = (current.sites || []).filter(item => item !== rule);
+      persist();
+    });
+    addSeparator();
+    addItem(t("folder.sites"), () => openFolderDialog(folder, "sites"));
+    addItem(t("folder.rename"), () => openFolderDialog(folder, "name"));
+
+    try {
+      const rect = anchor.getBoundingClientRect();
+      const x = (window.mozInnerScreenX ?? window.screenX ?? 0) + rect.left;
+      const y = (window.mozInnerScreenY ?? window.screenY ?? 0) + rect.bottom;
+      tilePopup.openPopupAtScreen(x, y, false, null);
+    } catch (e) {
+      tilePopup.openPopup(anchor, "after_start", 0, 0, false, false);
+    }
+  }
+
   function openTileMenu(folder, anchor) {
     ensureTilePanel();
     tilePopup.replaceChildren();
@@ -4210,6 +4292,19 @@
    *  так событие не перехватят другие обработчики Zen. */
   function onWindowContextMenu(event) {
     const target = event.target;
+    // Плитка-призрак: правило без открытой страницы. Своё меню: открыть
+    // страницу, убрать правило из папки.
+    const ghost = target?.closest?.(".zef-ghost");
+    if (ghost) {
+      event.preventDefault();
+      event.stopPropagation();
+      const folder = folderById(ghost.getAttribute("data-zef-owner") || "");
+      const rule = ghost.getAttribute("data-zef-rule") || "";
+      if (folder && rule) {
+        openGhostMenu(rule, folder, ghost);
+      }
+      return;
+    }
     // Правый клик работает и по плитке, и по шапке развёрнутой папки —
     // иначе закреплённую (развёрнутую) папку невозможно открепить.
     const tile = target?.closest?.(".zef-tile, .zef-head");
@@ -5327,6 +5422,11 @@
 
     // Настройки мода: размеры, индикаторы, раскладка плиток.
     ensureSettingPrefs();
+    // Какая версия мода загружена: мод читается при старте Zen, и по этой
+    // метке видно, подхватился ли браузер новую версию.
+    try {
+      Services.prefs.setStringPref("zen.essentialsfolders.version", MOD_VERSION);
+    } catch (e) {}
     // Правила переводим на страничный вид — до первой отрисовки.
     migrateRulesToPages();
     applySettings();
