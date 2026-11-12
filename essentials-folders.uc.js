@@ -3732,11 +3732,11 @@
   function handleDropOnSite(event, targetTab) {
     const tab = draggedTabFrom(event) || draggedTab;
     if (!tab || tab === targetTab) {
-      return { error: "нечего перетаскивать" };
+      return { error: "nothing to drag" };
     }
     const url = tabUrl(tab);
     if (!url) {
-      return { error: "нет адреса вкладки" };
+      return { error: "the tab has no address" };
     }
     const targetUrl = tabUrl(targetTab);
     const targetFolder = folderForUrl(targetUrl);
