@@ -31,6 +31,15 @@
   } catch (e) {}
   window[INSTANCE_KEY] = null;
 
+  // Мод могут загрузить несколько раз: Zen подставляет скрипты и при старте,
+  // и при перезагрузке модов. Рисовать панель должен только последний
+  // экземпляр — иначе в панели два набора плиток, а броски обрабатывают оба
+  // экземпляра сразу (значок «откатывается» на прежнее место).
+  const OWNER_KEY = "__zenEssentialsFoldersOwner";
+  window[OWNER_KEY] = (window[OWNER_KEY] || 0) + 1;
+  const OWNER = window[OWNER_KEY];
+  const isOwner = () => window[OWNER_KEY] === OWNER;
+
   /* ------------------------------------------------------------------ *
    * Настройки
    * ------------------------------------------------------------------ */
@@ -58,6 +67,11 @@
    * ------------------------------------------------------------------ */
 
   const PREF_SETTINGS = "zen.essentialsfolders.settings";
+  // Версия модели правил: "2" — правила хранятся по страницам.
+  const PREF_RULE_MODEL = "zen.essentialsfolders.rule-model";
+  // Резервная копия правил до перевода и отчёт о переводе.
+  const PREF_RULES_BACKUP = "zen.essentialsfolders.rules-backup";
+  const PREF_MIGRATION_REPORT = "zen.essentialsfolders.migration-report";
   // Отчёт о последнем броске: по нему видно, что произошло, даже если
   // консоль закрыта.
   const PREF_LAST_DROP = "zen.essentialsfolders.lastdrop";
@@ -65,7 +79,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.14.9";
+  const MOD_VERSION = "1.15.0";
 
 
   /* ------------------------------------------------------------------ *
@@ -166,6 +180,10 @@
     "folder.iconButton": { en: "Change icon", ru: "Сменить иконку" },
     "folder.sitesLabel": { en: "Sites in this folder", ru: "Сайты в папке" },
     "folder.rulePlaceholder": { en: "add a domain and press Enter", ru: "добавить домен и Enter" },
+    "folder.noOpenPages": {
+      en: "No open page of this domain — rules are stored per page.",
+      ru: "Нет открытой страницы этого домена — правила хранятся по страницам.",
+    },
     "folder.exclusion": { en: "exclusion {rule}", ru: "исключение {rule}" },
     "folder.dragType": { en: "folder", ru: "папка" },
     "folder.save": { en: "Save", ru: "Сохранить" },
@@ -352,6 +370,13 @@
   }
 
   const DEFAULT_ICON = "chrome://browser/skin/zen-icons/selectable/folder.svg";
+  // Иконка плитки-призрака: глобус — страницы правила сейчас не открыто.
+  const GHOST_ICON =
+    "data:image/svg+xml;utf8," +
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' " +
+    "stroke='white' stroke-width='1.7' opacity='.8'>" +
+    "<circle cx='12' cy='12' r='9'/><path d='M3 12h18'/>" +
+    "<path d='M12 3c3 3.6 3 14.4 0 18M12 3c-3 3.6-3 14.4 0 18'/></svg>";
   const DEFAULT_COLOR = "#8b5cf6";
 
   const PALETTE = [
@@ -367,8 +392,14 @@
 
   let folders = [];
   let collapsed = new Set();
+  // Правила папок, занятые открытыми вкладками: остальные рисуем бледными
+  // плитками (правило есть, а страницы сейчас не открыто).
+  let matchedRules = new Map();
   let lastSignature = null;
   let syncTimer = null;
+  // Отложенный первый рисунок панели: его снимает uninstall(), иначе старый
+  // экземпляр нарисует панель уже после того, как новый экземпляр его убрал.
+  let firstRenderTimer = 0;
   // Отложенные проверки иконок: favicon часто приезжает уже после того,
   // как панель перестроилась, — тогда на секунду вместо логотипа
   // показывалась буква, и иконка «пропадала».
@@ -1240,15 +1271,36 @@
    * DOM Zen
    * ------------------------------------------------------------------ */
 
+  /** Все контейнеры «Важных» в окне: в Zen их может быть несколько —
+   *  по одному на рабочее пространство. */
+  function allContainers() {
+    try {
+      return Array.from(document.querySelectorAll(".zen-essentials-container"));
+    } catch (e) {
+      return [];
+    }
+  }
+
   function getContainer() {
     let container = null;
     try {
       container = gZenWorkspaces?.getCurrentEssentialsContainer() || null;
     } catch (e) {}
-    if (!container) {
+    if (!container || !container.isConnected) {
+      // Берём тот контейнер, где реально лежат «Важные» вкладки и он виден.
+      // Если контейнеров несколько, это важно: иначе один экземпляр мода
+      // рисует панель в одном, а второй — в другом, и панель двоится.
+      const candidates = allContainers();
       container =
-        document.querySelector('.zen-essentials-container:not([hidden="true"])') ||
-        document.querySelector(".zen-essentials-container");
+        candidates.find(
+          el =>
+            !el.hidden &&
+            el.offsetParent !== null &&
+            el.querySelector(".tabbrowser-tab[zen-essential]")
+        ) ||
+        candidates.find(el => !el.hidden && el.offsetParent !== null) ||
+        candidates[0] ||
+        null;
     }
     if (container) {
       // Помечаем контейнер, в котором реально живут плитки: по этой
@@ -1481,6 +1533,7 @@
     if (!searchRow) {
       searchRow = document.createElement("div");
       searchRow.className = "zef-search";
+      searchRow.dataset.zef = "1";
 
       searchInput = document.createElement("input");
       searchInput.type = "text";
@@ -1623,6 +1676,7 @@
       if (!emptyHint) {
         emptyHint = document.createElement("div");
         emptyHint.className = "zef-empty";
+        emptyHint.dataset.zef = "1";
       }
       emptyHint.textContent = t("search.empty", { query: filterText.trim() });
       emptyHint.style.display = "";
@@ -1660,31 +1714,17 @@
   }
 
   function sync(force = false) {
+    // Рисует только последний загруженный экземпляр мода.
+    if (!isOwner()) {
+      return;
+    }
     const container = getContainer();
     if (!container) {
       return;
     }
-    // Бросок, который не попал ни в одну нашу зону (например, в пустое
-    // место, которое Zen вставил под вкладку), ищем по снимку раскладки.
-    if (!container.hasAttribute("zef-drop-ready")) {
-      container.setAttribute("zef-drop-ready", "true");
-      container.addEventListener("drop", event => {
-        // Бросить можно и вкладку, и папку: папка тоже должна попасть
-        // в открытую папку, а не потеряться.
-        if (dropHandled) {
-          // Бросок уже разобран на уровне окна: дальше его ведёт Zen.
-          dropHandled = false;
-          return;
-        }
-        if (!draggedTab && !draggedFolderId) {
-          return;
-        }
-        if (dropBySnapshot(event)) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      });
-    }
+    // Обработчики броска живут на панели: они перехватывают событие раньше
+    // Zen и не дают сетке «Важных» перестроиться под курсором.
+    installPanelHandlers(container);
     // Наблюдение должно следовать за текущим контейнером.
     installObserver();
     // Строка поиска всегда первая в сетке «Важных».
@@ -1721,29 +1761,11 @@
     }
     lastSignature = signature;
 
-    // Убираем плитки прошлого прохода (только наши — по классу).
-    for (const child of Array.from(container.children)) {
-      if (
-        child.classList?.contains("zef-tile") ||
-        child.classList?.contains("zef-head") ||
-        child.classList?.contains("zef-plane") ||
-        child.classList?.contains("zef-divider") ||
-        // Разрыв ряда — тоже наш элемент. Если его не убрать, старые разрывы
-        // останутся в панели навсегда и оставят дыры между иконками.
-        // Ряд плиток папок — тоже наш: без очистки они накапливались бы.
-        child.classList?.contains("zef-tiles-row") ||
-        // Полоса иконок вложенной папки — наш элемент.
-        child.classList?.contains("zef-icon-strip")
-      ) {
-        // Иконки лежат внутри полосы: сначала вернём их в контейнер,
-        // иначе они исчезнут вместе с полосой.
-        if (child.classList?.contains("zef-icon-strip")) {
-          for (const tab of Array.from(child.children)) {
-            container.appendChild(tab);
-          }
-        }
-        child.remove();
-      }
+    // Убираем плитки прошлого прохода (только наши — по метке data-zef).
+    // Чистим во всех контейнерах: мусор от прежнего экземпляра не должен
+    // остаться ни в одном из них.
+    for (const box of allContainers()) {
+      clearOurElements(box);
     }
 
     // Раскладываем вкладки по папкам. Порядок плиток внутри папки задают
@@ -1791,7 +1813,27 @@
       list.sort((a, b) => a.ruleIndex - b.ruleIndex || a.index - b.index);
     }
 
-    const countOf = id => (groups.get(id) || []).length;
+    // Какие правила папок «заняты» открытыми вкладками: остальные рисуем
+    // бледными плитками (правило есть, а вкладки сейчас нет).
+    matchedRules = new Map();
+    for (const match of matches) {
+      if (!match?.rule) {
+        continue;
+      }
+      const list = matchedRules.get(match.folder.id) || [];
+      list.push(match.rule);
+      matchedRules.set(match.folder.id, list);
+    }
+
+    // Счётчик папки — по правилам: правило есть, значит сайт в папке есть,
+    // даже если сейчас эта страница не открыта.
+    const countOf = id => {
+      const folder = folderById(id);
+      if (!folder) {
+        return (groups.get(id) || []).length;
+      }
+      return (folder.sites || []).filter(rule => !isExclusionRule(rule)).length;
+    };
 
     // Порядок в сетке «Важных»:
     //   1) ряд плиток папок верхнего уровня;
@@ -1820,6 +1862,7 @@
     if (!inGrid) {
       tilesRow = document.createElement("div");
       tilesRow.className = "zef-tiles-row";
+      tilesRow.dataset.zef = "1";
       tilesRow.style.order = String(nextOrder());
       container.appendChild(tilesRow);
     }
@@ -1890,6 +1933,7 @@
       if (children.length) {
         const nestedRow = document.createElement("div");
         nestedRow.className = "zef-tiles-row zef-nested-row";
+        nestedRow.dataset.zef = "1";
         nestedRow.style.order = String(nextOrder());
         nestedRow.setAttribute("data-zef-owner", folder.id);
         container.appendChild(nestedRow);
@@ -1920,6 +1964,12 @@
         for (const item of groups.get(folder.id) || []) {
           item.tab.style.order = String(nextOrder());
         }
+        // Правила без открытой вкладки — бледными плитками.
+        for (const rule of ghostRules(folder.id)) {
+          const ghost = buildGhostTile(rule, folder);
+          ghost.style.order = String(nextOrder());
+          container.appendChild(ghost);
+        }
       }
     };
 
@@ -1932,6 +1982,7 @@
     // чтобы убрать её из папки, а папку — вынести на верхний уровень.
     const divider = document.createElement("div");
     divider.className = "zef-divider";
+    divider.dataset.zef = "1";
     divider.setAttribute(
       "title",
       free.length > 0
@@ -1939,24 +1990,9 @@
         : t("pinned.plain")
     );
     divider.style.order = String(nextOrder());
-    divider.addEventListener("dragover", event => {
-      if (!dragKind(event)) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      event.dataTransfer.dropEffect = "move";
-      divider.classList.add("zef-drop-over");
-    });
     divider.addEventListener("dragleave", () =>
       divider.classList.remove("zef-drop-over")
     );
-    divider.addEventListener("drop", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      divider.classList.remove("zef-drop-over");
-      handleDropOnDivider(event);
-    });
     container.appendChild(divider);
 
     for (const tab of free) {
@@ -1985,6 +2021,7 @@
     // user-sheet не мешает доступу к chrome://-ресурсам Zen.
     const tile = document.createElement("div");
     tile.className = nested ? "zef-tile zef-nested" : "zef-tile";
+    tile.dataset.zef = "1";
     tile.setAttribute("data-zef-folder", folder.id);
     tile.setAttribute(
       "title",
@@ -2054,47 +2091,78 @@
       document.documentElement.classList.remove("zef-drag-active");
       clearDropMarks();
     });
-    tile.addEventListener("dragover", event => {
-      const kind = dragKind(event);
-      if (!kind) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      event.dataTransfer.dropEffect = "move";
-      // Вкладку кладём в папку целиком: края плитки заняты перестановкой
-      // папок, и вкладке незачем папку переставлять.
-      const zone = kind === "site" ? 1 : dropZoneOf(event, tile, 0.3);
-      tile.classList.remove("zef-drop-before", "zef-drop-into", "zef-drop-after");
-      tile.classList.add(
-        zone === 0 ? "zef-drop-before" : zone === 2 ? "zef-drop-after" : "zef-drop-into"
-      );
-    });
     tile.addEventListener("dragleave", event => {
       if (event.relatedTarget && tile.contains(event.relatedTarget)) {
         return;
       }
       tile.classList.remove("zef-drop-before", "zef-drop-into", "zef-drop-after");
     });
-    tile.addEventListener("drop", event => {
-      if (dropHandled) {
-        // Бросок уже разобран на уровне окна — ведёт его Zen.
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      const kind = dragKind(event);
-      const zone = kind === "site" ? 1 : dropZoneOf(event, tile, 0.3);
-      clearDropMarks();
-      const current = folderById(folder.id) || folder;
-      if (kind === "folder") {
-        handleFolderDropOnTile(event, current, zone);
-      } else if (kind === "site") {
-        handleSiteDropOnTile(event, current);
-      }
-    });
 
     return tile;
+  }
+
+  /** Правила папки, которым не соответствует ни одна открытая вкладка.
+   *
+   *  Такое правило — это «сайт в папке, но вкладки сейчас не открыто».
+   *  Показываем его бледной плиткой: иначе папка выглядит пустой, хотя
+   *  правило в ней есть. */
+  function ghostRules(folderId) {
+    const folder = folderById(folderId);
+    if (!folder) {
+      return [];
+    }
+    const used = new Set();
+    for (const match of matchedRules.get(folderId) || []) {
+      used.add(normalizeSite(ruleBody(match)));
+    }
+    const out = [];
+    for (const rule of folder.sites || []) {
+      if (isExclusionRule(rule)) {
+        continue;
+      }
+      const body = normalizeSite(ruleBody(rule));
+      if (!body || used.has(body)) {
+        continue;
+      }
+      out.push(rule);
+    }
+    return out;
+  }
+
+  /** Бледная плитка правила, у которого нет открытой вкладки. */
+  function buildGhostTile(rule, folder) {
+    const ghost = document.createElement("div");
+    ghost.className = "zef-ghost";
+    ghost.dataset.zef = "1";
+    ghost.setAttribute("data-zef-owner", folder.id);
+    ghost.setAttribute("data-zef-rule", rule);
+    ghost.title = rule;
+    ghost.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
+    const icon = document.createElement("div");
+    icon.className = "zef-ghost-icon";
+    icon.style.backgroundImage = `url("${GHOST_ICON}")`;
+    ghost.appendChild(icon);
+    // Клик открывает страницу правила.
+    ghost.addEventListener("mousedown", event => event.stopPropagation());
+    ghost.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      try {
+        gBrowser.selectedTab = gBrowser.addTab(urlOfRule(rule), {
+          triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+        });
+      } catch (e) {}
+    });
+    return ghost;
+  }
+
+  /** Адрес страницы по правилу: «домен/путь». */
+  function urlOfRule(rule) {
+    const body = normalizeSite(ruleBody(rule));
+    if (!body) {
+      return "";
+    }
+    return body.startsWith("http") ? body : "https://" + body;
   }
 
   /** Полоса иконок раскрытой вложенной папки: плотный ряд под плитками,
@@ -2103,6 +2171,7 @@
   function buildIconStrip(folder, items) {
     const strip = document.createElement("div");
     strip.className = "zef-icon-strip";
+    strip.dataset.zef = "1";
     strip.setAttribute("data-zef-owner", folder.id);
     strip.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
     let index = 0;
@@ -2111,29 +2180,20 @@
       tab.style.order = String(index++);
       strip.appendChild(tab);
     }
+    // Правила без открытой вкладки — бледными плитками: папка не должна
+    // выглядеть пустой, если в ней есть правила.
+    for (const rule of ghostRules(folder.id)) {
+      const ghost = buildGhostTile(rule, folder);
+      ghost.style.order = String(index++);
+      strip.appendChild(ghost);
+    }
     // Сама полоса — зона приёма: плитка сайта попадёт в папку,
     // папка — внутрь неё.
-    strip.addEventListener("dragover", event => {
-      if (!dragKind(event)) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      event.dataTransfer.dropEffect = "move";
-      strip.classList.add("zef-drop-over");
-    });
     strip.addEventListener("dragleave", event => {
       if (event.relatedTarget && strip.contains(event.relatedTarget)) {
         return;
       }
       strip.classList.remove("zef-drop-over");
-    });
-    strip.addEventListener("drop", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      strip.classList.remove("zef-drop-over");
-      const current = folderById(folder.id) || folder;
-      handleDropIntoFolder(event, current);
     });
     return strip;
   }
@@ -2157,32 +2217,17 @@
   function buildPlane(folder) {
     const plane = document.createElement("div");
     plane.className = "zef-plane";
+    plane.dataset.zef = "1";
     plane.setAttribute("data-zef-folder", folder.id);
     plane.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
 
     // Сама плоскость — зона приёма: плитка сайта попадёт в папку,
     // папка — внутрь неё.
-    plane.addEventListener("dragover", event => {
-      if (!dragKind(event)) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      event.dataTransfer.dropEffect = "move";
-      plane.classList.add("zef-drop-over");
-    });
     plane.addEventListener("dragleave", event => {
       if (event.relatedTarget && plane.contains(event.relatedTarget)) {
         return;
       }
       plane.classList.remove("zef-drop-over");
-    });
-    plane.addEventListener("drop", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      plane.classList.remove("zef-drop-over");
-      const current = folderById(folder.id) || folder;
-      handleDropIntoFolder(event, current);
     });
 
     return plane;
@@ -2193,6 +2238,7 @@
   function buildHead(folder, count) {
     const head = document.createElement("div");
     head.className = "zef-head";
+    head.dataset.zef = "1";
     head.setAttribute("data-zef-folder", folder.id);
     head.setAttribute("title", `${folderPath(folder)} — ${count}`.trim());
     head.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
@@ -2252,23 +2298,7 @@
       document.documentElement.classList.remove("zef-drag-active");
       clearDropMarks();
     });
-    head.addEventListener("dragover", event => {
-      if (!dragKind(event)) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      event.dataTransfer.dropEffect = "move";
-      head.classList.add("zef-drag-over");
-    });
     head.addEventListener("dragleave", () => head.classList.remove("zef-drag-over"));
-    head.addEventListener("drop", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      head.classList.remove("zef-drag-over");
-      const current = folderById(folder.id) || folder;
-      handleDropIntoFolder(event, current);
-    });
 
     return head;
   }
@@ -2633,7 +2663,87 @@
     sync(true);
   }
 
-  /** Сохраняет папки в преф. Возвращает false, если запись не прошла. */
+  /** Перевести правила на страничный вид — один раз.
+   *
+   *  Правило — это страница: «домен/путь» или «домен/» для главной страницы.
+   *  Доменное правило («домен») превращается в страницы открытых вкладок
+   *  этого домена; если открытых вкладок нет — остаётся «домен/» (главная
+   *  страница). Исключения («!…») больше не нужны: правила точные, и споров,
+   *  кому принадлежит вкладка, не возникает.
+   *
+   *  Перед переводом исходные правила сохраняются в префе — на случай, если
+   *  преобразование не понравится. */
+  function migrateRulesToPages() {
+    if (readStringPref(PREF_RULE_MODEL, "") === "2") {
+      return;
+    }
+    const stored = readFolders();
+    const container = getContainer();
+    const openPages = new Map();
+    for (const tab of essentialTabs(container)) {
+      const url = tabUrl(tab);
+      const host = hostOf(url);
+      if (!host) {
+        continue;
+      }
+      if (!openPages.has(host)) {
+        openPages.set(host, []);
+      }
+      openPages.get(host).push(url);
+    }
+    const report = { folders: 0, domains: 0, exclusions: 0, pages: 0 };
+    const next = [];
+    for (const folder of stored) {
+      const sites = [];
+      for (const rule of folder.sites || []) {
+        if (isExclusionRule(rule)) {
+          report.exclusions += 1;
+          continue;
+        }
+        const body = normalizeSite(ruleBody(rule));
+        if (!body) {
+          continue;
+        }
+        if (!body.includes("/")) {
+          // Доменное правило — раскладываем по открытым страницам домена.
+          report.domains += 1;
+          const pages = openPages.get(body) || [];
+          if (pages.length) {
+            for (const url of pages) {
+              const page = specificRuleFor(url);
+              if (page && !sites.includes(page)) {
+                sites.push(page);
+                report.pages += 1;
+              }
+            }
+          } else {
+            const page = body + "/";
+            if (!sites.includes(page)) {
+              sites.push(page);
+              report.pages += 1;
+            }
+          }
+          continue;
+        }
+        if (!sites.includes(body)) {
+          sites.push(body);
+          report.pages += 1;
+        }
+      }
+      next.push(Object.assign({}, folder, { sites }));
+      report.folders += 1;
+    }
+    // Резервная копия — исходные правила и результат перевода.
+    writeJSONPref(PREF_RULES_BACKUP, stored);
+    writeJSONPref(PREF_MIGRATION_REPORT, report);
+    try {
+      Services.prefs.setStringPref(PREF_RULE_MODEL, "2");
+    } catch (e) {}
+    folders = next;
+    persist();
+  }
+
+  /** Сохраняем папки в преф. Возвращает false, если запись не прошла. */
   function persist() {
     const saved = writeJSONPref(PREF_FOLDERS, folders);
     if (saved) {
@@ -2890,74 +3000,6 @@
     return items;
   }
 
-  /** Куда целился пользователь.
-   *
-   *  Сначала ищем по свежим замерам целей (см. measureDragTargets): сетку
-   *  «Важных» во время перетаскивания двигает сам Zen, и снимок раскладки
-   *  устаревает. Снимок оставлен запасным вариантом — на случай, если панель
-   *  сейчас не на месте.
-   *
-   *  Если рядом плитки нет — значит, целился в пустое место, и мы не мешаем
-   *  Zen. */
-  function resolveDropTarget(event) {
-    const x = event.clientX;
-    const y = event.clientY;
-
-    // Ближайшая цель и точное попадание среди указанных.
-    const nearestIn = (items) => {
-      let nearest = null;
-      for (const item of items) {
-        if (item.el === draggedTab) {
-          continue;
-        }
-        const r = item.rect;
-        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
-          return { item: item, dist: 0 };
-        }
-        const dist = Math.hypot(
-          x - (r.left + r.right) / 2,
-          y - (r.top + r.bottom) / 2
-        );
-        if (!nearest || dist < nearest.dist) {
-          nearest = { item: item, dist: dist };
-        }
-      }
-      return nearest;
-    };
-
-    const live = nearestIn(measureDragTargets());
-    if (live && live.dist === 0) {
-      // Под курсором может стоять уже другая плитка: Zen перестроил сетку
-      // и подставил свою копию вкладки. Но подсвечена та, в которую целился
-      // пользователь, — ей и надо верить, иначе перенос уходит не туда.
-      if (hoverTarget && hoverTarget.el !== live.item.el && hoverTarget.el?.isConnected) {
-        return hoverTarget;
-      }
-      return live.item;
-    }
-    const old = nearestIn(dragLayout || []);
-    if (old && old.dist === 0) {
-      return old.item;
-    }
-    const nearest = live && (!old || live.dist <= old.dist) ? live : old;
-    if (nearest && nearest.dist <= 10) {
-      // Совсем рядом с плиткой — считаем промахом по краю и берём её.
-      // Но только внутри панели: бросок в пустое место (или вовсе мимо
-      // панели) — это не наша зона, там разбирается Zen.
-      const cRect = getContainer()?.getBoundingClientRect();
-      if (
-        cRect &&
-        x >= cRect.left &&
-        x <= cRect.right &&
-        y >= cRect.top &&
-        y <= cRect.bottom
-      ) {
-        return nearest.item;
-      }
-    }
-    return null;
-  }
-
   /** Запомнить, что произошло с последним броском. Читается из консоли:
    *  window.__zenEssentialsFolders.lastDrop */
   function recordDrop(info) {
@@ -2995,7 +3037,12 @@
       target.el.classList.add(zone === 0 ? "zef-drop-before" : "zef-drop-after");
       return;
     }
-    if (target.kind === "head" || target.kind === "plane") {
+    if (
+      target.kind === "head" ||
+      target.kind === "plane" ||
+      target.kind === "strip" ||
+      target.kind === "divider"
+    ) {
       target.el.classList.add("zef-drop-over");
       return;
     }
@@ -3004,6 +3051,190 @@
     target.el.classList.add(
       zone === 0 ? "zef-drop-before" : zone === 2 ? "zef-drop-after" : "zef-drop-into"
     );
+  }
+
+  /** Обработчики броска на панели «Важных». Ставим один раз на контейнер:
+   *  Zen контейнер может пересоздать — тогда ставим заново. */
+  function installPanelHandlers(container) {
+    if (!container || container.getAttribute("zef-panel-drop") === "1") {
+      return;
+    }
+    container.setAttribute("zef-panel-drop", "1");
+    container.addEventListener("dragover", onPanelDragOver, true);
+    container.addEventListener("drop", onPanelDrop, true);
+  }
+
+  /** Наш ли это бросок: вкладка из панели, из списка вкладок или из сайдбара. */
+  function panelDragIsOurs(event) {
+    if (draggedTab || draggedFolderId) {
+      return true;
+    }
+    if (adoptDragFromData(event)) {
+      return true;
+    }
+    return looksLikeTabDrag(event);
+  }
+
+  /** Панель «Важных» под курсором: перетаскивание мы не пропускаем. */
+  function onPanelDragOver(event) {
+    if (!isOwner() || !panelDragIsOurs(event)) {
+      return;
+    }
+    // Сетку «Важных» не перестраиваем, когда тянут значок из самой панели.
+    // Zen слушает перетаскивание выше по дереву (на #tabbrowser-tabs, в фазе
+    // всплытия), поэтому остановка события здесь не даёт ему сдвинуть плитки
+    // из-под курсора. Вкладку из сайдбара ведёт Zen — её не гасим.
+    event.preventDefault();
+    if (draggedTabIsEssential) {
+      event.stopPropagation();
+    }
+    const target = resolveTarget(event.clientX, event.clientY);
+    if (!target) {
+      // Цели под курсором нет — подсветка (если была) устарела.
+      hoverTarget = null;
+      clearDropMarks();
+      return;
+    }
+    hoverTarget = target;
+    try {
+      event.dataTransfer.dropEffect = "move";
+    } catch (e) {}
+    markDropTarget(target, event);
+  }
+
+  /** Бросок на панели: цель выбираем и применяем действие сами. */
+  function onPanelDrop(event) {
+    if (!isOwner() || !panelDragIsOurs(event)) {
+      return;
+    }
+    event.preventDefault();
+    lastDropPoint = { x: event.clientX, y: event.clientY };
+    // Цель: сперва та, что под курсором. Но если подсвечена другая —
+    // берём подсвеченную: пользователь целился именно в неё.
+    let target = resolveTarget(event.clientX, event.clientY);
+    if (
+      target &&
+      hoverTarget &&
+      hoverTarget.el !== target.el &&
+      hoverTarget.el?.isConnected
+    ) {
+      target = hoverTarget;
+    }
+    if (!target) {
+      target = hoverTargetFor(event);
+    }
+    // Откуда взялась выбранная цель: подсветка (значит, пользователь целился
+    // именно в неё) или текущие координаты.
+    const targetSource = !target
+      ? "none"
+      : hoverTarget && target.el === hoverTarget.el
+        ? "hover"
+        : "live";
+    if (!target) {
+      // Бросок не в нашу зону — запомним, чтобы было видно, что произошло.
+      const container = getContainer();
+      const rect = container?.getBoundingClientRect();
+      const inPanel =
+        rect &&
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom;
+      recordDrop({
+        result: inPanel ? "no-target" : "outside-panel",
+        targetSource: targetSource,
+        at: { x: Math.round(event.clientX), y: Math.round(event.clientY) },
+        dragged: draggedTab ? "site" : draggedFolderId ? "folder" : "none",
+        draggedUrl: draggedTabUrl,
+        near: nearestTargetDistance(),
+        types: dragTypes(event),
+      });
+      return;
+    }
+    clearDropMarks();
+    currentDropSource = targetSource;
+    currentDropTarget = target.folderId || target.kind || "";
+    const info = applyDropToTarget(event, target) || {};
+    // Если вкладку не удалось сделать «Важной» — отдаём бросок Zen:
+    // он переносит вкладку из сайдбара в «Важные» как умеет. Событие мы
+    // в этом случае не гасим — Zen должен увидеть бросок.
+    if (info.essential === false) {
+      dropHandled = true;
+      setTimeout(() => {
+        dropHandled = false;
+      }, 0);
+      return;
+    }
+    event.stopPropagation();
+  }
+
+  /** Цель броска под курсором.
+   *
+   *  Приоритет жёсткий: плитка папки → шапка → полоса значков → разделитель →
+   *  цвет открытой папки → значок сайта. Плитка важнее цвета папки: иначе
+   *  бросок уходит в папку, в которую целяться не собирались.
+   *
+   *  Перетаскиваемая вкладка и её копия под курсором целью быть не могут. */
+  function resolveTarget(x, y) {
+    const container = getContainer();
+    if (!container) {
+      return null;
+    }
+    const items = [];
+    const targets = container.querySelectorAll(
+      ".zef-tile, .zef-head, .zef-icon-strip, .zef-divider, .zef-plane, " +
+      ".tabbrowser-tab[zen-essential='true']"
+    );
+    for (const el of targets) {
+      if (isDraggedSite(el)) {
+        continue;
+      }
+      const rect = el.getBoundingClientRect();
+      if (!rect.width || !rect.height) {
+        continue;
+      }
+      const isTile = el.classList.contains("zef-tile");
+      const isHead = el.classList.contains("zef-head");
+      const isStrip = el.classList.contains("zef-icon-strip");
+      const isDivider = el.classList.contains("zef-divider");
+      const isPlane = el.classList.contains("zef-plane");
+      items.push({
+        el,
+        kind: isTile
+          ? "folder"
+          : isHead
+            ? "head"
+            : isStrip
+              ? "strip"
+              : isDivider
+                ? "divider"
+                : isPlane
+                  ? "plane"
+                  : "site",
+        priority: isTile ? 0 : isHead ? 1 : isStrip ? 2 : isDivider ? 3
+          : isPlane ? 4 : 5,
+        folderId:
+          el.getAttribute("data-zef-folder") ||
+          // У полосы иконок папка лежит в data-zef-owner — своя папка,
+          // в которую полоса и вложена.
+          el.getAttribute("data-zef-owner") ||
+          null,
+        area: rect.width * rect.height,
+        rect,
+      });
+    }
+    const under = items.filter(
+      item =>
+        x >= item.rect.left &&
+        x <= item.rect.right &&
+        y >= item.rect.top &&
+        y <= item.rect.bottom
+    );
+    if (!under.length) {
+      return null;
+    }
+    under.sort((a, b) => a.priority - b.priority || a.area - b.area);
+    return under[0];
   }
 
   /** Выполнить бросок по найденной цели: плитка сайта — внутрь папки,
@@ -3023,8 +3254,15 @@
       recordDrop({ result: "no-folder", target: target.kind });
       return false;
     }
-    // Шапка или цветная область открытой папки — бросаем внутрь неё.
-    if (target.kind === "head" || target.kind === "plane") {
+    // Разделитель — зона «вынуть из папки».
+    if (target.kind === "divider") {
+      handleDropOnDivider(event);
+      recordDrop({ result: "out-of-folder", target: "divider" });
+      return true;
+    }
+    // Шапка, полоса значков или цветная область открытой папки — бросаем внутрь.
+    if (target.kind === "head" || target.kind === "plane" ||
+        target.kind === "strip") {
       const info = handleDropIntoFolder(event, folder) || {};
       recordDrop(Object.assign({ target: target.kind, folder: folder.id }, info));
       return info;
@@ -3260,15 +3498,6 @@
     return Number.isFinite(best) ? best : null;
   }
 
-  /** Бросок по снимку: плитка папки — внутрь, плитка сайта — рядом. */
-  function dropBySnapshot(event) {
-    const target = resolveDropTarget(event);
-    if (!target) {
-      return false;
-    }
-    return applyDropToTarget(event, target);
-  }
-
   /** Вкладка, которую сейчас тянут мышью. */
   function draggedTabFrom(event) {
     const types = ["application/x-moz-tab", "Tabs", "text/x-moz-tab"];
@@ -3340,6 +3569,38 @@
       return 2;
     }
     return 1;
+  }
+
+  /** Убрать из контейнера всё, что нарисовал мод.
+   *
+   *  Иконки лежат внутри полосы — сначала вернём их в контейнер,
+   *  иначе они исчезнут вместе с полосой. */
+  function clearOurElements(box) {
+    if (!box) {
+      return;
+    }
+    for (const child of Array.from(box.children)) {
+      if (
+        child.dataset?.zef === "1" ||
+        child.classList?.contains("zef-tile") ||
+        child.classList?.contains("zef-head") ||
+        child.classList?.contains("zef-plane") ||
+        child.classList?.contains("zef-divider") ||
+        // Разрыв ряда — тоже наш элемент. Если его не убрать, старые разрывы
+        // останутся в панели навсегда и оставят дыры между иконками.
+        // Ряд плиток папок — тоже наш: без очистки они накапливались бы.
+        child.classList?.contains("zef-tiles-row") ||
+        // Полоса иконок вложенной папки — наш элемент.
+        child.classList?.contains("zef-icon-strip")
+      ) {
+        if (child.classList?.contains("zef-icon-strip")) {
+          for (const tab of Array.from(child.children)) {
+            box.appendChild(tab);
+          }
+        }
+        child.remove();
+      }
+    }
   }
 
   /** Убрать все подсветки зон приёма. */
@@ -3466,26 +3727,25 @@
     sites.splice(Math.max(0, Math.min(sites.length, at)), 0, rule);
   }
 
-  /** Перенести весь домен в папку — когда у адреса нет пути, точнее
-   *  домена сделать нельзя. */
+  /** Перенести сайт в папку, когда точного правила нет.
+   *
+   *  Правило — всегда страница: для главной страницы это «домен/». Доменное
+   *  правило («домен») мод не создаёт: правила должны совпадать с адресом
+   *  страницы, иначе одна папка забирает чужие вкладки. */
   function moveWholeDomain(url, folder) {
-    const host = hostOf(url);
-    if (!host) {
+    const page = specificRuleFor(url);
+    if (!page) {
       return false;
     }
     for (const other of folders) {
       if (other.id !== folder.id) {
-        removeHostRule(other, host);
+        removeHostRule(other, hostOf(url));
       }
     }
     removeExclusionsFor(folder, url);
     const sites = folder.sites || (folder.sites = []);
-    if (
-      !sites.some(
-        item => !isExclusionRule(item) && normalizeSite(item) === host
-      )
-    ) {
-      sites.push(host);
+    if (!sites.some(item => !isExclusionRule(item) && normalizeSite(item) === page)) {
+      sites.push(page);
     }
     return true;
   }
@@ -3838,42 +4098,11 @@
       return;
     }
     tab.setAttribute("zef-drop-ready", "true");
-    tab.addEventListener("dragover", event => {
-      if (dragKind(event) !== "site") {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      event.dataTransfer.dropEffect = "move";
-      const zone = dropZoneOf(event, tab, 0.5);
-      tab.classList.remove("zef-drop-before", "zef-drop-after");
-      tab.classList.add(zone === 0 ? "zef-drop-before" : "zef-drop-after");
-    });
     tab.addEventListener("dragleave", event => {
       if (event.relatedTarget && tab.contains(event.relatedTarget)) {
         return;
       }
       tab.classList.remove("zef-drop-before", "zef-drop-after");
-    });
-    tab.addEventListener("drop", event => {
-      if (dropHandled) {
-        // Бросок уже разобран на уровне окна — ведёт его Zen.
-        return;
-      }
-      if (dragKind(event) !== "site") {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      tab.classList.remove("zef-drop-before", "zef-drop-after");
-      if (tab === draggedTab) {
-        // Бросок попал в «пустое место», которое Zen вставил в сетку под
-        // перетаскиваемую вкладку. Значит, цель была другой — ищем её
-        // по снимку раскладки, сделанному в начале перетаскивания.
-        dropBySnapshot(event);
-        return;
-      }
-      handleDropOnSite(event, tab);
     });
   }
 
@@ -4049,6 +4278,23 @@
       Date.now().toString(36) +
       Math.floor(Math.random() * 1e6).toString(36)
     );
+  }
+
+  /** Страницы открытых вкладок домена — по ним домен превращается в правила. */
+  function openPagesForHost(host) {
+    const pages = [];
+    const wanted = normalizeSite(host);
+    for (const tab of essentialTabs(getContainer())) {
+      const url = tabUrl(tab);
+      if (!url || hostOf(url) !== wanted) {
+        continue;
+      }
+      const page = specificRuleFor(url);
+      if (page && !pages.includes(page)) {
+        pages.push(page);
+      }
+    }
+    return pages;
   }
 
   /** Все домены, которые сейчас висят в «Важных». */
@@ -4507,28 +4753,41 @@
       if (!value) {
         return;
       }
-      manual.add(value);
-      sitesTouched = true;
-      siteInput.value = "";
-      const row = document.createElement("label");
-      row.className = "zef-site-row zef-site-row-manual";
-      const check = document.createElement("input");
-      check.type = "checkbox";
-      check.checked = true;
-      check.addEventListener("change", () => {
+      // Правило — страница. Домен превращаем в страницы открытых вкладок
+      // этого домена: иначе папка забирала бы чужие страницы целиком.
+      const rules = value.includes("/")
+        ? [value]
+        : openPagesForHost(value);
+      if (!rules.length) {
+        errorBox.textContent = t("folder.noOpenPages");
+        errorBox.hidden = false;
+        return;
+      }
+      for (const rule of rules) {
+        manual.add(rule);
         sitesTouched = true;
-        if (check.checked) {
-          manual.add(value);
-        } else {
-          manual.delete(value);
-        }
-      });
-      row.appendChild(check);
-      const label = document.createElement("span");
-      label.className = "zef-site-name";
-      label.textContent = value;
-      row.appendChild(label);
-      sitesList.appendChild(row);
+        const row = document.createElement("label");
+        row.className = "zef-site-row zef-site-row-manual";
+        const check = document.createElement("input");
+        check.type = "checkbox";
+        check.checked = true;
+        check.addEventListener("change", () => {
+          sitesTouched = true;
+          if (check.checked) {
+            manual.add(rule);
+          } else {
+            manual.delete(rule);
+          }
+        });
+        row.appendChild(check);
+        const label = document.createElement("span");
+        label.className = "zef-site-name";
+        label.textContent = rule;
+        row.appendChild(label);
+        sitesList.appendChild(row);
+      }
+      siteInput.value = "";
+      errorBox.hidden = true;
     });
     box.appendChild(siteInput);
 
@@ -5057,12 +5316,19 @@
     } catch (e) {}
     window[INSTANCE_KEY] = null;
 
+    // Если мод грузили уже после нас — рисует тот, кто загрузился последним.
+    if (!isOwner()) {
+      return;
+    }
+
     installObserver();
     installTabContextMenu();
     onWindow("contextmenu", onWindowContextMenu, true);
 
     // Настройки мода: размеры, индикаторы, раскладка плиток.
     ensureSettingPrefs();
+    // Правила переводим на страничный вид — до первой отрисовки.
+    migrateRulesToPages();
     applySettings();
     for (const name of [PREF_ICON_SIZE, PREF_TAB_ICON_SIZE, PREF_SETTINGS]) {
       const onChange = () => {
@@ -5181,119 +5447,11 @@
       true
     );
 
-    // --- Перехват броска на окне, в фазе захвата ---
+    // --- Перехват броска ---
     //
-    // Zen перехватывает бросок в панели «Важных»: он подменяет вкладку
-    // своей копией (landing element) и едет с ней под курсором. Поэтому
-    // событие броска приходит не нашей плитке, а копией Zen — и обработчики
-    // на плитках не срабатывают вообще. Окно в фазе захвата — первое, что
-    // видит событие, поэтому ловим его здесь, а цель ищем по снимку
-    // раскладки, а не по event.target.
-    onWindow(
-      "dragover",
-      event => {
-        // Вкладку могли начать тащить не с вкладки в браузере — например, из
-        // списка Zen в сайдбаре: тогда dragstart приходит от другого
-        // элемента, и мод вкладку не знает. Пока тащат, браузер отдаёт только
-        // названия типов данных, поэтому вкладку узнаём по типам, а адрес
-        // добираем при броске.
-        if (!draggedTab && !draggedFolderId) {
-          if (!adoptDragFromData(event) && !looksLikeTabDrag(event)) {
-            return;
-          }
-        }
-        const target = resolveDropTarget(event);
-        if (!target) {
-          // Цели под курсором нет — значит, подсветка (если была) устарела:
-          // пользователь увёл мышь, и брать её при броске уже нельзя.
-          hoverTarget = null;
-          return;
-        }
-        // Запоминаем цель: к моменту броска сетка может перестроиться,
-        // и плитка уедет из-под курсора.
-        hoverTarget = target;
-        event.preventDefault();
-        // Вкладку из сайдбара ведёт Zen: только он умеет сделать её
-        // «Важной». Если перехватить бросок, вкладка останется в сайдбаре,
-        // а папка будет выглядеть пустой. Поэтому такой бросок не гасим.
-        if (!draggedTabIsEssential) {
-          try {
-            event.dataTransfer.dropEffect = "move";
-          } catch (e) {}
-          markDropTarget(target, event);
-          return;
-        }
-        event.stopPropagation();
-        try {
-          event.dataTransfer.dropEffect = "move";
-        } catch (e) {}
-        markDropTarget(target, event);
-      },
-      true
-    );
-    onWindow(
-      "drop",
-      event => {
-        // Вкладку могли начать тащить не с вкладки в браузере (например, из
-        // списка Zen в сайдбаре) — тогда мод её не знает. Пока тащат, браузер
-        // отдаёт только названия типов данных, поэтому вкладку узнаём по типам,
-        // а адрес добираем при броске.
-        if (!draggedTab && !draggedFolderId) {
-          if (!adoptDragFromData(event) && !looksLikeTabDrag(event)) {
-            return;
-          }
-        }
-        lastDropPoint = { x: event.clientX, y: event.clientY };
-        const target = resolveDropTarget(event) || hoverTargetFor(event);
-        // Откуда взялась выбранная цель: подсветка (значит, пользователь целился
-        // именно в неё) или текущие координаты.
-        const targetSource = !target
-          ? "none"
-          : hoverTarget && target.el === hoverTarget.el
-            ? "hover"
-            : "live";
-        if (!target) {
-          // Бросок не в нашу зону. Если он вообще был в панели — запомним,
-          // чтобы было видно: мод не сработал или это был не наш бросок.
-          const container = getContainer();
-          const rect = container?.getBoundingClientRect();
-          const inPanel =
-            rect &&
-            event.clientX >= rect.left &&
-            event.clientX <= rect.right &&
-            event.clientY >= rect.top &&
-            event.clientY <= rect.bottom;
-          recordDrop({
-            result: inPanel ? "no-target" : "outside-panel",
-            targetSource: targetSource,
-            at: { x: Math.round(event.clientX), y: Math.round(event.clientY) },
-            dragged: draggedTab ? "site" : draggedFolderId ? "folder" : "none",
-            draggedUrl: draggedTabUrl,
-            near: nearestTargetDistance(),
-            types: dragTypes(event),
-          });
-          return;
-        }
-        event.preventDefault();
-        clearDropMarks();
-        currentDropSource = targetSource;
-        currentDropTarget = target ? target.folderId || target.kind || "" : "";
-        const info = applyDropToTarget(event, target) || {};
-        // Если вкладку не удалось сделать «Важной» — отдаём бросок Zen:
-        // он переносит вкладку из сайдбара в «Важные» как умеет.
-        if (info.essential === false) {
-          dropHandled = true;
-          // Страховка: если бросок не дошёл до нашего контейнера, флаг
-          // не должен помешать следующему перетаскиванию.
-          setTimeout(() => {
-            dropHandled = false;
-          }, 0);
-          return;
-        }
-        event.stopPropagation();
-      },
-      true
-    );
+    // Бросок разбирает панель «Важных» (см. onPanelDragOver/onPanelDrop):
+    // она лежит внутри #tabbrowser-tabs, и остановка события на панели не
+    // даёт Zen перестроить сетку и увести плитку из-под курсора.
 
     // Бросок иногда «догоняет» кликом: браузер шлёт click сразу после
     // drop. Помечаем момент броски, чтобы папка не свернулась сама.
@@ -5339,9 +5497,31 @@
         setTimeout(attempt, 500);
       }
     };
-    setTimeout(attempt, 800);
+    firstRenderTimer = setTimeout(attempt, 800);
 
     uninstall = () => {
+      // Отложенные задания: иначе старый экземпляр дорисует панель после
+      // того, как его убрали.
+      if (firstRenderTimer) {
+        clearTimeout(firstRenderTimer);
+        firstRenderTimer = 0;
+      }
+      if (syncTimer) {
+        clearTimeout(syncTimer);
+        syncTimer = null;
+      }
+      if (iconRecheckTimer) {
+        clearTimeout(iconRecheckTimer);
+        iconRecheckTimer = 0;
+      }
+      if (iconRecheckTimer2) {
+        clearTimeout(iconRecheckTimer2);
+        iconRecheckTimer2 = 0;
+      }
+      if (hintTimer) {
+        clearTimeout(hintTimer);
+        hintTimer = 0;
+      }
       observer?.disconnect();
       observer = null;
       observedRoot = null;
@@ -5359,26 +5539,12 @@
       document.documentElement?.style.removeProperty("--zef-icon-size");
       document.documentElement?.style.removeProperty("--zef-tab-icon-size");
       document.documentElement?.classList.remove("zef-drag-active");
-      const container = getContainer();
-      for (const child of Array.from(container?.children || [])) {
-        if (
-          child.classList?.contains("zef-tile") ||
-          child.classList?.contains("zef-head") ||
-          child.classList?.contains("zef-plane") ||
-          child.classList?.contains("zef-divider") ||
-          child.classList?.contains("zef-tiles-row") ||
-          child.classList?.contains("zef-icon-strip")
-        ) {
-          // Иконки лежат внутри полосы: сначала вернём их в контейнер,
-          // иначе они исчезнут из панели вместе с полосой.
-          if (child.classList?.contains("zef-icon-strip")) {
-            for (const tab of Array.from(child.children)) {
-              container.appendChild(tab);
-            }
-          }
-          child.remove();
-        }
+      // Чистим все контейнеры «Важных»: прежний экземпляр мог оставить
+      // панель в другом контейнере, и она осталась бы на экране.
+      for (const box of allContainers()) {
+        clearOurElements(box);
       }
+      const container = getContainer();
       for (const tab of essentialTabs(container)) {
         tab.removeAttribute("data-zef-folder");
         tab.removeAttribute("data-zef-rule");
@@ -5397,6 +5563,9 @@
       emptyHint?.remove();
       emptyHint = null;
       document.getElementById("context_zef-folders")?.remove();
+      if (window[INSTANCE_KEY]?.owner === OWNER) {
+        window[INSTANCE_KEY] = null;
+      }
     };
 
     // Регистрируем экземпляр: если мод загрузится ещё раз, новый экземпляр
@@ -5405,6 +5574,7 @@
     // мод снаружи (например, в макете) и чинить его, не перезагружая Zen.
     window[INSTANCE_KEY] = {
       uninstall,
+      owner: OWNER,
       updateActiveFolder,
       openSettingsDialog,
       readSettings,

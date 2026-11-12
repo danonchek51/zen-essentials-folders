@@ -270,6 +270,35 @@
   padding: 0;
 }
 
+/* Плитка-призрак: правило есть, а открытой вкладки сейчас нет. */
+.zen-essentials-container > .zef-ghost,
+.zen-essentials-container > .zef-icon-strip > .zef-ghost {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--zef-icon-size, 26px);
+  height: var(--zef-icon-size, 26px);
+  border-radius: 6px;
+  opacity: .55;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--zef-color, #8b5cf6) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--zef-color, #8b5cf6) 40%, transparent);
+}
+
+.zen-essentials-container > .zef-ghost:hover,
+.zen-essentials-container > .zef-icon-strip > .zef-ghost:hover {
+  opacity: .9;
+}
+
+.zen-essentials-container > .zef-ghost > .zef-ghost-icon,
+.zen-essentials-container > .zef-icon-strip > .zef-ghost > .zef-ghost-icon {
+  width: 60%;
+  height: 60%;
+  background: center / contain no-repeat;
+  filter: brightness(1.6);
+}
+
 /* Полоса подсвечивается, когда в неё бросили. */
 .zen-essentials-container > .zef-icon-strip.zef-drop-over {
   background: color-mix(in srgb, var(--zef-color, #8b5cf6) 16%, transparent);

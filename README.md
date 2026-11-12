@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.14.9](https://img.shields.io/badge/version-1.14.9-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.15.0](https://img.shields.io/badge/version-1.15.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -18,7 +18,7 @@ moves or deletes anything.
 | Configurable options | 22, in five groups |
 | Active-folder indicator styles | 4, plus off |
 | Folder nesting depth | unlimited |
-| Membership rules | domain, domain + path, exclusion |
+| Membership rules | one rule per page (domain + path) |
 | Compatibility | Zen Tab Groups (oom333) |
 | License | [MIT](LICENSE) |
 
@@ -255,34 +255,37 @@ was dragged, what was under the cursor and where the tile ended up.
 
 ### How it works: one tab — one rule
 
-A folder stores not tabs, but **rules**. An ordinary rule is a domain: `github.com` means "all
-GitHub tabs in this folder". But when a tab is dragged from one folder to another, the mod
-remembers it **more precisely** — by the full address:
+A folder stores not tabs, but **rules**, and a rule is always a **page**: `github.com/dano-/zef` is
+that repository, `github.com/` is the home page. There are no domain rules and no exclusions —
+exact rules leave no room for a dispute about which folder owns a tab.
 
 | Rule | What lands in the folder |
 |---|---|
-| `github.com` | all GitHub tabs |
 | `github.com/dano-/zef` | the `dano-/zef` repository and its inner pages |
 | `github.com/` | only the GitHub home page |
-| `!github.com/dano-/zef` | nothing: the tab is excluded from the folder |
 
 So a move looks like this:
 
 - you dragged **one** `github.com/dano-/zef` tile from the "GitHub" folder into the "Work"
   folder;
 - "Work" got the rule `github.com/dano-/zef` — only that tab is in it;
-- "GitHub" kept the rule `github.com` and gained the exclusion `!github.com/dano-/zef` — the
-  other GitHub tabs stayed where they were.
+- the other GitHub tabs stayed where they were: they have their own pages, and a page that is
+  not in the folder simply is not in it.
 
 If the address has no path at all (`https://github.com/`), the rule will be `github.com/` — the
 home page only.
 
-The **whole site** is added to a folder via a right-click on the tab → `Move to folder`: a plain
-domain rule is added there, and all tabs of that site join the folder. In the folder dialog you
-can tick the domain yourself — it is the same thing.
+Typing a domain in the folder dialog adds the pages of the open tabs of that domain — the same
+rules the drag would have created.
 
-Targeted rules and exclusions are visible in the folder dialog as separate rows: you can untick
-them.
+Older setups kept domain rules and exclusions. They are converted once, at the first start of
+the new version: a domain rule becomes the pages of the open tabs of that domain (or the home
+page, if no tab of that domain is open), and exclusions are dropped. The previous rules are kept
+in `zen.essentialsfolders.rules-backup`, and the report of the conversion — in
+`zen.essentialsfolders.migration-report`.
+
+A rule whose page is not open right now is shown as a **dim tile**: the folder is not empty
+while the rule lives in it, and the counter counts rules. Clicking the dim tile opens the page.
 
 ## Install
 

@@ -10,6 +10,36 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.15.0] — 2026-11-12
+
+Dragging a site icon from an open folder onto a folder tile now works the way it should, and the
+panel is drawn once instead of twice.
+
+### Fixed
+
+- **The panel is drawn once.** Zen can load the mod several times, and the panel was drawn by
+  every copy of it: two rows of tiles, two folder headers, and every drop was handled twice — the
+  icon went into the folder and immediately jumped back. The mod now draws the panel only in the
+  copy that was loaded last.
+- **The folder tile stays under the cursor.** While a tab is dragged over the Essentials panel,
+  Zen rebuilds the grid and the folder tiles slide away — the drop landed on the coloured area of
+  a folder instead of the tile. The mod now takes the drag over on the panel itself, so the grid
+  stands still and the drop reaches the tile you aimed at.
+- **One drop handler for the whole panel.** Folder tile, folder header, icon strip, divider and
+  site icon were handled by six separate handlers, and they could disagree about the target. Now
+  the panel decides once, and a folder tile always wins over the coloured area of a folder.
+- **Rules are stored per page.** A rule is a page now: `example.com/folder` or `example.com/` for
+  the main page. Domain rules are converted once (with a backup of the old rules), and exclusions
+  are gone: exact rules leave no room for a dispute about which folder owns a tab.
+- **A rule without an open tab is visible.** The folder shows a dim tile for it, and the counter
+  counts rules — a folder with rules no longer looks empty.
+
+### Added
+
+- A folder rule without an open page is drawn as a dim tile; clicking it opens the page.
+- The report of the migration of the rules (`zen.essentialsfolders.migration-report`) and a backup
+  of the previous rules (`zen.essentialsfolders.rules-backup`).
+
 ## [1.14.9] — 2026-11-11
 
 A site icon can now be dragged from an open folder into a folder tile again — the case that did
