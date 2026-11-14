@@ -79,7 +79,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.15.3";
+  const MOD_VERSION = "1.15.4";
 
 
   /* ------------------------------------------------------------------ *
@@ -418,6 +418,15 @@
   // показывалась буква, и иконка «пропадала».
   let iconRecheckTimer = 0;
   let iconRecheckTimer2 = 0;
+  // Тихий сторож панели: раз в пару секунд смотрим, не появилось ли вкладок,
+  // о которых мод ещё не знает, и не пропала ли иконка. Zen умеет пересоздать
+  // элемент вкладки — тогда плитка теряет своё место и «выбрасывается» наверх,
+  // а иконка не подгружается.
+  let maintenanceTimer = 0;
+  // Спрятанные вкладки уходят в самый конец сетки. Раньше у них оставался
+  // чужой порядок (из полосы иконок), и плитка вставала в первую ячейку —
+  // то есть выскакивала наверх панели.
+  const HIDDEN_ORDER_BASE = 9000;
   // Короткая подсказка: объясняет, почему бросок не сработал.
   let hintEl = null;
   let hintTimer = 0;
@@ -1420,6 +1429,65 @@
     return hash;
   }
 
+  /** Иконку можно запомнить: это настоящая иконка сайта, а не служебная
+   *  картинка Zen («глобус» и прочие заглушки). */
+  function isCacheableIcon(src) {
+    return (
+      src.startsWith("data:") ||
+      src.startsWith("http:") ||
+      src.startsWith("https://")
+    );
+  }
+
+  /** Настоящая иконка сайта из службы избранного.
+   *
+   *  Только что открытая вкладка и вкладка, выгруженная из памяти, остаются
+   *  без картинки. Иконку сайта можно взять у службы избранного — тогда
+   *  плитка сразу с логотипом, а не с буквой. */
+  const pendingIcons = new Set();
+  function requestSiteIcon(container, host) {
+    if (!host || pendingIcons.has(host)) {
+      return;
+    }
+    pendingIcons.add(host);
+    try {
+      const uri = Services.io.newURI("https://" + host + "/");
+      Promise.resolve(PlacesUtils.favicons.getFaviconForPage(uri))
+        .then(image => {
+          const src = image?.src || "";
+          // Служебная иконка «глобус» сайту не нужна.
+          if (src && isCacheableIcon(src)) {
+            iconCache.set(host, src);
+            applyCachedIcon(container, host);
+          }
+        })
+        .catch(() => {})
+        .finally(() => pendingIcons.delete(host));
+    } catch (e) {
+      pendingIcons.delete(host);
+    }
+  }
+
+  /** Поставить запомненную иконку во все вкладки этого сайта. */
+  function applyCachedIcon(container, host) {
+    const src = iconCache.get(host);
+    if (!src) {
+      return;
+    }
+    for (const tab of essentialTabs(container)) {
+      if (hostOf(tabUrl(tab)) !== host) {
+        continue;
+      }
+      const img = tab.querySelector(".tab-icon-image");
+      if (!img || img.getAttribute("src")) {
+        continue;
+      }
+      try {
+        img.src = src;
+      } catch (e) {}
+    }
+  }
+
   /** Плитка сайта без иконки: у сайта просто нет favicon — показываем
    *  первую букву адреса на цветном круге, чтобы плитку было видно
    *  и можно было узнать. */
@@ -1430,7 +1498,7 @@
       const src = img?.getAttribute("src") || "";
       // Иконку сайта запоминаем: у выгруженной Zen вкладки картинки нет, а
       // значок в папке должен остаться.
-      if (src.startsWith("data:")) {
+      if (src && isCacheableIcon(src)) {
         iconCache.set(host, src);
       }
       const cached = iconCache.get(host) || "";
@@ -1438,6 +1506,10 @@
         !img ||
         (!src && !cached) ||
         (img.complete && img.naturalWidth === 0 && !cached);
+      if (!src && !cached && host) {
+        // Картинки нет — спросим у службы избранного настоящую иконку сайта.
+        requestSiteIcon(container, host);
+      }
       if (broken) {
         tab.classList.add("zef-no-icon");
         tab.classList.remove("zef-sharp");
@@ -1504,6 +1576,50 @@
         updateIconFallbacks(container, essentialTabs(container), false);
       } catch (e) {}
     }, 1500);
+  }
+
+  /** Тихий сторож панели.
+   *
+   *  Zen умеет пересоздавать элемент вкладки: тогда у плитки пропадают и
+   *  место в сетке, и иконка — значок «выбрасывается» наверх и не
+   *  подгружается. Раз в пару секунд смотрим, не появилось ли вкладок, о
+   *  которых мод ещё не знает, и не осталось ли плиток без иконки. */
+  function startMaintenance() {
+    if (maintenanceTimer) {
+      return;
+    }
+    maintenanceTimer = setInterval(() => {
+      if (!isOwner()) {
+        return;
+      }
+      try {
+        const container = getContainer();
+        if (!container) {
+          return;
+        }
+        const tabs = essentialTabs(container);
+        let unknown = false;
+        let noIcon = false;
+        for (const tab of tabs) {
+          if (tab.getAttribute("data-zef-managed") !== "1") {
+            unknown = true;
+            break;
+          }
+          const img = tab.querySelector(".tab-icon-image");
+          if (!img || !img.getAttribute("src")) {
+            noIcon = true;
+          }
+        }
+        if (unknown) {
+          // Новая вкладка или пересозданный элемент: мод её заберёт.
+          scheduleSync(50);
+          return;
+        }
+        if (noIcon) {
+          updateIconFallbacks(container, tabs, false);
+        }
+      } catch (e) {}
+    }, 2000);
   }
 
   /** Вкладки, которые мы уже видели загруженными. По ним можно отличить
@@ -1768,6 +1884,10 @@
     if (!container) {
       return;
     }
+    // Метка «панель нарисована» на контейнере: по ней CSS прячет плитки,
+    // которые мод ещё не положил (Zen только что добавил вкладку или
+    // пересоздал её элемент). Нет метки — сетка живёт как обычно.
+    container.classList.add("zef-managed");
     // Обработчики броска живут на панели: они перехватывают событие раньше
     // Zen и не дают сетке «Важных» перестроиться под курсором.
     installPanelHandlers(container);
@@ -1842,9 +1962,14 @@
       tab.style.removeProperty("--zef-color");
 
       const match = matches[index];
+      // Мод взял вкладку под управление: по этой метке видно, что плитку
+      // нельзя выпускать в общую сетку, пока мод её не положил.
+      tab.setAttribute("data-zef-managed", "1");
       if (!match) {
         refreshFolderRule(previousFolderId, previousRule, tabUrl(tab));
         free.push(tab);
+        // Вкладка вне папок: своё место у неё есть, показываем.
+        tab.setAttribute("data-zef-open", "true");
         attachSiteDropHandlers(tab);
         return;
       }
@@ -1856,6 +1981,10 @@
       tab.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
       if (isHiddenByCollapse(folder.id)) {
         tab.setAttribute("data-zef-hidden", "true");
+        tab.removeAttribute("data-zef-open");
+        // Спрятанная вкладка не должна вставать в первую ячейку сетки:
+        // её место — в самом конце. Иначе плитка «выбрасывается» наверх.
+        tab.style.order = String(HIDDEN_ORDER_BASE + index);
       } else {
         tab.setAttribute("data-zef-open", "true");
       }
@@ -3708,8 +3837,17 @@
         child.classList?.contains("zef-icon-strip")
       ) {
         if (child.classList?.contains("zef-icon-strip")) {
-          for (const tab of Array.from(child.children)) {
-            box.appendChild(tab);
+          for (const item of Array.from(child.children)) {
+            // Наши бледные плитки пересоздаст следующая отрисовка — в сетке им
+            // не место. Вкладки возвращаем.
+            if (item.dataset?.zef === "1") {
+              continue;
+            }
+            // Порядок из полосы иконок в сетке не годится: с ним плитка
+            // встала бы в первую ячейку — то есть наверх панели. Место в
+            // сетке проставит следующая отрисовка, а пока — в самый конец.
+            item.style.order = String(HIDDEN_ORDER_BASE);
+            box.appendChild(item);
           }
         }
         child.remove();
@@ -3743,6 +3881,15 @@
             ).length,
             unloaded: list.filter(el => isTabUnloaded(el)).length,
             noOrder: list.filter(el => !el.style.order).length,
+            // Плитки, о которых мод не знает: их Zen пересоздал, и без
+            // страховки они оказываются наверху панели.
+            stray: container
+              ? Array.from(container.children).filter(
+                  el =>
+                    el.classList?.contains("tabbrowser-tab") &&
+                    el.getAttribute("data-zef-managed") !== "1"
+                ).length
+              : -1,
           };
         })(),
       };
@@ -5490,10 +5637,31 @@
         }
       }
       // Изменения списка детей — чаще всего это наша же перерисовка: на них
-      // реагировать нельзя, иначе панель перерисовывает сама себя.
+      // реагировать нельзя, иначе панель перерисовывает сама себя. Но в ту же
+      // пачку может попасть и чужая правка: Zen пересоздал элемент вкладки —
+      // тогда плитка теряет своё место и иконку. Свои элементы помечены
+      // data-zef, свои вкладки — data-zef-managed; всё остальное — чужое.
       if (ownChanges) {
         ownChanges = false;
-        return;
+        const foreign = records.some(record =>
+          Array.from(record.addedNodes)
+            .concat(Array.from(record.removedNodes))
+            .some(node => {
+              if (!node || node.nodeType !== 1) {
+                return false;
+              }
+              if (node.dataset?.zef === "1") {
+                return false;
+              }
+              if (node.getAttribute?.("data-zef-managed") === "1") {
+                return false;
+              }
+              return true;
+            })
+        );
+        if (!foreign) {
+          return;
+        }
       }
       scheduleSync();
     });
@@ -5583,6 +5751,8 @@
     installObserver();
     installTabContextMenu();
     onWindow("contextmenu", onWindowContextMenu, true);
+    // Сторож панели: подхватывает вкладки, о которых мод ещё не знает.
+    startMaintenance();
 
     // Настройки мода: размеры, индикаторы, раскладка плиток.
     ensureSettingPrefs();
@@ -5782,6 +5952,10 @@
         clearTimeout(iconRecheckTimer2);
         iconRecheckTimer2 = 0;
       }
+      if (maintenanceTimer) {
+        clearInterval(maintenanceTimer);
+        maintenanceTimer = 0;
+      }
       if (hintTimer) {
         clearTimeout(hintTimer);
         hintTimer = 0;
@@ -5814,9 +5988,13 @@
         tab.removeAttribute("data-zef-rule");
         tab.removeAttribute("data-zef-open");
         tab.removeAttribute("data-zef-hidden");
+        tab.removeAttribute("data-zef-managed");
         tab.removeAttribute("zef-drop-ready");
         tab.style.removeProperty("--zef-color");
         tab.style.removeProperty("order");
+      }
+      for (const box of allContainers()) {
+        box.classList.remove("zef-managed");
       }
       tilePopup?.remove();
       dialogPanel?.remove();

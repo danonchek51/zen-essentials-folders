@@ -758,7 +758,16 @@
 
 /* Содержимое свёрнутой папки скрыто. Счётчики Zen при этом не меняются —
    вкладка остаётся в DOM и продолжает быть настоящей «Важной». */
-.zen-essentials-container > .tabbrowser-tab[data-zef-hidden="true"] {
+.zen-essentials-container > .tabbrowser-tab[data-zef-hidden] {
+  display: none !important;
+}
+
+/* Страховка: плитка, которую мод ещё не положил (Zen только что добавил
+ * вкладку или пересоздал её элемент), не должна выскакивать наверх панели.
+ * Метка zef-managed на контейнере есть только у работающего мода: нет мода —
+ * сетка «Важных» живёт как обычно. */
+.zen-essentials-container.zef-managed
+  .tabbrowser-tab[zen-essential]:not([data-zef-open]) {
   display: none !important;
 }
 

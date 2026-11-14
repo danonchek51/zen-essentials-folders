@@ -10,6 +10,24 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.15.4] — 2026-11-14
+
+The icon stays where it belongs, and the panel puts it back when Zen replaces a tab.
+
+### Fixed
+
+- **A tile no longer jumps to the top of the panel.** When a nested folder is closed, its icons
+  return from the icon strip to the Essentials grid — and they kept the order they had in the
+  strip (`order = 0`). In the grid that order means "the very first cell", so the tile appeared
+  above every folder. Hidden tabs now always go to the end of the grid.
+- **A tile that Zen replaced comes back.** Zen recreates the element of a tab it unloads from
+  memory, and the new element came without the mod's marks: the tile showed up at the top with
+  no icon. A safety net in CSS hides any tile the mod has not placed yet, and a quiet watcher
+  picks the new element up within a couple of seconds and puts it back in its folder.
+- **The icon of a site is fetched when the tab has none.** Only a just-opened or an unloaded tab
+  has no picture. The mod now asks the favourites service for the real icon of the site instead
+  of showing a letter, and it remembers the icon of every site it sees.
+
 ## [1.15.3] — 2026-11-14
 
 The icons of the tabs stay, the tabs stay in their place, and the panel stops repainting itself.
