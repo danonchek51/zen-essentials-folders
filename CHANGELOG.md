@@ -10,6 +10,22 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.15.3] — 2026-11-14
+
+The icons of the tabs stay, the tabs stay in their place, and the panel stops repainting itself.
+
+### Fixed
+
+- **The icon of a tab does not vanish.** Zen unloads tabs from memory to save it, and an unloaded
+  tab loses its icon. The mod now remembers the icon of every site and shows it again, even when
+  the tab itself is unloaded.
+- **A tab keeps its place in the panel.** Zen replaces the element of a tab it unloaded, and the
+  tab jumped out of its row. The panel now notices that the order of the tabs has changed and
+  rebuilds itself.
+- **The panel stops repainting itself.** The watcher of the panel reacted to the changes of the
+  panel itself: every repaint scheduled another one. It now reacts to the changes of the tabs and
+  ignores its own.
+
 ## [1.15.2] — 2026-11-12
 
 The Essentials panel is drawn once now — it used to appear twice, and the browser kept repainting it.

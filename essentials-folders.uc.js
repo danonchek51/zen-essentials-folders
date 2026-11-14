@@ -79,7 +79,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.15.2";
+  const MOD_VERSION = "1.15.3";
 
 
   /* ------------------------------------------------------------------ *
@@ -404,6 +404,12 @@
   // Счётчик отрисовок и последняя запись диагностики — для разбора.
   let renderCount = 0;
   let lastDiag = "";
+  // Иконки сайтов: помним их, чтобы они не пропадали, когда Zen выгружает
+  // вкладку из памяти (у выгруженной вкладки Zen убирает картинку).
+  const iconCache = new Map();
+  // Наши собственные изменения DOM: на них наблюдатель реагировать не должен,
+  // иначе панель перерисовывает сама себя.
+  let ownChanges = false;
   // Отложенный первый рисунок панели: его снимает uninstall(), иначе старый
   // экземпляр нарисует панель уже после того, как новый экземпляр его убрал.
   let firstRenderTimer = 0;
@@ -1421,10 +1427,17 @@
     for (const tab of tabs || essentialTabs(container)) {
       const img = tab.querySelector(".tab-icon-image");
       const host = hostOf(tabUrl(tab)) || "";
+      const src = img?.getAttribute("src") || "";
+      // Иконку сайта запоминаем: у выгруженной Zen вкладки картинки нет, а
+      // значок в папке должен остаться.
+      if (src.startsWith("data:")) {
+        iconCache.set(host, src);
+      }
+      const cached = iconCache.get(host) || "";
       const broken =
         !img ||
-        !img.getAttribute("src") ||
-        (img.complete && img.naturalWidth === 0);
+        (!src && !cached) ||
+        (img.complete && img.naturalWidth === 0 && !cached);
       if (broken) {
         tab.classList.add("zef-no-icon");
         tab.classList.remove("zef-sharp");
@@ -1437,6 +1450,12 @@
           `hsl(${hostHue(host)} 62% 48%)`
         );
       } else {
+        if (!src && cached && img) {
+          // Картинки нет — ставим запомненную иконку сайта.
+          try {
+            img.src = cached;
+          } catch (e) {}
+        }
         tab.classList.remove("zef-no-icon");
         tab.style.removeProperty("--zef-fallback-letter");
         tab.style.removeProperty("--zef-fallback-color");
@@ -1732,6 +1751,7 @@
       return;
     }
     rendering = true;
+    ownChanges = true;
     try {
       syncInner(force);
     } finally {
@@ -1776,6 +1796,14 @@
       [...collapsed],
       matches.map(match => (match ? match.folder.id : "")),
       filterText.trim().toLowerCase(),
+      // Порядок вкладок и их состояние: Zen выгружает вкладки из памяти и
+      // заменяет их элементы, и без этого панель не заметила бы, что вкладка
+      // сменилась, — её место в сетке осталось бы прежним.
+      tabs.map(
+        tab =>
+          `${tab.style.order || ""}:${isTabUnloaded(tab) ? "u" : ""}` +
+          `:${tab.classList.contains("zef-no-icon") ? "n" : ""}`
+      ),
     ]);
 
     if (
@@ -3703,6 +3731,20 @@
         planes: container ? container.querySelectorAll(".zef-plane").length : -1,
         marked: container ? container.querySelectorAll("[data-zef]").length : -1,
         searches: document.querySelectorAll(".zef-search").length,
+        icons: (() => {
+          const list = container
+            ? Array.from(container.querySelectorAll(".tabbrowser-tab"))
+            : [];
+          return {
+            tabs: list.length,
+            noIcon: list.filter(el => el.classList.contains("zef-no-icon")).length,
+            withSrc: list.filter(
+              el => el.querySelector(".tab-icon-image")?.getAttribute("src")
+            ).length,
+            unloaded: list.filter(el => isTabUnloaded(el)).length,
+            noOrder: list.filter(el => !el.style.order).length,
+          };
+        })(),
       };
       const text = JSON.stringify(info);
       if (text !== lastDiag) {
@@ -5438,7 +5480,23 @@
     observer?.disconnect();
     observer = null;
     observedRoot = root;
-    observer = new MutationObserver(() => scheduleSync());
+    observer = new MutationObserver(records => {
+      // Изменение атрибута вкладки — это Zen: вкладка стала «Важной»,
+      // выгружена из памяти или вернулась. На такое реагируем.
+      for (const record of records) {
+        if (record.type === "attributes") {
+          scheduleSync();
+          return;
+        }
+      }
+      // Изменения списка детей — чаще всего это наша же перерисовка: на них
+      // реагировать нельзя, иначе панель перерисовывает сама себя.
+      if (ownChanges) {
+        ownChanges = false;
+        return;
+      }
+      scheduleSync();
+    });
     observer.observe(root, {
       childList: true,
       subtree: true,
@@ -5447,7 +5505,17 @@
       // discarded и pending — вкладку выгрузили из памяти или вернули;
       // linkedpanel — у выгруженной вкладки панель браузера исчезает:
       // рамка вокруг выгруженной иконки должна появляться сразу.
-      attributeFilter: ["zen-essential", "discarded", "pending", "linkedpanel", "uri"],
+      // src — Zen убрал картинку вкладки (выгрузил её из памяти);
+      // style — у вкладки сбилось место в сетке.
+      attributeFilter: [
+        "zen-essential",
+        "discarded",
+        "pending",
+        "linkedpanel",
+        "uri",
+        "src",
+        "style",
+      ],
     });
   }
 
