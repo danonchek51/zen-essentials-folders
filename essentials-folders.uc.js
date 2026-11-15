@@ -79,7 +79,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.15.6";
+  const MOD_VERSION = "1.15.7";
 
 
   /* ------------------------------------------------------------------ *
@@ -411,6 +411,14 @@
   // Иконки сайтов: помним их, чтобы они не пропадали, когда Zen выгружает
   // вкладку из памяти (у выгруженной вкладки Zen убирает картинку).
   const iconCache = new Map();
+  // Скачанные картинки — по ним живут blob-ссылки, их нужно отпустить при
+  // выгрузке мода, иначе они держат память до конца сессии.
+  const objectUrls = new Set();
+  // Хосты, у которых иконки не нашлось: запоминаем время, чтобы не дёргать
+  // сеть по каждой перерисовке. Через 5 минут пробуем снова.
+  const iconMisses = new Map();
+  // Откуда взялась иконка: память, открытая вкладка, кэш браузера, сам сайт.
+  const iconSources = { cache: 0, tab: 0, service: 0, net: 0, none: 0 };
   // Наши собственные изменения DOM: на них наблюдатель реагировать не должен,
   // иначе панель перерисовывает сама себя.
   let ownChanges = false;
@@ -2428,12 +2436,22 @@
     if (!host) {
       return "";
     }
-    let tabs = [];
+    const tabs = [];
+    // Все окна Zen: сайт может быть открыт в соседнем окне.
     try {
-      tabs = gBrowser?.tabs || [];
-    } catch (e) {
-      return "";
-    }
+      for (const win of Services.wm.getEnumerator("navigator:browser")) {
+        for (const tab of win.gBrowser?.tabs || []) {
+          tabs.push(tab);
+        }
+      }
+    } catch (e) {}
+    try {
+      for (const tab of gBrowser?.tabs || []) {
+        if (!tabs.includes(tab)) {
+          tabs.push(tab);
+        }
+      }
+    } catch (e) {}
     for (const tab of tabs) {
       try {
         if (hostOf(tabUrl(tab)) !== host) {
@@ -2458,42 +2476,132 @@
     return "";
   }
 
-  /** Иконка сайта из сети: /favicon.ico.
-   *
-   *  В кэше браузера её может не быть: сайт закрыт, иконка не грузилась.
-   *  Тогда спрашиваем сам сайт — один запрос на сайт, ответ кладём в кэш.
-   *  Если и у сайта ничего нет, остаётся буква адреса. */
-  function fetchIconFromNetwork(host) {
-    if (!host || typeof Image === "undefined") {
-      return Promise.resolve("");
-    }
-    const url = "https://" + host + "/favicon.ico";
+  /** Не ждать ответа вечно: вернуть пусто, если он не пришёл вовремя. */
+  function withTimeout(promise, ms, fallback = "") {
     return new Promise(resolve => {
+      let done = false;
+      const timer = setTimeout(() => {
+        if (!done) {
+          done = true;
+          resolve(fallback);
+        }
+      }, ms);
+      Promise.resolve(promise).then(
+        value => {
+          if (!done) {
+            done = true;
+            clearTimeout(timer);
+            resolve(value);
+          }
+        },
+        () => {
+          if (!done) {
+            done = true;
+            clearTimeout(timer);
+            resolve(fallback);
+          }
+        }
+      );
+    });
+  }
+
+  /** Первый непустой ответ из нескольких: кто ответил первым и с картинкой. */
+  function firstIcon(...promises) {
+    return new Promise(resolve => {
+      let left = promises.length;
       let done = false;
       const finish = value => {
         if (done) {
           return;
         }
-        done = true;
-        resolve(value);
+        if (value && value.src) {
+          done = true;
+          resolve(value);
+          return;
+        }
+        left -= 1;
+        if (left <= 0) {
+          done = true;
+          resolve({ src: "", from: "none" });
+        }
       };
-      let image = null;
-      try {
-        image = new Image();
-      } catch (e) {
-        finish("");
-        return;
-      }
-      image.addEventListener("load", () => {
-        finish(image.naturalWidth > 0 ? url : "");
-      });
-      image.addEventListener("error", () => finish(""));
-      try {
-        image.src = url;
-      } catch (e) {
-        finish("");
+      for (const promise of promises) {
+        Promise.resolve(promise).then(finish, () => finish(null));
       }
     });
+  }
+
+  /** Скачать картинку и отдать ссылку на неё.
+   *
+   *  Запрос идёт от системного principal (код мода работает в документе
+   *  браузера), поэтому CORS не мешает: можно взять иконку любого сайта. */
+  async function fetchImageBlob(url) {
+    try {
+      const response = await fetch(url, { credentials: "omit" });
+      if (!response.ok) {
+        return "";
+      }
+      const type = response.headers.get("content-type") || "";
+      if (!type.startsWith("image/")) {
+        return "";
+      }
+      const blob = await response.blob();
+      if (!blob.size) {
+        return "";
+      }
+      const objectUrl = URL.createObjectURL(blob);
+      objectUrls.add(objectUrl);
+      return objectUrl;
+    } catch (e) {
+      return "";
+    }
+  }
+
+  /** Иконка сайта из сети.
+   *
+   *  В кэше браузера её может не быть: сайт закрыт, иконка не грузилась.
+   *  Тогда спрашиваем сам сайт: сначала /favicon.ico, а если его нет — со
+   *  страницы сайта (там почти всегда есть <link rel="icon">). Один запрос
+   *  на сайт, ответ кладём в кэш. Если и у сайта ничего нет — остаётся буква. */
+  async function fetchIconFromNetwork(host) {
+    if (!host || typeof fetch !== "function") {
+      return "";
+    }
+    const miss = iconMisses.get(host) || 0;
+    if (Date.now() - miss < 300000) {
+      return "";
+    }
+    const direct = await fetchImageBlob("https://" + host + "/favicon.ico");
+    if (direct) {
+      return direct;
+    }
+    // Страница сайта: иконка объявлена в её заголовке.
+    try {
+      const response = await fetch("https://" + host + "/", { credentials: "omit" });
+      if (!response.ok) {
+        iconMisses.set(host, Date.now());
+        return "";
+      }
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const link = doc.querySelector(
+        'link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]'
+      );
+      const href = link?.getAttribute("href") || "";
+      if (!href) {
+        iconMisses.set(host, Date.now());
+        return "";
+      }
+      const url = new URL(href, "https://" + host + "/").href;
+      const blob = await fetchImageBlob(url);
+      if (!blob) {
+        iconMisses.set(host, Date.now());
+      }
+      return blob;
+    } catch (e) {
+      iconMisses.set(host, Date.now());
+      return "";
+    }
   }
 
   /** Иконка сайта для правила.
@@ -2509,41 +2617,56 @@
     const host = hostOf(url) || "";
     const cached = iconCache.get(host);
     if (cached) {
+      iconSources.cache += 1;
       return Promise.resolve(cached);
     }
     const fromTab = iconFromOpenTab(host);
     if (fromTab) {
       iconCache.set(host, fromTab);
+      iconSources.tab += 1;
       return Promise.resolve(fromTab);
     }
     const services = browserServices();
-    let service = Promise.resolve("");
-    if (services.io && services.places) {
+    // Служба избранного отвечает не сразу: если иконки нет в кэше, она ищет
+    // её сама и может висеть долго. Поэтому сайт спрашиваем ПАРАЛЛЕЛЬНО, и
+    // берём тот ответ, который пришёл первым и с настоящей картинкой.
+    const servicePromise = (async () => {
+      if (!services.io || !services.places) {
+        return { src: "", from: "service" };
+      }
       try {
         const uri = Services.io.newURI(url);
-        service = Promise.resolve(PlacesUtils.favicons.getFaviconForPage(uri))
-          .then(favicon => iconSrcOf(favicon))
-          .catch(() => "");
+        const favicon = await Promise.resolve(
+          PlacesUtils.favicons.getFaviconForPage(uri)
+        );
+        return { src: iconSrcOf(favicon), from: "service" };
       } catch (e) {
-        service = Promise.resolve("");
+        return { src: "", from: "service" };
       }
-    }
-    return service.then(src => {
-      if (src) {
-        iconCache.set(host, src);
-        return src;
+    })();
+    const netPromise = (async () => {
+      // Без служб браузера (макет) обращаться некуда: остаётся буква.
+      if (!services.io || typeof fetch !== "function") {
+        return { src: "", from: "net" };
       }
-      // Сайта нет в кэше браузера — спрашиваем сайт сами. Без служб
-      // браузера (макет) обращаться некуда: остаётся буква.
-      if (!services.io) {
+      const net = await fetchIconFromNetwork(host);
+      if (net) {
+        iconMisses.delete(host);
+      }
+      return { src: net, from: "net" };
+    })();
+    return firstIcon(
+      withTimeout(servicePromise, 6000, { src: "", from: "service" }),
+      withTimeout(netPromise, 20000, { src: "", from: "net" })
+    ).then(result => {
+      const src = result?.src || "";
+      if (!src) {
+        iconSources.none += 1;
         return "";
       }
-      return fetchIconFromNetwork(host).then(net => {
-        if (net) {
-          iconCache.set(host, net);
-        }
-        return net;
-      });
+      iconCache.set(host, src);
+      iconSources[result.from] = (iconSources[result.from] || 0) + 1;
+      return src;
     });
   }
 
@@ -2570,20 +2693,31 @@
     icon.alt = "";
     ghost.appendChild(icon);
     // Иконка приезжает позже — до этого показываем букву адреса.
-    faviconForRule(rule).then(src => {
-      if (!src || !ghost.isConnected) {
-        return;
-      }
-      icon.src = src;
-      ghost.classList.remove("zef-no-icon");
-      // Картинка не загрузилась — снова показываем букву: пустая плитка
-      // выглядит хуже, чем понятная буква.
-      icon.addEventListener("error", () => {
-        if (ghost.isConnected) {
-          ghost.classList.add("zef-no-icon");
+    const tryIcon = (attempt = 0) => {
+      faviconForRule(rule).then(src => {
+        if (!src) {
+          // Не нашлось — попробуем ещё раз через 5 минут: сеть могла
+          // подождать, а сайт мог появиться.
+          if (attempt < 3 && ghost.isConnected) {
+            setTimeout(() => tryIcon(attempt + 1), 300000);
+          }
+          return;
         }
+        if (!ghost.isConnected) {
+          return;
+        }
+        icon.src = src;
+        ghost.classList.remove("zef-no-icon");
+        // Картинка не загрузилась — снова показываем букву: пустая плитка
+        // выглядит хуже, чем понятная буква.
+        icon.addEventListener("error", () => {
+          if (ghost.isConnected) {
+            ghost.classList.add("zef-no-icon");
+          }
+        });
       });
-    });
+    };
+    tryIcon();
     // Клик открывает страницу правила.
     ghost.addEventListener("mousedown", event => event.stopPropagation());
     ghost.addEventListener("click", event => {
@@ -4070,6 +4204,58 @@
     }
   }
 
+  /** Разведка среды: что мод может в этом браузере.
+   *
+   *  Пишется в отдельный преф: видно без консоли, без догадок — есть ли службы
+   *  браузера, грузятся ли картинки и отвечает ли сеть. */
+  async function probeEnvironment() {
+    // Разведка ходит в сеть и пишет результат в преф. Если писать некуда
+    // (макет, а не браузер) — разведка не нужна, а запрос только помешает.
+    try {
+      if (typeof Services?.prefs?.savePrefFile !== "function") {
+        return;
+      }
+    } catch (e) {
+      return;
+    }
+    const out = { io: false, places: false, fetch: "", image: "" };
+    try {
+      const services = browserServices();
+      out.io = services.io;
+      out.places = services.places;
+    } catch (e) {}
+    try {
+      const response = await fetch("https://www.mozilla.org/favicon.ico", {
+        credentials: "omit",
+      });
+      out.fetch =
+        "http:" + response.status + " type:" + (response.headers.get("content-type") || "-");
+    } catch (e) {
+      out.fetch = "fail";
+    }
+    try {
+      out.image = await new Promise(resolve => {
+        const image = new Image();
+        const timer = setTimeout(() => resolve("timeout"), 8000);
+        image.addEventListener("load", () => {
+          clearTimeout(timer);
+          resolve("ok:" + image.naturalWidth);
+        });
+        image.addEventListener("error", () => {
+          clearTimeout(timer);
+          resolve("error");
+        });
+        image.src = "https://www.mozilla.org/favicon.ico";
+      });
+    } catch (e) {
+      out.image = "fail";
+    }
+    try {
+      Services.prefs.setStringPref("zen.essentialsfolders.env", JSON.stringify(out));
+      Services.prefs.savePrefFile(null);
+    } catch (e) {}
+  }
+
   /** Диагностика панели: пишется в преф, чтобы разобраться без консоли. */
   function writeDiag(container) {
     try {
@@ -4161,6 +4347,18 @@
             ? container.querySelectorAll(".zef-tile[data-zef-folder]").length
             : -1,
           firstRun: container ? container.querySelectorAll(".zef-firstrun").length : -1,
+          // Плитки-правила по сайтам: видно, у какого сайта иконка есть.
+          hosts: container
+            ? Array.from(container.querySelectorAll(".zef-ghost")).slice(0, 20).map(el => {
+                const src = el.querySelector(".zef-ghost-img")?.getAttribute("src") || "";
+                return {
+                  h: el.getAttribute("title") || "",
+                  kind: !src ? "none" : src.startsWith("blob:") ? "blob" : src.slice(0, 24),
+                  letter: el.classList.contains("zef-no-icon") ? 1 : 0,
+                };
+              })
+            : [],
+          sources: Object.assign({}, iconSources),
         },
       };
       const text = JSON.stringify(info);
@@ -6202,6 +6400,10 @@
       }
     };
     firstRenderTimer = setTimeout(attempt, 800);
+    // Разведка среды: что мод может здесь. Один раз, через три секунды.
+    setTimeout(() => {
+      probeEnvironment();
+    }, 3000);
 
     uninstall = () => {
       // Отложенные задания: иначе старый экземпляр дорисует панель после
@@ -6210,6 +6412,12 @@
         clearTimeout(firstRenderTimer);
         firstRenderTimer = 0;
       }
+      for (const url of objectUrls) {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (e) {}
+      }
+      objectUrls.clear();
       if (syncTimer) {
         clearTimeout(syncTimer);
         syncTimer = null;

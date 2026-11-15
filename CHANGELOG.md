@@ -10,6 +10,35 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.15.7] — 2026-11-15
+
+A rule tile really gets the icon of its site.
+
+### Fixed
+
+- **The site and the favourites service are asked at the same time.** The favourites service
+  looks for the icon itself when it is not in its cache, and that can take a long time — until
+  it answered, the site was not asked at all. Both are asked now, and the first answer with a
+  real picture wins. Every answer has a time limit, so the tile never waits forever.
+- **A rule tile really gets the icon of its site.** The picture is now fetched with `fetch` from
+  the system principal, so CORS does not stand in the way: first `/favicon.ico`, and if the site
+  has none, the icon declared on the page itself (`<link rel="icon">`). One request per site, the
+  result is remembered. The old way — an `<img>` with the address of the picture inside the
+  browser document — did not load anything, which is why such tiles kept showing a letter.
+- **The icon is looked for in every window.** If the site is open in another Zen window, the tile
+  takes the logo from there.
+- **A site without an icon is not asked for again and again.** The mod remembers that the icon was
+  not found and tries again after five minutes, instead of on every repaint of the panel.
+
+### Added
+
+- **The mod reports what it can do in your browser.** `zen.essentialsfolders.env` records whether
+  the browser services are available, whether the network answers and whether pictures load — so a
+  missing icon can be read off without the console.
+- **The diagnostics say where every icon came from.** `diag.tiles.sources` counts the icons taken
+  from memory, from an open tab, from the favourites service and from the site itself, and
+  `diag.tiles.hosts` lists the rule tiles with their state.
+
 ## [1.15.6] — 2026-11-15
 
 Every icon in a row is the same size, and a site tile shows the real logo of the site.
