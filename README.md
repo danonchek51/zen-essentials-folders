@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.16.1](https://img.shields.io/badge/version-1.16.1-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.16.2](https://img.shields.io/badge/version-1.16.2-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -290,6 +290,9 @@ in `zen.essentialsfolders.rules-backup`, and the report of the conversion — in
 
 A rule whose page is not open right now is shown as a **dim tile**: the folder is not empty
 while the rule lives in it, and the counter counts rules. Clicking the dim tile opens the page.
+
+A dim tile can be taken out of the folder as well: drop it on the line under the folders.
+The same line takes a live tab out of its folder.
 
 A site is shown by one tile: if a page of that site is already open in the folder, the dim tile
 of that site is not drawn next to it. Two open tabs of the same site are two tiles — they are two

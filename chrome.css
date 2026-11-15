@@ -385,12 +385,13 @@
 /* Раскрытая вложенная папка: шеврон смотрит вниз (у свёрнутой — вправо),
    а плитка мягко светится своим цветом. Свечение мягкое и внешнее — чтобы его
    нельзя было спутать с рамкой активной папки. */
+/* Внешнего свечения нет: размытая тень выходила за плитку и ложилась на
+   шапку родительской папки — плитка выглядела налезающей на неё. */
 .zen-essentials-container .zef-tile.zef-nested.zef-open {
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--zef-color, #8b5cf6) 60%, transparent),
     inset 0 -2px 0 0 var(--zef-color, #8b5cf6),
-    0 0 0 1px color-mix(in srgb, var(--zef-color, #8b5cf6) 30%, transparent),
-    0 0 10px 1px color-mix(in srgb, var(--zef-color, #8b5cf6) 45%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--zef-color, #8b5cf6) 30%, transparent);
 }
 
 /* Шеврон вложенной папки: свёрнута — вправо, раскрыта — вниз. */

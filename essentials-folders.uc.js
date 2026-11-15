@@ -82,7 +82,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.16.1";
+  const MOD_VERSION = "1.16.2";
 
 
   /* ------------------------------------------------------------------ *
@@ -189,6 +189,10 @@
     },
     "folder.exclusion": { en: "exclusion {rule}", ru: "исключение {rule}" },
     "ghost.open": { en: "Open the page", ru: "Открыть страницу" },
+    "ghost.dragOut": {
+      en: "Drag to the line below the folders to take it out of the folder",
+      ru: "Перетащите на линию под папками, чтобы убрать из папки",
+    },
     "ghost.remove": {
       en: "Remove the rule from the folder",
       ru: "Убрать правило из папки",
@@ -231,6 +235,10 @@
     "hint.dragFailed": { en: "Could not tell which tab was dragged", ru: "Не понял, какую вкладку перетащили" },
     "hint.alreadyIn": { en: "This tab is already in \u00ab{name}\u00bb", ru: "Вкладка уже в папке \u00ab{name}\u00bb" },
     "hint.moveFailed": { en: "Could not move the tab", ru: "Не получилось перенести вкладку" },
+    "hint.ruleRemoved": {
+      en: "Removed from \u00ab{name}\u00bb",
+      ru: "Убрано из папки \u00ab{name}\u00bb",
+    },
     "hint.movedIn": { en: "Moved into \u00ab{name}\u00bb", ru: "Перенесено в папку \u00ab{name}\u00bb" },
     "hint.pinFailed": { en: "The tab stayed in the sidebar", ru: "Вкладка осталась в сайдбаре" },
     "firstrun.hint": {
@@ -490,6 +498,8 @@
   let dragSourceEl = null;
   // Правило, которое тянут (бледная плитка): вкладки за ним нет.
   let draggedRule = "";
+  // Ряд, из которого тянут: по нему видно, из какой папки вынимают правило.
+  let draggedGroup = "";
   // Бросок уже разобран на уровне окна — контейнеру не надо его трогать.
   let dropHandled = false;
   // Точка последнего броска: нужна для разбора, когда цель не нашлась.
@@ -2059,6 +2069,14 @@
       tab.setAttribute("data-zef-managed", "1");
       if (!match) {
         refreshFolderRule(previousFolderId, previousRule, tabUrl(tab));
+        // Плитка без адреса — огрызок закрытой вкладки: мод не знает, что
+        // это, и она занимала место в панели (и выглядела как случайный
+        // значок). Прячем её: как только у вкладки появится адрес, плитка
+        // вернётся — метка снимается при каждой перерисовке.
+        if (!tabUrl(tab)) {
+          tab.setAttribute("data-zef-hidden", "true");
+          return;
+        }
         free.push(tab);
         // Вкладка вне папок: своё место у неё есть, показываем.
         tab.setAttribute("data-zef-open", "true");
@@ -2843,7 +2861,7 @@
     ghost.dataset.zef = "1";
     ghost.setAttribute("data-zef-owner", folder.id);
     ghost.setAttribute("data-zef-rule", rule);
-    ghost.title = rule;
+    ghost.title = `${rule} — ${t("ghost.dragOut")}`;
     ghost.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
     const host = ruleHost(rule);
     ghost.style.setProperty(
@@ -4039,16 +4057,19 @@
       return true;
     }
     arrangeCancel();
-    const folder = folderById(target.folderId);
-    if (!folder) {
-      recordDrop({ result: "no-folder", target: target.kind });
-      return false;
-    }
-    // Разделитель — зона «вынуть из папки».
+    // Разделитель — зона «вынуть из папки». Своей папки у него нет, поэтому
+    // его проверяем раньше: иначе бросок на линию под папками уходил в
+    // «no-folder» и ничего не делал — хотя подсказка под разделителем
+    // обещала именно это.
     if (target.kind === "divider") {
       handleDropOnDivider(event);
       recordDrop({ result: "out-of-folder", target: "divider" });
       return true;
+    }
+    const folder = folderById(target.folderId);
+    if (!folder) {
+      recordDrop({ result: "no-folder", target: target.kind });
+      return false;
     }
     // Шапка, полоса значков или цветная область открытой папки — бросаем внутрь.
     if (target.kind === "head" || target.kind === "plane" ||
@@ -4498,6 +4519,8 @@
               : -1,
             // Вкладки вне папок: они лежат под разделителем.
             free: list.filter(el => !el.getAttribute("data-zef-folder")).length,
+            // Плитки без адреса: огрызки закрытых вкладок. Мод их прячет.
+            blank: list.filter(el => !tabUrl(el)).length,
             // Иконка завёрнута в moz-remote-image: обёртка иногда не
             // грузится, и плитка показывает букву вместо логотипа.
             wrapped: list.filter(el =>
@@ -4666,6 +4689,29 @@
         "zef-drop-site"
       );
     }
+  }
+
+  /** Убрать правило из папки — бледная плитка, за которой нет вкладки. */
+  function removeRuleFromFolder(folder, rule) {
+    if (!folder || !rule) {
+      return false;
+    }
+    const sites = folder.sites || [];
+    const target = normalizeSite(ruleBody(rule));
+    const next = sites.filter(
+      item => normalizeSite(ruleBody(item)) !== target
+    );
+    if (next.length === sites.length) {
+      return false;
+    }
+    folder.sites = next;
+    return true;
+  }
+
+  /** Папка по ключу группы: «f:папка», «s:папка». */
+  function folderForGroup(key) {
+    const id = String(key || "").replace(/^[fs]:/, "");
+    return id ? folderById(id) : null;
   }
 
   /** Убрать вкладку из папки — не выбрасывая из неё остальные вкладки
@@ -5101,6 +5147,24 @@
       }
       placeFolder(source, null, null, false);
       persist();
+      return;
+    }
+    // Бледная плитка — это правило, а не вкладка. Её тоже можно вынуть
+    // из папки: бросок на разделитель убирает правило.
+    if (draggedRule) {
+      const source =
+        folderForGroup(draggedGroup) ||
+        folders.find(item =>
+          (item.sites || []).some(
+            site =>
+              normalizeSite(ruleBody(site)) ===
+              normalizeSite(ruleBody(draggedRule))
+          )
+        );
+      if (source && removeRuleFromFolder(source, draggedRule)) {
+        persist();
+        showHint(t("hint.ruleRemoved", { name: source.name || "…" }));
+      }
       return;
     }
     const tab = draggedTabFrom(event) || draggedTab;
@@ -6886,6 +6950,7 @@
         // Плитку сайта можно переставлять: запоминаем её группу.
         const tile = event.target?.closest?.("[data-zef-group]");
         const groupKey = groupKeyOf(tile);
+        draggedGroup = groupKey;
         arrange = null;
         if (
           groupKey.startsWith("f:") ||
@@ -6945,6 +7010,7 @@
         draggedTabIsEssential = false;
         draggedFolderId = null;
         draggedRule = "";
+        draggedGroup = "";
         arrangeCancel();
         dragInProgress = false;
         dragLayout = null;

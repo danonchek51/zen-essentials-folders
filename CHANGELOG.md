@@ -10,6 +10,26 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.16.2] — 2026-11-15
+
+A tile can be taken out of a folder, and a leftover tile no longer sits in the panel.
+
+### Fixed
+
+- **Dropping a tile on the line under the folders takes it out of its folder.** The line under
+  the folders promises exactly that, but the drop never reached it: the mod looked for a folder
+  behind the target first, and the line has none. Now the line works — for a live tab and for a
+  dim tile (a rule without a tab) as well.
+- **A dim tile can be taken out of a folder.** A dim tile is a rule, not a tab, and the drop
+  handler expected a tab, so the drop did nothing. The title of the dim tile now says how to
+  remove it.
+- **A leftover tile no longer sits in the panel.** Zen leaves a tile without an address behind
+  after a tab is closed. The mod cannot tell what it is, so it took up space in the panel and
+  looked like a stray icon. Such a tile is hidden now.
+- **The tile of an open nested folder no longer spills onto the heading of its parent.** The
+  tile stood where it should; it was its glow that reached ten pixels beyond it. The glow is
+  gone, only a thin outline is left.
+
 ## [1.16.1] — 2026-11-15
 
 One site — one tile in a folder.
