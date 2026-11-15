@@ -10,6 +10,18 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.15.8] — 2026-11-15
+
+The diagnostics show the panel as it is now, not as it was a moment ago.
+
+### Fixed
+
+- **The diagnostics are a live snapshot.** They were written right after the panel was
+  drawn, and the icons of a rule tile arrive later — so the counters said "the icons were
+  found" while the list of tiles still said "letters". The panel watcher now rewrites the
+  diagnostics every two seconds, and a tile that has just received its icon updates them
+  right away.
+
 ## [1.15.7] — 2026-11-15
 
 A rule tile really gets the icon of its site.
