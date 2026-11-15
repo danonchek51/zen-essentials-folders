@@ -79,7 +79,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.15.4";
+  const MOD_VERSION = "1.15.5";
 
 
   /* ------------------------------------------------------------------ *
@@ -1429,6 +1429,46 @@
     return hash;
   }
 
+  /** Картинка из обёртки Zen.
+   *
+   *  Zen хранит иконку «Важной» вкладки как moz-remote-image: внутри обёртки
+   *  лежит сама картинка (data-URL). Обёртка — это удалённая загрузка, и она
+   *  иногда не срабатывает. Тогда берём картинку изнутри: она уже у нас. */
+  function unwrapRemoteIcon(src) {
+    if (!src || !src.startsWith("moz-remote-image:")) {
+      return "";
+    }
+    const match = /[?&]url=([^&]+)/.exec(src);
+    if (!match) {
+      return "";
+    }
+    try {
+      return decodeURIComponent(match[1]);
+    } catch (e) {
+      return match[1];
+    }
+  }
+
+  /** Картинка из обёртки Zen.
+   *
+   *  Zen хранит иконку «Важной» вкладки как moz-remote-image: внутри обёртки
+   *  лежит сама картинка (data-URL). Обёртка — это удалённая загрузка, и она
+   *  иногда не срабатывает. Тогда берём картинку изнутри: она уже у нас. */
+  function unwrapRemoteIcon(src) {
+    if (!src || !src.startsWith("moz-remote-image:")) {
+      return "";
+    }
+    const match = /[?&]url=([^&]+)/.exec(src);
+    if (!match) {
+      return "";
+    }
+    try {
+      return decodeURIComponent(match[1]);
+    } catch (e) {
+      return match[1];
+    }
+  }
+
   /** Иконку можно запомнить: это настоящая иконка сайта, а не служебная
    *  картинка Zen («глобус» и прочие заглушки). */
   function isCacheableIcon(src) {
@@ -1437,6 +1477,44 @@
       src.startsWith("http:") ||
       src.startsWith("https://")
     );
+  }
+
+  /** Ссылка на иконку из службы избранного.
+   *
+   *  Firefox отдаёт её по-разному: то объектом с полем dataURI (так делает
+   *  сам Zen), то готовой картинкой. Берём любой вариант, похожий на картинку. */
+  function iconSrcOf(favicon) {
+    const candidates = [
+      favicon?.dataURI?.spec,
+      typeof favicon?.dataURI === "string" ? favicon.dataURI : "",
+      favicon?.src,
+      favicon?.getAttribute?.("src"),
+    ];
+    for (const value of candidates) {
+      if (value && isCacheableIcon(String(value))) {
+        return String(value);
+      }
+    }
+    return "";
+  }
+
+  /** Ссылка на иконку из службы избранного.
+   *
+   *  Firefox отдаёт её по-разному: то объектом с полем dataURI (так делает
+   *  сам Zen), то готовой картинкой. Берём любой вариант, похожий на картинку. */
+  function iconSrcOf(favicon) {
+    const candidates = [
+      favicon?.dataURI?.spec,
+      typeof favicon?.dataURI === "string" ? favicon.dataURI : "",
+      favicon?.src,
+      favicon?.getAttribute?.("src"),
+    ];
+    for (const value of candidates) {
+      if (value && isCacheableIcon(String(value))) {
+        return String(value);
+      }
+    }
+    return "";
   }
 
   /** Настоящая иконка сайта из службы избранного.
@@ -1453,10 +1531,10 @@
     try {
       const uri = Services.io.newURI("https://" + host + "/");
       Promise.resolve(PlacesUtils.favicons.getFaviconForPage(uri))
-        .then(image => {
-          const src = image?.src || "";
+        .then(favicon => {
+          const src = iconSrcOf(favicon);
           // Служебная иконка «глобус» сайту не нужна.
-          if (src && isCacheableIcon(src)) {
+          if (src) {
             iconCache.set(host, src);
             applyCachedIcon(container, host);
           }
@@ -1479,9 +1557,19 @@
         continue;
       }
       const img = tab.querySelector(".tab-icon-image");
-      if (!img || img.getAttribute("src")) {
+      if (!img) {
         continue;
       }
+      const current = img.getAttribute("src");
+      const failed = img.complete && img.naturalWidth === 0;
+      // Живая картинка на месте — её не трогаем.
+      if (current && !failed) {
+        continue;
+      }
+      if (img.dataset.zefFixed === src.slice(0, 120)) {
+        continue;
+      }
+      img.dataset.zefFixed = src.slice(0, 120);
       try {
         img.src = src;
       } catch (e) {}
@@ -1495,19 +1583,23 @@
     for (const tab of tabs || essentialTabs(container)) {
       const img = tab.querySelector(".tab-icon-image");
       const host = hostOf(tabUrl(tab)) || "";
-      const src = img?.getAttribute("src") || "";
+      const raw = img?.getAttribute("src") || "";
+      // Внутри обёртки Zen лежит сама картинка — она может сработать, даже
+      // если сама обёртка не загрузилась.
+      const inner = unwrapRemoteIcon(raw);
+      // Картинка есть, но не загрузилась: такую тоже считаем «нет иконки».
+      const failed = Boolean(img && img.complete && img.naturalWidth === 0);
+      const usable = raw && !failed ? raw : inner;
       // Иконку сайта запоминаем: у выгруженной Zen вкладки картинки нет, а
       // значок в папке должен остаться.
-      if (src && isCacheableIcon(src)) {
-        iconCache.set(host, src);
+      if (usable && isCacheableIcon(usable)) {
+        iconCache.set(host, usable);
       }
       const cached = iconCache.get(host) || "";
-      const broken =
-        !img ||
-        (!src && !cached) ||
-        (img.complete && img.naturalWidth === 0 && !cached);
-      if (!src && !cached && host) {
-        // Картинки нет — спросим у службы избранного настоящую иконку сайта.
+      const broken = !img || failed || (!raw && !cached);
+      if (broken && host) {
+        // Картинки нет (или она не загрузилась) — спросим у службы
+        // избранного настоящую иконку сайта.
         requestSiteIcon(container, host);
       }
       if (broken) {
@@ -1521,8 +1613,21 @@
           "--zef-fallback-color",
           `hsl(${hostHue(host)} 62% 48%)`
         );
+        // Пробуем другую картинку: изнутри обёртки Zen или запомненную.
+        // Каждую пробуем один раз, чтобы не крутить цикл «load → error».
+        const replacement = inner || cached;
+        if (
+          img &&
+          replacement &&
+          img.dataset.zefFixed !== replacement.slice(0, 120)
+        ) {
+          img.dataset.zefFixed = replacement.slice(0, 120);
+          try {
+            img.src = replacement;
+          } catch (e) {}
+        }
       } else {
-        if (!src && cached && img) {
+        if (!raw && cached && img) {
           // Картинки нет — ставим запомненную иконку сайта.
           try {
             img.src = cached;
@@ -2332,7 +2437,7 @@
     try {
       const uri = Services.io.newURI(url);
       return Promise.resolve(PlacesUtils.favicons.getFaviconForPage(uri))
-        .then(image => image?.src || "")
+        .then(favicon => iconSrcOf(favicon))
         .catch(() => "");
     } catch (e) {
       return Promise.resolve("");
@@ -3890,6 +3995,42 @@
                     el.getAttribute("data-zef-managed") !== "1"
                 ).length
               : -1,
+            // Вкладки вне папок: они лежат под разделителем.
+            free: list.filter(el => !el.getAttribute("data-zef-folder")).length,
+            // Иконка завёрнута в moz-remote-image: обёртка иногда не
+            // грузится, и плитка показывает букву вместо логотипа.
+            wrapped: list.filter(el =>
+              (
+                el.querySelector(".tab-icon-image")?.getAttribute("src") || ""
+              ).startsWith("moz-remote-image:")
+            ).length,
+            // Картинка есть, но не загрузилась.
+            broken: list.filter(el => {
+              const img = el.querySelector(".tab-icon-image");
+              return Boolean(img && img.complete && img.naturalWidth === 0);
+            }).length,
+            // Как устроены значки: по одному сайту (до двадцати).
+            sample: list
+              .slice(0, 20)
+              .map(el => {
+                const img = el.querySelector(".tab-icon-image");
+                const src = img?.getAttribute("src") || "";
+                return {
+                  h: hostOf(tabUrl(el)) || "",
+                  kind: !src
+                    ? "none"
+                    : src.startsWith("moz-remote-image:")
+                      ? "wrapper"
+                      : src.startsWith("data:")
+                        ? "data"
+                        : src.startsWith("http")
+                          ? "http"
+                          : "other",
+                  len: src.length,
+                  nat: img ? img.naturalWidth : -1,
+                  letter: el.classList.contains("zef-no-icon") ? 1 : 0,
+                };
+              }),
           };
         })(),
       };

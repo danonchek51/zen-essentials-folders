@@ -70,7 +70,9 @@
   justify-content: center;
   width: var(--zef-icon-size, 26px);
   height: var(--zef-icon-size, 26px);
-  border-radius: 50%;
+  /* Скруглённый квадрат — как у Zen: в одной папке рядом стоят и родные
+     заглушки Zen, и наши, и круги выбивались из ряда. */
+  border-radius: 7px;
   background: var(--zef-fallback-color, #7c7c8a);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
   font-size: calc(var(--zef-icon-size, 26px) * 0.46);

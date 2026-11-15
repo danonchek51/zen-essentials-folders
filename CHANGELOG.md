@@ -10,6 +10,27 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.15.5] — 2026-11-15
+
+The icon of a site stays, and every tile in a folder looks the same.
+
+### Fixed
+
+- **The icon of a site comes back.** Zen keeps the icon of an Essentials tab in a
+  `moz-remote-image` wrapper: the picture itself is inside, but the wrapper is a remote
+  download and does not always load — after a session restore it usually does not. The mod
+  now takes the picture out of the wrapper and shows the real logo instead of a letter.
+- **A picture that failed to load counts as no picture.** The mod only noticed a missing
+  `src`, so a broken image stayed broken forever and the tile kept showing a letter. The
+  mod now asks the favourites service for the icon of the site and remembers it.
+- **The icon is fetched the way Firefox returns it.** The favourites service hands out an
+  object with a `dataURI` field (this is what Zen itself reads), so the mod was reading an
+  empty field and never got the icon.
+- **Every tile in a folder looks the same.** Zen draws its own placeholder as a rounded
+  square, while the mod drew a circle — in one folder you could see a circle next to
+  squares of different sizes. The mod's placeholder is now a rounded square of the same
+  size, and the panel diagnostics show how every icon is stored.
+
 ## [1.15.4] — 2026-11-14
 
 The icon stays where it belongs, and the panel puts it back when Zen replaces a tab.
