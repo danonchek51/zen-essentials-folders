@@ -82,7 +82,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.16.2";
+  const MOD_VERSION = "1.16.3";
 
 
   /* ------------------------------------------------------------------ *
@@ -3709,7 +3709,18 @@
           el.getAttribute("data-zef-rule") === draggedRule
       );
     }
-    if (el === draggedTab || el.contains?.(draggedTab)) {
+    if (el === draggedTab) {
+      return true;
+    }
+    // Копию вкладки, которую Zen подставляет под курсор, целиться нельзя:
+    // она закрывает плитку. А полоса значков (ряд вложенной папки) — можно:
+    // пустое место в конце ряда значит «поставь плитку в конец», и ряд
+    // должен остаться целью. Раньше полоса выпадала из целей целиком —
+    // бросок уходил в цветную область родительской папки.
+    if (
+      el.classList?.contains("tabbrowser-tab") &&
+      el.contains?.(draggedTab)
+    ) {
       return true;
     }
     if (!el.classList?.contains("tabbrowser-tab")) {
@@ -3959,6 +3970,25 @@
     event.stopPropagation();
   }
 
+  /** Ключ группы, которому соответствует цель броска.
+   *
+   *  Полоса значков — это ряд вложенной папки («s:папка»), плоскость — ряд
+   *  папки верхнего уровня («f:папка»). Пустой ряд — это место для плитки
+   *  внутри той же группы, а не папка, куда надо что-то внести. */
+  function groupKeyForTarget(target) {
+    const id = target?.folderId || "";
+    if (!id) {
+      return "";
+    }
+    if (target.kind === "strip") {
+      return "s:" + id;
+    }
+    if (target.kind === "plane") {
+      return "f:" + id;
+    }
+    return "";
+  }
+
   /** Цель броска под курсором.
    *
    *  Приоритет жёсткий: плитка папки → шапка → полоса значков → разделитель →
@@ -4054,6 +4084,19 @@
       arrangeCancel();
       const info = handleDropOnSite(event, target.el) || {};
       recordDrop(Object.assign({ result: "reordered", target: "site" }, info));
+      return true;
+    }
+    // Перестановка внутри своего ряда: пустое место справа от последней
+    // плитки — это «поставь плитку в конец», а не «внеси её в папку».
+    // Ряд — это полоса значков вложенной папки или плоскость папки
+    // верхнего уровня; целиться в него можно только своим же рядом.
+    const rowKey = groupKeyForTarget(target);
+    if (arrange && rowKey && rowKey === arrange.key) {
+      const moved = arrangeCommit();
+      recordDrop({
+        result: moved ? "reordered" : "reorder-failed",
+        target: target.kind,
+      });
       return true;
     }
     arrangeCancel();

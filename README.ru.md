@@ -1,6 +1,6 @@
 # Essentials Folders — плитки-папки для «Важных» в Zen Browser
 
-[![Версия 1.16.2](https://img.shields.io/badge/version-1.16.2-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Версия 1.16.3](https://img.shields.io/badge/version-1.16.3-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![Лицензия MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -60,6 +60,10 @@ nested folders, drag & drop, search, and 22 settings. Tabs stay ordinary Zen tab
   иконок) и у свободных плиток внизу панели.
 - **Новый сайт встаёт справа.** Плитка, попавшая в папку, добавляется в конец правил
   папки — и появляется в самом правом краю ряда.
+- **Свободное место в конце ряда — это место, а не папка.** Перетащите плитку за последнюю
+  плитку ряда и отпустите там — плитка встанет в самый правый край и останется там.
+  Раньше такой бросок читался как «внести в папку» и терялся: плитка либо уезжала из
+  ряда, либо ничего не происходило.
 - **Переносится только та вкладка, которую тянули.** Бросили иконку GitHub с одним
   репозиторием в другую папку — переехала только она, остальные вкладки GitHub остались
   на месте (см. «Как это работает»).

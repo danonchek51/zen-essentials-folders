@@ -10,6 +10,28 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.16.3] — 2026-11-15
+
+A tile can be put at the far right of its row — and it stays there.
+
+### Fixed
+
+- **Dropping a tile into the free space at the end of a row is kept now.** The free space
+  on the right of the last tile belongs to the row of tiles, but the mod treated it as the
+  coloured area of the parent folder: the tile left its row (the rule disappeared from the
+  folder) or the drop did nothing at all. The preview was right, only the drop threw the
+  result away.
+- **A row of tiles is a drop target again.** The row was skipped while dragging because it
+  holds the dragged tile — so the drop landed one level too high. Now a row can be aimed at
+  like any other target.
+- **A drop into your own row reorders the row instead of moving the tile into the folder.**
+  This works both for a live tab and for a dim tile (a rule without a tab).
+
+### Tests
+
+- `test_drag_last_slot.py` — three scenarios: a drop in the middle of a row (control), a
+  drop into the free space at the far right, and the same with a dim tile.
+
 ## [1.16.2] — 2026-11-15
 
 A tile can be taken out of a folder, and a leftover tile no longer sits in the panel.

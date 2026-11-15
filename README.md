@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.16.2](https://img.shields.io/badge/version-1.16.2-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.16.3](https://img.shields.io/badge/version-1.16.3-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -61,6 +61,10 @@ within** — all with ordinary mouse drag & drop.
   icons) and among the free tiles at the bottom of the panel.
 - **A new site lands on the right.** A tile that arrives in a folder is appended to the
   end of the folder's rules, so it shows up at the far right of the row.
+- **The free space at the end of a row is a place, not a folder.** Drag a tile past the
+  last tile of the row and let go there — the tile lands at the far right and stays there.
+  Before, that drop was read as "put it into the folder" and was lost: the tile left the
+  row or nothing happened at all.
 - **Only the tab you dragged moves.** Drop a GitHub icon with one repository into another
   folder — only that one moved, the other GitHub tabs stayed where they were (see "How it
   works").
