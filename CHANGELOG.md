@@ -10,6 +10,28 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.16.1] — 2026-11-15
+
+One site — one tile in a folder.
+
+### Fixed
+
+- **A site is shown by one tile.** A folder could show the same site twice: a bright live tab and
+  a dim tile right next to it. The tiles of a folder are now built from the rules themselves, so a
+  rule can only be drawn once, and a site that is already open is not drawn a second time.
+- **Dropping a site into a folder no longer duplicates it.** If the folder already had a rule for
+  that site, the old rule — the one with no open tab under it — is replaced by the new one. Two
+  pages of the same site still work as before: while a tab is open under the old rule, both rules
+  stay.
+- **A rule rewritten when a tab changed its address is no longer drawn twice.** The tiles were
+  placed by the number of a rule, and the number could get out of date: the live tile landed on a
+  foreign rule, and the real rule was drawn as a dim tile next to it.
+
+### Added
+
+- **The diagnostics list the tiles row by row.** `tiles.groups` shows every tile with its row, its
+  kind and its rule, and `tiles.dup` points at the rows where one site is drawn twice.
+
 ## [1.16.0] — 2026-11-15
 
 The tiles inside a folder can be put in the order you want.

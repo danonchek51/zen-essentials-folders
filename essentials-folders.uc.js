@@ -82,7 +82,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.16.0";
+  const MOD_VERSION = "1.16.1";
 
 
   /* ------------------------------------------------------------------ *
@@ -2456,40 +2456,122 @@
    *  перестановка сохраняется, а новое правило (в конце списка) встаёт
    *  в конец ряда — справа. */
   function folderTileOrder(folder, items) {
-    const byRule = new Map();
-    for (const item of items || []) {
-      if (!byRule.has(item.ruleIndex)) {
-        byRule.set(item.ruleIndex, []);
-      }
-      byRule.get(item.ruleIndex).push(item);
-    }
-    const ghosts = ghostRules(folder.id);
-    const ghostSet = new Set(ghosts);
-    const out = [];
-    const used = new Set();
     const rules = folder.sites || [];
-    for (let index = 0; index < rules.length; index++) {
-      const rule = rules[index];
+    // Каждую вкладку переносим к правилу заново — по текущим правилам папки.
+    // Номер правила, посчитанный раньше, мог устареть: правило переписали
+    // (вкладка сменила адрес), а вкладка осталась. Тогда живая плитка
+    // вставала на место чужого правила, а настоящее правило дорисовывалось
+    // бледным призраком рядом — рядом оказывались две плитки одного сайта.
+    const live = [];
+    const liveHosts = new Set();
+    for (const item of items || []) {
+      const url = tabUrl(item.tab);
+      const match = url ? bestRuleMatch(folder, url) : null;
+      const rule = match ? match.rule : null;
+      const entry = {
+        tab: item.tab,
+        rule: rule,
+        canon: rule ? ruleCanon(rule) : "",
+      };
+      live.push(entry);
+      if (rule) {
+        liveHosts.add(ruleHost(rule));
+      }
+    }
+    // Группируем вкладки по правилу — по самому правилу, а не по номеру.
+    const byCanon = new Map();
+    for (const entry of live) {
+      if (!entry.canon) {
+        continue;
+      }
+      if (!byCanon.has(entry.canon)) {
+        byCanon.set(entry.canon, []);
+      }
+      byCanon.get(entry.canon).push(entry);
+    }
+    const out = [];
+    const drawn = new Set();
+    const drawnHosts = new Set();
+    for (const rule of rules) {
       if (isExclusionRule(rule)) {
         continue;
       }
-      const group = byRule.get(index);
-      if (group && group.length) {
-        for (const item of group) {
-          out.push({ kind: "tab", item, rule });
-          used.add(item);
-        }
-      } else if (ghostSet.has(rule)) {
-        out.push({ kind: "ghost", rule });
+      const canon = ruleCanon(rule);
+      if (!canon || drawn.has(canon)) {
+        continue;
       }
+      const host = ruleHost(rule);
+      const group = byCanon.get(canon);
+      if (group && group.length) {
+        for (const entry of group) {
+          out.push({ kind: "tab", item: entry, rule });
+        }
+        drawn.add(canon);
+        drawnHosts.add(host);
+        continue;
+      }
+      // Бледная плитка — только если этот сайт ещё не показан: ни живой
+      // плиткой, ни другой бледной. Иначе ряд показывал бы рядом два
+      // одинаковых значка одного сайта.
+      if (liveHosts.has(host) || drawnHosts.has(host)) {
+        continue;
+      }
+      drawn.add(canon);
+      drawnHosts.add(host);
+      out.push({ kind: "ghost", rule });
     }
     // Вкладка без правила — в конце: иначе она бы пропала из ряда.
-    for (const item of items || []) {
-      if (!used.has(item)) {
-        out.push({ kind: "tab", item, rule: null });
+    for (const entry of live) {
+      if (!entry.rule) {
+        out.push({ kind: "tab", item: entry, rule: null });
       }
     }
     return out;
+  }
+
+  /** Канон правила: адрес без хвостовых слешей.
+   *
+   *  «boosty.to» и «boosty.to/» — один и тот же сайт: правило с пустым
+   *  путём ловит только главную страницу, правило без слеша — весь домен.
+   *  Для плиток это один значок, иначе ряд показывает два одинаковых. */
+  function ruleCanon(rule) {
+    return normalizeSite(ruleBody(rule)).replace(/\/+$/, "");
+  }
+
+  /** Есть ли открытая вкладка, которая попадает под это правило. */
+  function ruleHasOpenTab(rule) {
+    try {
+      const tabs = gBrowser && gBrowser.tabs ? gBrowser.tabs : [];
+      for (const tab of Array.from(tabs)) {
+        const url = tabUrl(tab);
+        if (url && ruleMatches(rule, url)) {
+          return true;
+        }
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  /** Номер правила того же сайта, под которое никто не открыт: оно устарело.
+   *
+   *  Если такое правило есть, новую страницу того же сайта не надо добавлять
+   *  вторым правилом — иначе в папке окажется два значка одного сайта. */
+  function staleHostRule(folder, host) {
+    const sites = folder.sites || [];
+    for (let index = sites.length - 1; index >= 0; index--) {
+      const rule = sites[index];
+      if (isExclusionRule(rule)) {
+        continue;
+      }
+      if (ruleHost(rule) !== host) {
+        continue;
+      }
+      if (ruleHasOpenTab(rule)) {
+        continue;
+      }
+      return index;
+    }
+    return -1;
   }
 
   /** Есть ли в этой среде службы браузера.
@@ -4482,6 +4564,50 @@
               })
             : [],
           sources: Object.assign({}, iconSources),
+          // Плитки по рядам: видно, где одно правило нарисовано дважды.
+          groups: container
+            ? Array.from(container.querySelectorAll("[data-zef-group]"))
+                .slice(0, 40)
+                .map(el => ({
+                  g: el.getAttribute("data-zef-group") || "",
+                  k: el.classList?.contains("zef-ghost") ? "ghost" : "tab",
+                  r: el.getAttribute("data-zef-rule") || "",
+                  o: Number(el.style.order) || 0,
+                }))
+                .sort((a, b) =>
+                  a.g === b.g ? a.o - b.o : a.g < b.g ? -1 : 1
+                )
+            : [],
+          // Дубли: в одном ряду один сайт нарисован и живой вкладкой,
+          // и бледной плиткой рядом. Это и есть жалоба «две плитки».
+          dup: (() => {
+            if (!container) {
+              return [];
+            }
+            const seen = new Map();
+            for (const el of Array.from(
+              container.querySelectorAll("[data-zef-group]")
+            )) {
+              const group = el.getAttribute("data-zef-group") || "";
+              if (!group.startsWith("f:") && !group.startsWith("s:")) {
+                continue;
+              }
+              const rule = el.getAttribute("data-zef-rule") || "";
+              const url = el.getAttribute("data-zef-url") || "";
+              const host = rule ? ruleHost(rule) : hostOf(url) || "";
+              if (!host) {
+                continue;
+              }
+              const kind = el.classList?.contains("zef-ghost") ? "ghost" : "tab";
+              const key = group + "|" + host;
+              const item = seen.get(key) || { g: group, h: host, tab: 0, ghost: 0 };
+              item[kind] += 1;
+              seen.set(key, item);
+            }
+            return Array.from(seen.values())
+              .filter(item => item.tab > 0 && item.ghost > 0)
+              .map(item => ({ g: item.g, h: item.h, n: item.tab + item.ghost }));
+          })(),
         },
       };
       const text = JSON.stringify(info);
@@ -4711,6 +4837,16 @@
     removeExclusionsFor(folder, url);
     const sites = folder.sites || (folder.sites = []);
     if (!bestRuleMatch(folder, url)) {
+      // В папке уже есть этот сайт: старое правило, под которое никто не
+      // открыт, заменяем. Иначе в папке будут два значка одного сайта.
+      const stale = staleHostRule(folder, host);
+      if (stale >= 0) {
+        sites.splice(stale, 1);
+        // Правило пропало — индекс места вставки сдвигается.
+        if (stale <= targetRuleIndex) {
+          targetRuleIndex -= 1;
+        }
+      }
       insertRule(sites, specific, targetRuleIndex, before);
     } else {
       reorderInFolder(folder, url, targetRuleIndex, before);
