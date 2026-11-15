@@ -47,6 +47,9 @@
   const PREF_FOLDERS = "zen.essentialsfolders.folders";
   const PREF_COLLAPSED = "zen.essentialsfolders.collapsed";
   const PREF_ORDER = "zen.essentialsfolders.order";
+  // Порядок свободных плиток (вкладки вне папок) — свой: правил у них
+  // нет, а ряд наверху принадлежит папкам.
+  const PREF_FREE_ORDER = "zen.essentialsfolders.free-order";
   const PREF_SHOW_NAMES = "zen.essentialsfolders.show-names";
   const PREF_SHOW_COUNT = "zen.essentialsfolders.show-count";
   const PREF_SHOW_SEARCH = "zen.essentialsfolders.show-search";
@@ -79,7 +82,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.15.8";
+  const MOD_VERSION = "1.16.0";
 
 
   /* ------------------------------------------------------------------ *
@@ -206,6 +209,11 @@
       },
 
     "menu.intoFolder": { en: "Into a folder", ru: "В папку" },
+    "menu.moveTile": { en: "Move in the row", ru: "Переставить в ряду" },
+    "tile.moveLeft": { en: "Move left", ru: "Сдвинуть влево" },
+    "tile.moveRight": { en: "Move right", ru: "Сдвинуть вправо" },
+    "tile.moveStart": { en: "Move to the start", ru: "В начало ряда" },
+    "tile.moveEnd": { en: "Move to the end", ru: "В конец ряда" },
     "menu.newFolder": { en: "New folder\u2026", ru: "Новая папка\u2026" },
     "menu.modSettings": { en: "Mod settings\u2026", ru: "Настройки мода\u2026" },
 
@@ -480,6 +488,8 @@
   // Элемент, с которого начали тянуть: по нему видно, вкладку тянут или
   // что-то другое (например, ссылку со страницы).
   let dragSourceEl = null;
+  // Правило, которое тянут (бледная плитка): вкладки за ним нет.
+  let draggedRule = "";
   // Бросок уже разобран на уровне окна — контейнеру не надо его трогать.
   let dropHandled = false;
   // Точка последнего броска: нужна для разбора, когда цель не нашлась.
@@ -2142,6 +2152,7 @@
     for (const folder of topRow) {
       const tile = buildTile(folder, countOf(folder.id), false);
       tile.style.order = String(nextOrder());
+      tile.setAttribute("data-zef-group", "folders");
       tileHost.appendChild(tile);
     }
 
@@ -2219,6 +2230,7 @@
         for (const child of children) {
           const tile = buildTile(child, countOf(child.id), true);
           tile.setAttribute("data-zef-parent", folder.id);
+          tile.setAttribute("data-zef-group", "nf:" + folder.id);
           tile.style.order = String(nestedRow.children.length);
           // Раскрытую вложенную папку помечаем: её иконки лежат рядом.
           if (!isHiddenByCollapse(child.id)) {
@@ -2238,16 +2250,21 @@
         }
       }
 
-      // Плитки сайтов папки.
+      // Плитки сайтов папки — строго по порядку правил папки.
       if (!nested) {
-        for (const item of groups.get(folder.id) || []) {
-          item.tab.style.order = String(nextOrder());
-        }
-        // Правила без открытой вкладки — бледными плитками.
-        for (const rule of ghostRules(folder.id)) {
-          const ghost = buildGhostTile(rule, folder);
-          ghost.style.order = String(nextOrder());
-          container.appendChild(ghost);
+        for (const entry of folderTileOrder(
+          folder,
+          groups.get(folder.id) || []
+        )) {
+          if (entry.kind === "tab") {
+            entry.item.tab.style.order = String(nextOrder());
+            entry.item.tab.setAttribute("data-zef-group", "f:" + folder.id);
+          } else {
+            const ghost = buildGhostTile(entry.rule, folder);
+            ghost.style.order = String(nextOrder());
+            ghost.setAttribute("data-zef-group", "f:" + folder.id);
+            container.appendChild(ghost);
+          }
         }
       }
     };
@@ -2278,8 +2295,28 @@
     );
     container.appendChild(divider);
 
-    for (const tab of free) {
+    // Свободные плитки (вне папок) — по своему порядку: он сохранён
+    // отдельно, иначе ряд каждый раз выстраивался бы заново.
+    const freeOrder = readJSONPref(PREF_FREE_ORDER, []);
+    const freeRank = new Map();
+    (Array.isArray(freeOrder) ? freeOrder : []).forEach((url, index) =>
+      freeRank.set(url, index)
+    );
+    const freeSorted = free
+      .map((tab, index) => ({ tab, index }))
+      .sort((a, b) => {
+        const rankA = freeRank.has(tabUrl(a.tab))
+          ? freeRank.get(tabUrl(a.tab))
+          : 1e9 + a.index;
+        const rankB = freeRank.has(tabUrl(b.tab))
+          ? freeRank.get(tabUrl(b.tab))
+          : 1e9 + b.index;
+        return rankA - rankB || a.index - b.index;
+      })
+      .map(entry => entry.tab);
+    for (const tab of freeSorted) {
       tab.style.order = String(nextOrder());
+      tab.setAttribute("data-zef-group", "free");
     }
 
     // Во время поиска показываем подсказку, если совпадений нет.
@@ -2408,6 +2445,49 @@
         continue;
       }
       out.push(rule);
+    }
+    return out;
+  }
+
+  /** Плитки папки в порядке её правил.
+   *
+   *  Правило — это место плитки: есть открытая вкладка — живая плитка,
+   *  нет — бледная. Порядок правил и есть порядок плиток, поэтому ручная
+   *  перестановка сохраняется, а новое правило (в конце списка) встаёт
+   *  в конец ряда — справа. */
+  function folderTileOrder(folder, items) {
+    const byRule = new Map();
+    for (const item of items || []) {
+      if (!byRule.has(item.ruleIndex)) {
+        byRule.set(item.ruleIndex, []);
+      }
+      byRule.get(item.ruleIndex).push(item);
+    }
+    const ghosts = ghostRules(folder.id);
+    const ghostSet = new Set(ghosts);
+    const out = [];
+    const used = new Set();
+    const rules = folder.sites || [];
+    for (let index = 0; index < rules.length; index++) {
+      const rule = rules[index];
+      if (isExclusionRule(rule)) {
+        continue;
+      }
+      const group = byRule.get(index);
+      if (group && group.length) {
+        for (const item of group) {
+          out.push({ kind: "tab", item, rule });
+          used.add(item);
+        }
+      } else if (ghostSet.has(rule)) {
+        out.push({ kind: "ghost", rule });
+      }
+    }
+    // Вкладка без правила — в конце: иначе она бы пропала из ряда.
+    for (const item of items || []) {
+      if (!used.has(item)) {
+        out.push({ kind: "tab", item, rule: null });
+      }
     }
     return out;
   }
@@ -2692,6 +2772,17 @@
       "--zef-fallback-color",
       `hsl(${hostHue(host)} 62% 48%)`
     );
+    // Бледную плитку можно тянуть: это правило, а не вкладка.
+    ghost.draggable = true;
+    ghost.addEventListener("dragstart", event => {
+      try {
+        if (event.dataTransfer) {
+          event.dataTransfer.setData("application/x-zef-rule", rule);
+          event.dataTransfer.setData("text/uri-list", urlOfRule(rule));
+          event.dataTransfer.effectAllowed = "move";
+        }
+      } catch (e) {}
+    });
     const icon = document.createElement("img");
     icon.className = "zef-ghost-img";
     icon.alt = "";
@@ -2767,18 +2858,20 @@
     strip.dataset.zef = "1";
     strip.setAttribute("data-zef-owner", folder.id);
     strip.style.setProperty("--zef-color", folder.color || DEFAULT_COLOR);
+    // Плитки полосы — в порядке правил папки, как и в раскрытой папке.
     let index = 0;
-    for (const item of items || []) {
-      const tab = item.tab;
-      tab.style.order = String(index++);
-      strip.appendChild(tab);
-    }
-    // Правила без открытой вкладки — бледными плитками: папка не должна
-    // выглядеть пустой, если в ней есть правила.
-    for (const rule of ghostRules(folder.id)) {
-      const ghost = buildGhostTile(rule, folder);
-      ghost.style.order = String(index++);
-      strip.appendChild(ghost);
+    for (const entry of folderTileOrder(folder, items)) {
+      if (entry.kind === "tab") {
+        const tab = entry.item.tab;
+        tab.style.order = String(index++);
+        tab.setAttribute("data-zef-group", "s:" + folder.id);
+        strip.appendChild(tab);
+      } else {
+        const ghost = buildGhostTile(entry.rule, folder);
+        ghost.style.order = String(index++);
+        ghost.setAttribute("data-zef-group", "s:" + folder.id);
+        strip.appendChild(ghost);
+      }
     }
     // Сама полоса — зона приёма: плитка сайта попадёт в папку,
     // папка — внутрь неё.
@@ -3509,7 +3602,12 @@
    *  правило и тот же адрес. */
   function isDraggedSite(el) {
     if (!draggedTab) {
-      return false;
+      // Бледная плитка — не вкладка, но целиться в себя она тоже не может.
+      return Boolean(
+        draggedRule &&
+          el?.classList?.contains("zef-ghost") &&
+          el.getAttribute("data-zef-rule") === draggedRule
+      );
     }
     if (el === draggedTab || el.contains?.(draggedTab)) {
       return true;
@@ -3776,7 +3874,7 @@
     const items = [];
     const targets = container.querySelectorAll(
       ".zef-tile, .zef-head, .zef-icon-strip, .zef-divider, .zef-plane, " +
-      ".tabbrowser-tab[zen-essential='true']"
+      ".zef-ghost, .tabbrowser-tab[zen-essential='true']"
     );
     for (const el of targets) {
       if (isDraggedSite(el)) {
@@ -3791,6 +3889,9 @@
       const isStrip = el.classList.contains("zef-icon-strip");
       const isDivider = el.classList.contains("zef-divider");
       const isPlane = el.classList.contains("zef-plane");
+      const isSite =
+        el.classList.contains("tabbrowser-tab") ||
+        el.classList.contains("zef-ghost");
       items.push({
         el,
         kind: isTile
@@ -3804,8 +3905,11 @@
                 : isPlane
                   ? "plane"
                   : "site",
-        priority: isTile ? 0 : isHead ? 1 : isStrip ? 2 : isDivider ? 3
-          : isPlane ? 4 : 5,
+        // Плитка сайта идёт раньше полосы и цветной области папки:
+        // иначе бросок на соседнюю плитку всегда читался как «бросок в
+        // папку», и переставить плитки внутри папки было нечем.
+        priority: isTile ? 0 : isHead ? 1 : isSite ? 2 : isStrip ? 3
+          : isDivider ? 4 : isPlane ? 5 : 6,
         folderId:
           el.getAttribute("data-zef-folder") ||
           // У полосы иконок папка лежит в data-zef-owner — своя папка,
@@ -3838,10 +3942,21 @@
     }
     const kind = dragKind(event);
     if (target.kind === "site") {
+      // Перестановка внутри своей группы: место уже выбрано щелью.
+      if (arrange && groupKeyOf(target.el) === arrange.key) {
+        const moved = arrangeCommit();
+        recordDrop({
+          result: moved ? "reordered" : "reorder-failed",
+          target: "site",
+        });
+        return true;
+      }
+      arrangeCancel();
       const info = handleDropOnSite(event, target.el) || {};
       recordDrop(Object.assign({ result: "reordered", target: "site" }, info));
       return true;
     }
+    arrangeCancel();
     const folder = folderById(target.folderId);
     if (!folder) {
       recordDrop({ result: "no-folder", target: target.kind });
@@ -4791,19 +4906,30 @@
     };
   }
 
+  /** Адрес плитки-цели: вкладка или правило (бледная плитка). */
+  function targetUrlOf(element) {
+    if (!element) {
+      return "";
+    }
+    if (element.classList?.contains("zef-ghost")) {
+      return urlOfRule(element.getAttribute("data-zef-rule") || "");
+    }
+    return tabUrl(element);
+  }
+
   /** Бросили плитку сайта на другую плитку сайта:
    *  та, что в папке, — меняет место внутри своей папки,
    *  та, что свободна, — выходит из папки. */
   function handleDropOnSite(event, targetTab) {
     const tab = draggedTabFrom(event) || draggedTab;
-    if (!tab || tab === targetTab) {
+    const url = tab ? tabUrl(tab) : draggedTabUrl || urlFromData(event);
+    if (!url) {
       return { error: "nothing to drag" };
     }
-    const url = tabUrl(tab);
-    if (!url) {
-      return { error: "the tab has no address" };
+    if (tab && tab === targetTab) {
+      return { error: "nothing to drag" };
     }
-    const targetUrl = tabUrl(targetTab);
+    const targetUrl = targetUrlOf(targetTab);
     const targetFolder = folderForUrl(targetUrl);
     const source = folderForUrl(url);
     if (!targetFolder) {
@@ -4912,6 +5038,292 @@
   }
 
   /* ------------------------------------------------------------------ *
+   * Перестановка плиток — как иконки приложений на телефоне
+   *
+   * Тянешь плитку — она отрывается от ряда, а ряд расступается,
+   * освобождая место. Сделано через номера плиток (свойство order): у
+   * плиток одной группы номера идут подряд, поэтому их можно
+   * переставлять местами, не задевая остальные ряды.
+   * ------------------------------------------------------------------ */
+
+  // Группа плиток, которые переставляют друг с другом прямо сейчас.
+  let arrange = null;
+
+  /** Ключ группы плитки: «f:папка», «s:папка», «free». */
+  function groupKeyOf(element) {
+    return element?.getAttribute?.("data-zef-group") || "";
+  }
+
+  /** Плитки одной группы: братья по родителю с тем же ключом, по порядку. */
+  function groupSiblings(element) {
+    const key = groupKeyOf(element);
+    if (!key || !element.parentElement) {
+      return [];
+    }
+    return Array.from(element.parentElement.children).filter(
+      child => groupKeyOf(child) === key
+    );
+  }
+
+  /** Номер плитки в ряду — им задаётся видимый порядок. */
+  function tileOrder(element) {
+    const value = Number(element.style.order);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  /** Плитку взяли: запоминаем группу и её состав. */
+  function arrangeStart(element) {
+    const items = groupSiblings(element);
+    arrange =
+      items.length > 1
+        ? {
+            key: groupKeyOf(element),
+            items,
+            element,
+            original: items.slice(),
+            numbers: items.map(tileOrder),
+            spot: -1,
+          }
+        : null;
+    if (arrange) {
+      element.classList.add("zef-lifted");
+    }
+  }
+
+  /** Куда встать: по положению курсора среди плиток группы. */
+  function arrangeSpot(x, y) {
+    if (!arrange) {
+      return -1;
+    }
+    const others = arrange.items.filter(item => item !== arrange.element);
+    if (!others.length) {
+      return -1;
+    }
+    // Ряд — полоса плиток под курсором. Соседние строки не считаем.
+    const band = [];
+    for (const item of others) {
+      const rect = item.getBoundingClientRect();
+      if (!rect.width || !rect.height) {
+        continue;
+      }
+      if (y >= rect.top - 4 && y <= rect.bottom + 4) {
+        band.push({ item, rect });
+      }
+    }
+    if (!band.length) {
+      return -1;
+    }
+    let spot = 0;
+    for (const entry of band) {
+      if (x < entry.rect.left + entry.rect.width / 2) {
+        break;
+      }
+      spot = others.indexOf(entry.item) + 1;
+    }
+    return spot;
+  }
+
+  /** Поставить плитку на новое место: соседи сдвигаются, как на телефоне. */
+  function arrangeMove(spot) {
+    if (!arrange) {
+      return;
+    }
+    const items = arrange.items;
+    const numbers = items.map(tileOrder).sort((a, b) => a - b);
+    const before = new Map();
+    for (const item of items) {
+      before.set(item, item.getBoundingClientRect());
+    }
+    const others = items.filter(item => item !== arrange.element);
+    const at = Math.max(0, Math.min(others.length, spot));
+    others.splice(at, 0, arrange.element);
+    others.forEach((item, index) => {
+      item.style.order = String(numbers[index]);
+    });
+    arrange.items = others;
+    arrangeAnimate(before);
+  }
+
+  /** Плитки сдвинулись — показать это плавно. */
+  function arrangeAnimate(before) {
+    for (const item of arrange.items) {
+      const prev = before.get(item);
+      if (!prev) {
+        continue;
+      }
+      const now = item.getBoundingClientRect();
+      const dx = prev.left - now.left;
+      const dy = prev.top - now.top;
+      if (!dx && !dy) {
+        continue;
+      }
+      item.style.transition = "none";
+      item.style.transform = "translate(" + dx + "px, " + dy + "px)";
+      requestAnimationFrame(() => {
+        item.style.transition = "transform 140ms ease-out";
+        item.style.transform = "";
+      });
+    }
+  }
+
+  /** Сохранить новый порядок плиток. */
+  function arrangeCommit() {
+    if (!arrange) {
+      return false;
+    }
+    const key = arrange.key;
+    const items = arrange.items;
+    let saved = false;
+    if (key.startsWith("f:") || key.startsWith("s:")) {
+      const folder = folderById(key.slice(2));
+      if (folder) {
+        const rules = [];
+        for (const item of items) {
+          const rule = item.getAttribute("data-zef-rule");
+          if (rule && !rules.includes(rule)) {
+            rules.push(rule);
+          }
+        }
+        // Правила без плиток (запреты) — в конец, как и раньше.
+        const rest = (folder.sites || []).filter(rule => !rules.includes(rule));
+        folder.sites = rules.concat(rest);
+        persist();
+        saved = true;
+      }
+    } else if (key === "free") {
+      const urls = [];
+      for (const item of items) {
+        const url = tabUrl(item);
+        if (url && !urls.includes(url)) {
+          urls.push(url);
+        }
+      }
+      writeJSONPref(PREF_FREE_ORDER, urls);
+      sync(true);
+      saved = true;
+    }
+    arrange.element.classList.remove("zef-lifted");
+    arrange = null;
+    return saved;
+  }
+
+  /** Перестановку отменить: вернуть плитки на прежние места. */
+  function arrangeCancel() {
+    if (!arrange) {
+      return;
+    }
+    arrange.element.classList.remove("zef-lifted");
+    arrange.original.forEach((item, index) => {
+      item.style.order = String(arrange.numbers[index]);
+    });
+    arrange = null;
+  }
+
+  /** Сдвинуть плитку в своей группе — точная расстановка из меню. */
+  function tileMoveAction(element, where) {
+    if (!element) {
+      return false;
+    }
+    const key = groupKeyOf(element);
+    if (key.startsWith("f:") || key.startsWith("s:")) {
+      const folder = folderById(key.slice(2));
+      const rule = element.getAttribute("data-zef-rule");
+      const sites = folder?.sites || [];
+      const index = sites.indexOf(rule);
+      if (!folder || index < 0) {
+        return false;
+      }
+      let target = index;
+      if (where === "left") {
+        target = index - 1;
+      } else if (where === "right") {
+        target = index + 1;
+      } else if (where === "start") {
+        target = 0;
+      } else if (where === "end") {
+        target = sites.length - 1;
+      }
+      target = Math.max(0, Math.min(sites.length - 1, target));
+      if (target === index) {
+        return false;
+      }
+      const [moved] = sites.splice(index, 1);
+      sites.splice(target, 0, moved);
+      persist();
+      return true;
+    }
+    if (key === "free") {
+      const url = tabUrl(element);
+      const urls = [];
+      for (const item of groupSiblings(element)) {
+        const itemUrl = tabUrl(item);
+        if (itemUrl) {
+          urls.push(itemUrl);
+        }
+      }
+      const index = urls.indexOf(url);
+      if (index < 0) {
+        return false;
+      }
+      let target = index;
+      if (where === "left") {
+        target = index - 1;
+      } else if (where === "right") {
+        target = index + 1;
+      } else if (where === "start") {
+        target = 0;
+      } else if (where === "end") {
+        target = urls.length - 1;
+      }
+      target = Math.max(0, Math.min(urls.length - 1, target));
+      if (target === index) {
+        return false;
+      }
+      const [moved] = urls.splice(index, 1);
+      urls.splice(target, 0, moved);
+      writeJSONPref(PREF_FREE_ORDER, urls);
+      sync(true);
+      return true;
+    }
+    return false;
+  }
+
+  /** Сдвинуть папку в ряду: среди папок того же уровня. */
+  function moveFolderInRow(folder, where) {
+    if (!folder) {
+      return false;
+    }
+    const parentId = folder.parentId || null;
+    const siblings = folders.filter(item => (item.parentId || null) === parentId);
+    const index = siblings.indexOf(folder);
+    if (index < 0) {
+      return false;
+    }
+    let target = index;
+    if (where === "left") {
+      target = index - 1;
+    } else if (where === "right") {
+      target = index + 1;
+    } else if (where === "start") {
+      target = 0;
+    } else if (where === "end") {
+      target = siblings.length - 1;
+    }
+    target = Math.max(0, Math.min(siblings.length - 1, target));
+    if (target === index) {
+      return false;
+    }
+    const others = folders.filter(item => item !== folder);
+    const anchor = siblings[target];
+    const at = others.findIndex(item => item.id === anchor.id);
+    others.splice(at < 0 ? others.length : at, 0, folder);
+    folders = others;
+    normalizeTree();
+    persist();
+    return true;
+  }
+
+  /* ------------------------------------------------------------------ *
    * Меню плитки
    * ------------------------------------------------------------------ */
 
@@ -4951,6 +5363,11 @@
       current.sites = (current.sites || []).filter(item => item !== rule);
       persist();
     });
+    addSeparator();
+    addItem(t("tile.moveLeft"), () => tileMoveAction(anchor, "left"));
+    addItem(t("tile.moveRight"), () => tileMoveAction(anchor, "right"));
+    addItem(t("tile.moveStart"), () => tileMoveAction(anchor, "start"));
+    addItem(t("tile.moveEnd"), () => tileMoveAction(anchor, "end"));
     addSeparator();
     addItem(t("folder.sites"), () => openFolderDialog(folder, "sites"));
     addItem(t("folder.rename"), () => openFolderDialog(folder, "name"));
@@ -4996,6 +5413,11 @@
     addItem(t("folder.rename"), () => openFolderDialog(folder, "name"));
     addItem(t("folder.icon"), () => pickIcon(folder));
     addItem(t("folder.color"), () => openFolderDialog(folder, "color"));
+    addSeparator();
+    addItem(t("tile.moveLeft"), () => moveFolderInRow(folder, "left"));
+    addItem(t("tile.moveRight"), () => moveFolderInRow(folder, "right"));
+    addItem(t("tile.moveStart"), () => moveFolderInRow(folder, "start"));
+    addItem(t("tile.moveEnd"), () => moveFolderInRow(folder, "end"));
     addSeparator();
 
     // Вложение папки в другую — тем же способом, что и перетаскивание.
@@ -5773,6 +6195,9 @@
       <menu id="context_zef-folders" hidden="true">
         <menupopup id="context_zef-folders-popup"></menupopup>
       </menu>
+      <menu id="context_zef-move" hidden="true">
+        <menupopup id="context_zef-move-popup"></menupopup>
+      </menu>
     `);
 
     // Ставим пункт ближе к началу меню, рядом с «Добавить в важное»,
@@ -5787,6 +6212,10 @@
     const item = document.getElementById("context_zef-folders");
     item.setAttribute("label", t("menu.intoFolder"));
     const popup = document.getElementById("context_zef-folders-popup");
+    const moveItem = document.getElementById("context_zef-move");
+    moveItem.setAttribute("label", t("menu.moveTile"));
+    const movePopup = document.getElementById("context_zef-move-popup");
+    item.after(moveItem);
 
     // Список пунктов и видимость обновляем, когда открывается всё меню,
     // а не наш подменю — иначе пункт остаётся скрытым.
@@ -5805,6 +6234,26 @@
         entry.addEventListener("command", () => addTabToFolder(tab, folder));
         popup.appendChild(entry);
       }
+      // Перестановка в ряду — только если плитка вообще в ряду.
+      const moveKey = groupKeyOf(tab);
+      const canMove =
+        moveKey.startsWith("f:") || moveKey.startsWith("s:") || moveKey === "free";
+      moveItem.hidden = !canMove;
+      movePopup.replaceChildren();
+      if (canMove) {
+        const moves = [
+          ["left", t("tile.moveLeft")],
+          ["right", t("tile.moveRight")],
+          ["start", t("tile.moveStart")],
+          ["end", t("tile.moveEnd")],
+        ];
+        for (const [where, label] of moves) {
+          const entry = document.createXULElement("menuitem");
+          entry.setAttribute("label", label);
+          entry.addEventListener("command", () => tileMoveAction(tab, where));
+          movePopup.appendChild(entry);
+        }
+      }
       popup.appendChild(document.createXULElement("menuseparator"));
       const create = document.createXULElement("menuitem");
       create.setAttribute("label", t("menu.newFolder"));
@@ -5818,6 +6267,7 @@
 
     menu.addEventListener("popupshowing", update);
     item.addEventListener("popupshowing", update);
+    moveItem.addEventListener("popupshowing", update);
   }
 
   /* ------------------------------------------------------------------ *
@@ -6296,6 +6746,18 @@
       "dragstart",
       event => {
         dragSourceEl = event.target || null;
+        draggedRule = "";
+        // Плитку сайта можно переставлять: запоминаем её группу.
+        const tile = event.target?.closest?.("[data-zef-group]");
+        const groupKey = groupKeyOf(tile);
+        arrange = null;
+        if (
+          groupKey.startsWith("f:") ||
+          groupKey.startsWith("s:") ||
+          groupKey === "free"
+        ) {
+          arrangeStart(tile);
+        }
         // Вкладку ищем тремя способами: по родителю события, по элементу под
         // курсором и по самой геометрии вкладок. Zen подменяет вкладку своей
         // копией, поэтому одного поиска по родителю мало.
@@ -6303,6 +6765,12 @@
           event.target?.closest?.(".tabbrowser-tab") || tabUnderPoint(event);
         draggedTab = tab || null;
         draggedTabUrl = tab ? tabUrl(tab) : "";
+        // Бледная плитка — это правило, а не вкладка: адрес берём из него.
+        const ghost = event.target?.closest?.(".zef-ghost");
+        if (ghost) {
+          draggedRule = ghost.getAttribute("data-zef-rule") || "";
+          draggedTabUrl = urlOfRule(draggedRule);
+        }
         draggedTabIsEssential = Boolean(tab?.hasAttribute?.("zen-essential"));
         dragInProgress = true;
         dropHandled = false;
@@ -6340,6 +6808,8 @@
         draggedTab = null;
         draggedTabIsEssential = false;
         draggedFolderId = null;
+        draggedRule = "";
+        arrangeCancel();
         dragInProgress = false;
         dragLayout = null;
         hoverTarget = null;
@@ -6391,9 +6861,17 @@
     // Пока идёт перетаскивание, следим за сеткой покадрово.
     onWindow(
       "dragover",
-      () => {
+      event => {
         if (dragInProgress) {
           followPlanes();
+        }
+        // Плитка едет по ряду: место для неё считаем по курсору.
+        if (arrange) {
+          const spot = arrangeSpot(event.clientX, event.clientY);
+          if (spot >= 0 && spot !== arrange.spot) {
+            arrange.spot = spot;
+            arrangeMove(spot);
+          }
         }
       },
       true

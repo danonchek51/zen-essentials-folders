@@ -1727,3 +1727,11 @@
   overscroll-behavior: contain;
   scrollbar-width: thin;
 }
+
+/* Плитка, которую тянут: она отрывается от ряда и бледнеет —
+   видно, что её взяли. */
+.zef-lifted {
+  opacity: 0.3 !important;
+  transform: scale(1.06);
+  z-index: 4;
+}

@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.15.8](https://img.shields.io/badge/version-1.15.8-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.16.0](https://img.shields.io/badge/version-1.16.0-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -55,8 +55,12 @@ within** — all with ordinary mouse drag & drop.
   instead of the usual sideways one, and its tile glows softly in the colour of the folder.
 - **Reordering folders.** Drag a tile by its edge — the folder lands next to the one you dropped
   it on. A nested folder can be dragged back out to the top level the same way.
-- **Reordering tiles inside a folder.** Drag an icon onto a neighbouring icon — the tile lands
-  before or after it, depending on which side you released it.
+- **Reordering tiles inside a folder.** Drag a tile and the row opens a gap for it: the
+  neighbours move aside and the tile lands where you let go, the way app icons move on
+  a phone home screen. It works in an open folder, in a nested folder (the dense row of
+  icons) and among the free tiles at the bottom of the panel.
+- **A new site lands on the right.** A tile that arrives in a folder is appended to the
+  end of the folder's rules, so it shows up at the far right of the row.
 - **Only the tab you dragged moves.** Drop a GitHub icon with one repository into another
   folder — only that one moved, the other GitHub tabs stayed where they were (see "How it
   works").

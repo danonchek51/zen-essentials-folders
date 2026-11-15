@@ -10,6 +10,33 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.16.0] — 2026-11-15
+
+The tiles inside a folder can be put in the order you want.
+
+### Added
+
+- **Reorder the tiles inside a folder.** Drag a tile and the row opens a gap for it: the
+  neighbours move aside and the tile lands where you let go — the way app icons move on a
+  phone home screen. It works in an open folder, in a nested folder (the dense row of icons)
+  and among the free tiles at the bottom of the panel.
+- **A new site lands on the right.** A tile that arrives in a folder is appended to the end
+  of the folder's rules, so it shows up at the far right of the row instead of the far left.
+- **A pale tile can be dragged too.** A rule without an open tab is a tile of its own now,
+  not a picture that cannot be moved.
+- **Exact placement from the menu.** Right-click a tile — "Move left / Move right / Move to
+  the start / Move to the end" — for the times when dragging is not convenient. Folder tiles
+  have the same items.
+
+### Fixed
+
+- **The tiles of a folder are drawn in one list.** The live tiles used to be drawn first and
+  the pale ones after them, so a manual order could not be shown at all. Now the tiles follow
+  the order of the folder's rules, and that order is what gets saved.
+- **A drop on a neighbouring tile is no longer read as a drop into the folder.** The strip of
+  icons and the colour area of a folder caught the drop before the tile itself, so
+  reordering the tiles inside a folder was impossible.
+
 ## [1.15.8] — 2026-11-15
 
 The diagnostics show the panel as it is now, not as it was a moment ago.
