@@ -79,7 +79,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.15.5";
+  const MOD_VERSION = "1.15.6";
 
 
   /* ------------------------------------------------------------------ *
@@ -225,6 +225,10 @@
     "hint.moveFailed": { en: "Could not move the tab", ru: "Не получилось перенести вкладку" },
     "hint.movedIn": { en: "Moved into \u00ab{name}\u00bb", ru: "Перенесено в папку \u00ab{name}\u00bb" },
     "hint.pinFailed": { en: "The tab stayed in the sidebar", ru: "Вкладка осталась в сайдбаре" },
+    "firstrun.hint": {
+      en: "Drag a tab here, or press \u201c+\u201d to make your first folder.",
+      ru: "Перетащите сюда вкладку или нажмите «+» — появится первая папка.",
+    },
   };
 
   /** Текущий язык интерфейса: английский по умолчанию, русский — по выбору. */
@@ -1449,26 +1453,6 @@
     }
   }
 
-  /** Картинка из обёртки Zen.
-   *
-   *  Zen хранит иконку «Важной» вкладки как moz-remote-image: внутри обёртки
-   *  лежит сама картинка (data-URL). Обёртка — это удалённая загрузка, и она
-   *  иногда не срабатывает. Тогда берём картинку изнутри: она уже у нас. */
-  function unwrapRemoteIcon(src) {
-    if (!src || !src.startsWith("moz-remote-image:")) {
-      return "";
-    }
-    const match = /[?&]url=([^&]+)/.exec(src);
-    if (!match) {
-      return "";
-    }
-    try {
-      return decodeURIComponent(match[1]);
-    } catch (e) {
-      return match[1];
-    }
-  }
-
   /** Иконку можно запомнить: это настоящая иконка сайта, а не служебная
    *  картинка Zen («глобус» и прочие заглушки). */
   function isCacheableIcon(src) {
@@ -1477,25 +1461,6 @@
       src.startsWith("http:") ||
       src.startsWith("https://")
     );
-  }
-
-  /** Ссылка на иконку из службы избранного.
-   *
-   *  Firefox отдаёт её по-разному: то объектом с полем dataURI (так делает
-   *  сам Zen), то готовой картинкой. Берём любой вариант, похожий на картинку. */
-  function iconSrcOf(favicon) {
-    const candidates = [
-      favicon?.dataURI?.spec,
-      typeof favicon?.dataURI === "string" ? favicon.dataURI : "",
-      favicon?.src,
-      favicon?.getAttribute?.("src"),
-    ];
-    for (const value of candidates) {
-      if (value && isCacheableIcon(String(value))) {
-        return String(value);
-      }
-    }
-    return "";
   }
 
   /** Ссылка на иконку из службы избранного.
@@ -2189,6 +2154,17 @@
       tileHost.appendChild(add);
     }
 
+    // Первый запуск: папок ещё нет. Без подсказки панель выглядит сломанной
+    // — пусто и непонятно, что делать. Говорим прямо, что делать дальше.
+    if (!folders.length) {
+      const firstRun = document.createElement("div");
+      firstRun.className = "zef-firstrun";
+      firstRun.dataset.zef = "1";
+      firstRun.textContent = t("firstrun.hint");
+      firstRun.style.order = String(nextOrder());
+      container.appendChild(firstRun);
+    }
+
     // --- плоскости раскрытых папок ---
     // Каждая раскрытая папка — большая плоскость её цвета: шапка с
     // названием и плитки сайтов внутри. Свежая открытая папка — сверху.
@@ -2424,24 +2400,151 @@
     return out;
   }
 
-  /** Иконка сайта для правила — из кэша иконок браузера.
+  /** Есть ли в этой среде службы браузера.
    *
-   *  Правило без открытой вкладки — это всё равно сайт: показываем его
-   *  настоящую иконку, а не глобус. Если иконки нет, покажем букву адреса
-   *  на цветном круге — как у вкладок без favicon. */
+   *  В настоящем Zen — да: и служба избранного, и сеть. В макете (страница
+   *  без браузера) — нет: там нечего спрашивать, а попытка обратиться к
+   *  сети просто подвешивает страницу. */
+  function browserServices() {
+    try {
+      return {
+        io: Boolean(Services?.io?.newURI),
+        places: Boolean(
+          typeof PlacesUtils !== "undefined" && PlacesUtils?.favicons
+        ),
+      };
+    } catch (e) {
+      return { io: false, places: false };
+    }
+  }
+
+  /** Иконка сайта из любой открытой вкладки.
+   *
+   *  Правило папки живёт и тогда, когда вкладка сайта закрыта. Но иконка
+   *  сайта часто остаётся в памяти: у любой открытой вкладки того же сайта
+   *  есть картинка. Берём её оттуда — и плитка правила выглядит как
+   *  настоящая, а не как буква. */
+  function iconFromOpenTab(host) {
+    if (!host) {
+      return "";
+    }
+    let tabs = [];
+    try {
+      tabs = gBrowser?.tabs || [];
+    } catch (e) {
+      return "";
+    }
+    for (const tab of tabs) {
+      try {
+        if (hostOf(tabUrl(tab)) !== host) {
+          continue;
+        }
+        const img = tab.querySelector?.(".tab-icon-image");
+        if (!img) {
+          continue;
+        }
+        const raw = img.getAttribute("src") || "";
+        if (!raw) {
+          continue;
+        }
+        // Картинка не загрузилась: внутри обёртки Zen может лежать настоящая.
+        if (img.complete && img.naturalWidth === 0) {
+          const inner = unwrapRemoteIcon(raw);
+          return isCacheableIcon(inner) ? inner : "";
+        }
+        return isCacheableIcon(raw) ? raw : "";
+      } catch (e) {}
+    }
+    return "";
+  }
+
+  /** Иконка сайта из сети: /favicon.ico.
+   *
+   *  В кэше браузера её может не быть: сайт закрыт, иконка не грузилась.
+   *  Тогда спрашиваем сам сайт — один запрос на сайт, ответ кладём в кэш.
+   *  Если и у сайта ничего нет, остаётся буква адреса. */
+  function fetchIconFromNetwork(host) {
+    if (!host || typeof Image === "undefined") {
+      return Promise.resolve("");
+    }
+    const url = "https://" + host + "/favicon.ico";
+    return new Promise(resolve => {
+      let done = false;
+      const finish = value => {
+        if (done) {
+          return;
+        }
+        done = true;
+        resolve(value);
+      };
+      let image = null;
+      try {
+        image = new Image();
+      } catch (e) {
+        finish("");
+        return;
+      }
+      image.addEventListener("load", () => {
+        finish(image.naturalWidth > 0 ? url : "");
+      });
+      image.addEventListener("error", () => finish(""));
+      try {
+        image.src = url;
+      } catch (e) {
+        finish("");
+      }
+    });
+  }
+
+  /** Иконка сайта для правила.
+   *
+   *  Порядок поиска: запомненная иконка → иконка открытой вкладки того же
+   *  сайта → кэш иконок браузера → сам сайт (/favicon.ico). Только если
+   *  ничего не нашлось, остаётся буква адреса. */
   function faviconForRule(rule) {
     const url = urlOfRule(rule);
     if (!url) {
       return Promise.resolve("");
     }
-    try {
-      const uri = Services.io.newURI(url);
-      return Promise.resolve(PlacesUtils.favicons.getFaviconForPage(uri))
-        .then(favicon => iconSrcOf(favicon))
-        .catch(() => "");
-    } catch (e) {
-      return Promise.resolve("");
+    const host = hostOf(url) || "";
+    const cached = iconCache.get(host);
+    if (cached) {
+      return Promise.resolve(cached);
     }
+    const fromTab = iconFromOpenTab(host);
+    if (fromTab) {
+      iconCache.set(host, fromTab);
+      return Promise.resolve(fromTab);
+    }
+    const services = browserServices();
+    let service = Promise.resolve("");
+    if (services.io && services.places) {
+      try {
+        const uri = Services.io.newURI(url);
+        service = Promise.resolve(PlacesUtils.favicons.getFaviconForPage(uri))
+          .then(favicon => iconSrcOf(favicon))
+          .catch(() => "");
+      } catch (e) {
+        service = Promise.resolve("");
+      }
+    }
+    return service.then(src => {
+      if (src) {
+        iconCache.set(host, src);
+        return src;
+      }
+      // Сайта нет в кэше браузера — спрашиваем сайт сами. Без служб
+      // браузера (макет) обращаться некуда: остаётся буква.
+      if (!services.io) {
+        return "";
+      }
+      return fetchIconFromNetwork(host).then(net => {
+        if (net) {
+          iconCache.set(host, net);
+        }
+        return net;
+      });
+    });
   }
 
   /** Бледная плитка правила, у которого нет открытой вкладки. */
@@ -2473,6 +2576,13 @@
       }
       icon.src = src;
       ghost.classList.remove("zef-no-icon");
+      // Картинка не загрузилась — снова показываем букву: пустая плитка
+      // выглядит хуже, чем понятная буква.
+      icon.addEventListener("error", () => {
+        if (ghost.isConnected) {
+          ghost.classList.add("zef-no-icon");
+        }
+      });
     });
     // Клик открывает страницу правила.
     ghost.addEventListener("mousedown", event => event.stopPropagation());
@@ -4033,6 +4143,25 @@
               }),
           };
         })(),
+        tiles: {
+          // Плитки-правила (сайт есть в папке, но вкладка закрыта).
+          ghosts: container ? container.querySelectorAll(".zef-ghost").length : -1,
+          ghostIcons: container
+            ? Array.from(container.querySelectorAll(".zef-ghost")).filter(
+                el => el.querySelector(".zef-ghost-img")?.getAttribute("src")
+              ).length
+            : -1,
+          ghostLetters: container
+            ? Array.from(container.querySelectorAll(".zef-ghost")).filter(
+                el => el.classList.contains("zef-no-icon")
+              ).length
+            : -1,
+          strips: container ? container.querySelectorAll(".zef-icon-strip").length : -1,
+          folderTiles: container
+            ? container.querySelectorAll(".zef-tile[data-zef-folder]").length
+            : -1,
+          firstRun: container ? container.querySelectorAll(".zef-firstrun").length : -1,
+        },
       };
       const text = JSON.stringify(info);
       if (text !== lastDiag) {

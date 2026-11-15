@@ -10,6 +10,39 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.15.6] — 2026-11-15
+
+Every icon in a row is the same size, and a site tile shows the real logo of the site.
+
+### Fixed
+
+- **A site tile shows the real icon of the site.** A tile of a folder rule — a site that
+  is in the folder, but whose tab is closed right now — took its icon from the favourites
+  service only. For a site the browser had never loaded there was no icon in that cache,
+  so the tile showed a letter instead of the logo. The mod now looks for the icon in
+  four places: its own memory, any open tab of the same site, the favourites service,
+  and finally the site itself (`/favicon.ico`). One request per site, the result is
+  remembered.
+- **Every icon in a row is the same size.** The icon of a rule tile took 68 % of its cell
+  while the logo of a tab took the whole cell, so one row mixed small and large icons.
+  The icon of a rule tile now fills its cell like every other icon.
+- **The placeholder of a rule tile looks like the one of Zen.** Zen draws a rounded
+  square, the mod drew a circle — in one folder you could see a circle next to squares
+  of a different size. Both are rounded squares of the same size now, and the row is
+  aligned.
+- **A picture that does not load turns back into a letter.** A rule tile whose icon fails
+  to load stays empty instead of showing a broken picture.
+
+### Added
+
+- **The panel explains itself when it is empty.** Right after the install the panel had
+  nothing in it, and a new user could not tell that the mod was working at all. The panel
+  now shows one line — "Drag a tab here, or press “+” to make your first folder." — and
+  the button that creates the first folder. The line disappears as soon as the first
+  folder appears.
+- **The diagnostics count the tiles.** `zen.essentialsfolders.diag` now reports how many
+  rule tiles there are, how many of them have an icon and how many still show a letter.
+
 ## [1.15.5] — 2026-11-15
 
 The icon of a site stays, and every tile in a folder looks the same.
