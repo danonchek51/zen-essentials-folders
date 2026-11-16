@@ -1,6 +1,6 @@
 # Essentials Folders — плитки-папки для «Важных» в Zen Browser
 
-[![Версия 1.16.3](https://img.shields.io/badge/version-1.16.3-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Версия 1.16.4](https://img.shields.io/badge/version-1.16.4-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![Лицензия MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -300,6 +300,10 @@ Essentials Folders → шестерёнка): оба места читают и 
 Один сайт — одна плитка: если страница этого сайта уже открыта в папке, бледная плитка
 рядом не рисуется. Две открытые вкладки одного сайта — это две плитки: это две вкладки,
 а не дубль.
+
+Папка следует за сайтом, которым вы правда пользуетесь. Правило указывает на страницу —
+закройте её, и папка сохранит сайт: правило переходит к открытой вкладке того же сайта,
+и в папке он показан живой плиткой со своим значком, а не бледной буквой.
 
 ## Установка (Install)
 

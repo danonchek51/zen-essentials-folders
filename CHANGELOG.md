@@ -10,6 +10,29 @@ installation: [Sine Store](https://github.com/sineorg/store) → `Install from r
 
 ---
 
+## [1.16.4] — 2026-11-16
+
+A site in a folder shows its logo once, not twice.
+
+### Fixed
+
+- **A site whose page was closed came back as a letter.** A folder rule points at a page. Close
+  that page and open the site on another one — the rule stopped matching, the folder kept a dim
+  tile without a logo (a letter instead of the site icon), and the live tile of the same site
+  stayed below the folders. The site was shown twice, and it was not clear which tile was the
+  real one. Now the rule follows the open tab of the same site: the site is in the folder again,
+  as a live tile with its logo, and nothing is left below the folders.
+- **A dim tile now takes the logo from the tab of the same site.** The icon of a Zen tab lives in
+  a `moz-remote-image:` wrapper, and the mod unwrapped it only when the picture had failed to
+  load. With a loaded picture the wrapper stayed, and that address cannot be used as an icon —
+  so the tile of the rule kept the letter. The wrapper is unwrapped now, always.
+- The change is announced in a short hint, so an automatic rule change is never silent.
+
+### Tests
+
+- `test_site_in_folder.py` — two scenarios: a rule that follows the open tab of the site, and the
+  logo of a dim tile taken from the tab of the same site.
+
 ## [1.16.3] — 2026-11-15
 
 A tile can be put at the far right of its row — and it stays there.

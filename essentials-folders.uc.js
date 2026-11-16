@@ -82,7 +82,7 @@
 
   /** Версия мода. Показывается в окне настроек: сразу видно, что
    *  обновление действительно применилось. */
-  const MOD_VERSION = "1.16.3";
+  const MOD_VERSION = "1.16.4";
 
 
   /* ------------------------------------------------------------------ *
@@ -238,6 +238,10 @@
     "hint.ruleRemoved": {
       en: "Removed from \u00ab{name}\u00bb",
       ru: "Убрано из папки \u00ab{name}\u00bb",
+    },
+    "hint.ruleAdopted": {
+      en: "\u00ab{name}\u00bb shows {site} again",
+      ru: "\u00ab{name}\u00bb снова показывает {site}",
     },
     "hint.movedIn": { en: "Moved into \u00ab{name}\u00bb", ru: "Перенесено в папку \u00ab{name}\u00bb" },
     "hint.pinFailed": { en: "The tab stayed in the sidebar", ru: "Вкладка осталась в сайдбаре" },
@@ -2002,6 +2006,10 @@
     normalizeTree();
 
     const tabs = essentialTabs(container);
+    // Правило папки, чья страница закрыта, догоняет живую вкладку сайта:
+    // иначе в папке лежит бледная плитка без значка, а живая плитка сайта —
+    // под папками. Считаем совпадения после этого: правило могло смениться.
+    adoptOpenSiteRule(tabs);
     const matches = tabs.map(tab => matchFolderForUrl(tabUrl(tab)));
     updateIconFallbacks(container, tabs);
     updateUnloadedMarks(tabs);
@@ -2592,6 +2600,107 @@
     return -1;
   }
 
+  /** Правило папки, чья страница закрыта, но сайт открыт вкладкой, которая
+   *  ни в какой папке не лежит.
+   *
+   *  Без этого в папке остаётся бледная плитка правила (часто вовсе без
+   *  значка — буква вместо логотипа), а живая плитка сайта стоит под
+   *  папками: сайт видно дважды, и непонятно, где его настоящая плитка.
+   *  Правило догоняет живую вкладку — сайт снова в папке, живой плиткой и
+   *  со значком.
+   *
+   *  Условия все сразу: правило действительно устарело (его страница не
+   *  открыта), второго правила того же сайта в папке нет, живая вкладка
+   *  сайта свободна (ни в какой папке не лежит) и её правила в папке ещё
+   *  нет. */
+  function adoptOpenSiteRule(tabs) {
+    // Открытые страницы по хостам: и «Важные», и обычные вкладки. Правило
+    // живо, пока его страница открыта хоть где-нибудь.
+    const open = new Map();
+    const addUrl = url => {
+      const host = hostOf(url);
+      if (!host) {
+        return;
+      }
+      if (!open.has(host)) {
+        open.set(host, []);
+      }
+      open.get(host).push(url);
+    };
+    for (const tab of tabs || []) {
+      addUrl(tabUrl(tab));
+    }
+    try {
+      for (const tab of gBrowser?.tabs || []) {
+        addUrl(tabUrl(tab));
+      }
+    } catch (e) {}
+    // Свободные вкладки: те, что не лежат ни в одной папке.
+    const free = [];
+    for (const tab of tabs || []) {
+      const url = tabUrl(tab);
+      if (!url || matchFolderForUrl(url)) {
+        continue;
+      }
+      free.push(url);
+    }
+    if (!free.length) {
+      return false;
+    }
+    let changed = false;
+    for (const folder of folders) {
+      const sites = folder.sites || (folder.sites = []);
+      for (let index = 0; index < sites.length; index++) {
+        const rule = sites[index];
+        if (isExclusionRule(rule)) {
+          continue;
+        }
+        const host = ruleHost(rule);
+        if (!host) {
+          continue;
+        }
+        // Страница правила открыта — правило живое, трогать нечего.
+        const urls = open.get(host) || [];
+        if (urls.some(url => ruleMatches(rule, url))) {
+          continue;
+        }
+        // Два правила одного сайта в папке: какое из них устарело — не разобрать.
+        const sameHost = sites.filter(
+          item => !isExclusionRule(item) && ruleHost(item) === host
+        );
+        if (sameHost.length > 1) {
+          continue;
+        }
+        // Живая вкладка этого сайта, не принадлежащая ни одной папке.
+        const at = free.findIndex(url => hostOf(url) === host);
+        if (at < 0) {
+          continue;
+        }
+        const candidate = free[at];
+        const fresh = specificRuleFor(candidate);
+        if (!fresh || fresh === rule || sites.includes(fresh)) {
+          continue;
+        }
+        // Правило-запрет: такой адрес обратно в папку не вернуть.
+        if (sites.some(item => isExclusionRule(item) && ruleMatches(item, candidate))) {
+          continue;
+        }
+        sites[index] = fresh;
+        changed = true;
+        // Вкладка теперь в папке — другим папкам она не достанется.
+        free.splice(at, 1);
+        showHint(t("hint.ruleAdopted", {
+          name: folder.name || "…",
+          site: host,
+        }));
+      }
+    }
+    if (changed) {
+      persist();
+    }
+    return changed;
+  }
+
   /** Есть ли в этой среде службы браузера.
    *
    *  В настоящем Zen — да: и служба избранного, и сеть. В макете (страница
@@ -2649,10 +2758,18 @@
         if (!raw) {
           continue;
         }
-        // Картинка не загрузилась: внутри обёртки Zen может лежать настоящая.
-        if (img.complete && img.naturalWidth === 0) {
-          const inner = unwrapRemoteIcon(raw);
+        // Значок вкладки Zen лежит в обёртке `moz-remote-image:` — это
+        // служебный адрес, а сама картинка внутри. Разворачиваем обёртку
+        // всегда, а не только когда картинка не загрузилась: иначе плитка
+        // правила сайта остаётся без значка и показывает букву вместо
+        // логотипа.
+        const inner = unwrapRemoteIcon(raw);
+        if (inner) {
           return isCacheableIcon(inner) ? inner : "";
+        }
+        // Картинка не загрузилась — значка у сайта нет.
+        if (img.complete && img.naturalWidth === 0) {
+          return "";
         }
         return isCacheableIcon(raw) ? raw : "";
       } catch (e) {}

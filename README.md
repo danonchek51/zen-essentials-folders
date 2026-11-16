@@ -1,6 +1,6 @@
 # Essentials Folders — folder tiles for the Zen Browser Essentials grid
 
-[![Version 1.16.3](https://img.shields.io/badge/version-1.16.3-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
+[![Version 1.16.4](https://img.shields.io/badge/version-1.16.4-informational)](https://github.com/danonchek51/zen-essentials-folders/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Zen Browser 1.24b](https://img.shields.io/badge/zen%20browser-1.24b-orange)](https://zen-browser.app)
 [![Sine Store](https://img.shields.io/badge/sine-store-purple)](https://github.com/sineorg/store)
@@ -301,6 +301,10 @@ The same line takes a live tab out of its folder.
 A site is shown by one tile: if a page of that site is already open in the folder, the dim tile
 of that site is not drawn next to it. Two open tabs of the same site are two tiles — they are two
 tabs, not a duplicate.
+
+A folder follows the site you actually use. A rule points at a page — close that page and the
+folder keeps the site: the rule follows the open tab of the same site, and the folder shows it as
+a live tile with its logo instead of a dim letter.
 
 ## Install
 
